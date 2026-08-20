@@ -6,6 +6,8 @@ import Image from 'next/image';
 import { SlashMenu } from './SlashMenu';
 import { SocialSimulatorModal } from './SocialSimulatorModal';
 import { InsertImageModal } from './InsertImageModal';
+import { TagInput } from './TagInput';
+import { NewCategoryModal } from './NewCategoryModal';
 import { ArticleContentRenderer } from '@/components/content/ArticleContentRenderer';
 import {
   Save,
@@ -42,6 +44,7 @@ import {
   Undo2,
   Redo2,
   Globe,
+  Plus,
 } from 'lucide-react';
 import { slugify, calculateReadingTime } from '@/lib/utils';
 
@@ -61,8 +64,9 @@ interface SlashEditorProps {
     sponsorName?: string | null;
     sponsorUrl?: string | null;
     status: string;
+    tags?: Array<{ tag?: { name: string }; name?: string }>;
   };
-  categories: { id: string; name: string; isIndexable?: boolean }[];
+  categories: { id: string; name: string; slug?: string; isIndexable?: boolean }[];
   seriesList: { id: string; title: string }[];
   userRole?: string;
 }
@@ -173,7 +177,15 @@ export function SlashEditor({
   const [slug, setSlug] = useState(initialArticle?.slug || '');
   const [isSlugManual, setIsSlugManual] = useState(Boolean(initialArticle?.slug));
   const [excerpt, setExcerpt] = useState(initialArticle?.excerpt || '');
+  const [categoriesList, setCategoriesList] = useState(categories);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [categoryId, setCategoryId] = useState(initialArticle?.categoryId || categories[0]?.id || '');
+  const [tags, setTags] = useState<string[]>(() => {
+    if (initialArticle?.tags && Array.isArray(initialArticle.tags)) {
+      return initialArticle.tags.map((t: any) => t.tag?.name || t.name || '').filter(Boolean);
+    }
+    return [];
+  });
   const [seriesId, setSeriesId] = useState(initialArticle?.seriesId || '');
   const [seriesOrder, setSeriesOrder] = useState(initialArticle?.seriesOrder || 1);
   const [coverImageUrl, setCoverImageUrl] = useState(initialArticle?.coverImageUrl || '');
@@ -230,6 +242,7 @@ export function SlashEditor({
           excerpt,
           contentMarkdown,
           categoryId,
+          tags,
           seriesId,
           seriesOrder,
           coverImageUrl,
@@ -251,6 +264,7 @@ export function SlashEditor({
     excerpt,
     contentMarkdown,
     categoryId,
+    tags,
     seriesId,
     seriesOrder,
     coverImageUrl,
@@ -271,6 +285,7 @@ export function SlashEditor({
         if (parsed.excerpt) setExcerpt(parsed.excerpt);
         if (parsed.contentMarkdown) setContentMarkdown(parsed.contentMarkdown);
         if (parsed.categoryId) setCategoryId(parsed.categoryId);
+        if (Array.isArray(parsed.tags)) setTags(parsed.tags);
         if (parsed.seriesId) setSeriesId(parsed.seriesId);
         if (parsed.seriesOrder) setSeriesOrder(parsed.seriesOrder);
         if (parsed.coverImageUrl) setCoverImageUrl(parsed.coverImageUrl);
@@ -676,6 +691,7 @@ export function SlashEditor({
       sponsorName: isSponsored ? sponsorName : null,
       sponsorUrl: isSponsored ? sponsorUrl : null,
       status: nextStatus,
+      tags,
     };
 
     try {
@@ -908,19 +924,36 @@ export function SlashEditor({
             {/* Category & Series Selectors */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-[#09090b] dark:text-white uppercase tracking-wider">
-                  Kanal Kategori
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-[#09090b] dark:text-white uppercase tracking-wider">
+                    Kanal Kategori
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setIsCategoryModalOpen(true)}
+                    className="text-[11px] font-bold text-[#ff5a00] hover:underline flex items-center gap-0.5"
+                  >
+                    <Plus className="w-3 h-3" />
+                    <span>Kategori Baru</span>
+                  </button>
+                </div>
                 <select
                   value={categoryId}
-                  onChange={(e) => setCategoryId(e.target.value)}
-                  className="w-full px-4 py-3 rounded-[14px] bg-[#f4f4f5] dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-xs font-semibold text-[#09090b] dark:text-white focus:outline-none"
+                  onChange={(e) => {
+                    if (e.target.value === '__NEW__') {
+                      setIsCategoryModalOpen(true);
+                    } else {
+                      setCategoryId(e.target.value);
+                    }
+                  }}
+                  className="w-full px-4 py-3 rounded-[14px] bg-[#f4f4f5] dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-xs font-semibold text-[#09090b] dark:text-white focus:outline-none focus:border-[#ff5a00]"
                 >
-                  {categories.map((c) => (
+                  {categoriesList.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.name} {c.isIndexable === false ? '(No-Index / Jurnal)' : ''}
                     </option>
                   ))}
+                  <option value="__NEW__">+ Tambah Kategori Baru...</option>
                 </select>
               </div>
 
@@ -931,7 +964,7 @@ export function SlashEditor({
                 <select
                   value={seriesId}
                   onChange={(e) => setSeriesId(e.target.value)}
-                  className="w-full px-4 py-3 rounded-[14px] bg-[#f4f4f5] dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-xs font-semibold text-[#09090b] dark:text-white focus:outline-none"
+                  className="w-full px-4 py-3 rounded-[14px] bg-[#f4f4f5] dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-xs font-semibold text-[#09090b] dark:text-white focus:outline-none focus:border-[#ff5a00]"
                 >
                   <option value="">Bukan Bagian dari Seri</option>
                   {seriesList.map((s) => (
@@ -955,6 +988,11 @@ export function SlashEditor({
                   className="w-full px-4 py-3 rounded-[14px] bg-[#f4f4f5] dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-xs font-semibold text-[#09090b] dark:text-white focus:outline-none disabled:opacity-50"
                 />
               </div>
+            </div>
+
+            {/* Keyword / Tags Input Component */}
+            <div className="pt-1">
+              <TagInput tags={tags} onChange={setTags} />
             </div>
 
             {/* Cover Image Upload (WebP) & Source Type */}
@@ -1387,6 +1425,20 @@ export function SlashEditor({
         onClose={() => setIsImageModalOpen(false)}
         onInsert={handleInsertImageMarkdown}
         articleTitle={title}
+      />
+
+      {/* Dynamic Category Creation Modal */}
+      <NewCategoryModal
+        isOpen={isCategoryModalOpen}
+        onClose={() => setIsCategoryModalOpen(false)}
+        onCreated={(newCat) => {
+          setCategoriesList((prev) => {
+            if (prev.some((c) => c.id === newCat.id)) return prev;
+            return [...prev, newCat];
+          });
+          setCategoryId(newCat.id);
+          setSuccessMsg(`Kategori baru "${newCat.name}" berhasil dibuat dan dipilih!`);
+        }}
       />
     </div>
   );
