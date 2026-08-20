@@ -8,21 +8,18 @@ export async function GET() {
     return NextResponse.json({ error: 'Akses ditolak' }, { status: 403 });
   }
 
-  // 1. Total searches
-  const totalSearches = await prisma.searchQueryLog.count();
-
-  // 2. Zero-result queries (Content gaps)
-  const zeroResultQueries = await prisma.searchQueryLog.findMany({
-    where: { resultsCount: 0 },
-    orderBy: { createdAt: 'desc' },
-    take: 20,
-  });
-
-  // 3. Recent search logs
-  const recentSearches = await prisma.searchQueryLog.findMany({
-    orderBy: { createdAt: 'desc' },
-    take: 30,
-  });
+  const [totalSearches, zeroResultQueries, recentSearches] = await Promise.all([
+    prisma.searchQueryLog.count(),
+    prisma.searchQueryLog.findMany({
+      where: { resultsCount: 0 },
+      orderBy: { createdAt: 'desc' },
+      take: 20,
+    }),
+    prisma.searchQueryLog.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 30,
+    }),
+  ]);
 
   return NextResponse.json({
     totalSearches,

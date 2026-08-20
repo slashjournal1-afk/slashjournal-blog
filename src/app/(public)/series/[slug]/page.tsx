@@ -3,10 +3,13 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { prisma } from '@/lib/db';
 import { formatDate } from '@/lib/utils';
-import { Layers, ArrowLeft, ArrowRight, CheckCircle2, Clock } from 'lucide-react';
+import { Layers, ArrowRight, Clock } from 'lucide-react';
 import type { Metadata } from 'next';
+import { absoluteUrl } from '@/lib/site';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { breadcrumbSchema } from '@/lib/structured-data';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 900;
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -18,11 +21,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     where: { slug },
   });
 
-  if (!series) return { title: 'Seri Tidak Ditemukan | SlashJournal' };
+  if (!series || !series.isPublished) return { title: 'Seri Tidak Ditemukan', robots: { index: false, follow: false } };
 
   return {
-    title: `${series.title} | SlashJournal`,
+    title: series.title,
     description: series.description || 'Seri panduan terkurasi.',
+    alternates: { canonical: absoluteUrl(`/series/${series.slug}`) },
   };
 }
 
@@ -33,7 +37,7 @@ export default async function SeriesDetailPage({ params }: PageProps) {
     where: { slug },
     include: {
       articles: {
-        where: { status: 'PUBLISHED' },
+        where: { status: 'PUBLISHED', isIndexable: true, category: { isIndexable: true } },
         orderBy: { seriesOrder: 'asc' },
         include: { author: true },
       },
@@ -43,16 +47,21 @@ export default async function SeriesDetailPage({ params }: PageProps) {
   if (!series) {
     notFound();
   }
+  const breadcrumbJsonLd = breadcrumbSchema([
+    { name: 'Beranda', path: '/' }, { name: 'Seri', path: '/series' },
+    { name: series.title, path: `/series/${series.slug}` },
+  ]);
 
   return (
     <div className="min-h-screen max-w-[1200px] mx-auto px-4 sm:px-6 py-12">
-      <Link
-        href="/series"
-        className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#71717a] dark:text-[#a1a1aa] hover:text-[#09090b] dark:hover:text-white transition-colors mb-6"
-      >
-        <ArrowLeft className="w-3.5 h-3.5" />
-        Kembali ke Semua Seri
-      </Link>
+      <JsonLd data={breadcrumbJsonLd} />
+      <nav aria-label="Breadcrumb" className="mb-6 flex items-center gap-2 text-xs text-[#71717a] dark:text-[#a1a1aa]">
+        <Link href="/" className="hover:text-[#09090b] dark:hover:text-white">Beranda</Link>
+        <span aria-hidden="true">/</span>
+        <Link href="/series" className="hover:text-[#09090b] dark:hover:text-white">Seri</Link>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">{series.title}</span>
+      </nav>
 
       <div className="rounded-[36px] bg-white dark:bg-[#18181b] border border-[#ececee] dark:border-[#27272a] p-8 sm:p-12 mb-12 space-y-4">
         <div className="flex items-center gap-3">

@@ -1,9 +1,12 @@
 import React from 'react';
 import { ShieldCheck, Lock, CheckCircle2, FileText } from 'lucide-react';
+import type { Metadata } from 'next';
+import { absoluteUrl } from '@/lib/site';
 
-export const metadata = {
-  title: 'Kebijakan Privasi (UU PDP) | SlashJournal',
+export const metadata: Metadata = {
+  title: 'Kebijakan Privasi (UU PDP)',
   description: 'Pernyataan kepatuhan perlindungan data pribadi dan hak penghapusan akun pembaca.',
+  alternates: { canonical: absoluteUrl('/privacy-policy') },
 };
 
 export default function PrivacyPolicyPage() {

@@ -2,7 +2,8 @@
 
 import React from 'react';
 import Image from 'next/image';
-import { ExternalLink, Sparkles, ArrowUpRight } from 'lucide-react';
+import Link from 'next/link';
+import { ArrowUpRight } from 'lucide-react';
 import { AdSlot } from '@/lib/types';
 
 interface InFeedAdProps {
@@ -29,13 +30,13 @@ export function InFeedAd({ ad, className = '' }: InFeedAdProps) {
           </p>
         </div>
         <div className="mt-6 pt-4 border-t border-[#ececee] dark:border-[#27272a]">
-          <a
+          <Link
             href="/contact?subject=sponsor"
             className="inline-flex items-center gap-1 text-xs font-bold text-[var(--accent)] hover:underline"
           >
             <span>Hubungi untuk Kemitraan</span>
             <ArrowUpRight className="w-3.5 h-3.5" />
-          </a>
+          </Link>
         </div>
       </div>
     );

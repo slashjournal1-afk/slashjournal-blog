@@ -10,37 +10,47 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    // Query articles with case-insensitive search
-    const articles = await prisma.article.findMany({
-      where: {
-        status: 'PUBLISHED',
-        OR: [
-          { title: { contains: q, mode: 'insensitive' } },
-          { excerpt: { contains: q, mode: 'insensitive' } },
-          { contentMarkdown: { contains: q, mode: 'insensitive' } },
-        ],
-      },
-      include: {
-        category: true,
-        series: true,
-      },
-      orderBy: { publishedAt: 'desc' },
-      take: 8,
-    });
-
-    // Query glossary terms with case-insensitive search
-    const glossaryTerms = await prisma.glossaryTerm.findMany({
-      where: {
-        OR: [
-          { term: { contains: q, mode: 'insensitive' } },
-          { shortDef: { contains: q, mode: 'insensitive' } },
-          { definition: { contains: q, mode: 'insensitive' } },
-          { category: { contains: q, mode: 'insensitive' } },
-        ],
-      },
-      orderBy: { term: 'asc' },
-      take: 6,
-    });
+    const [articles, glossaryTerms] = await Promise.all([
+      prisma.article.findMany({
+        where: {
+          status: 'PUBLISHED',
+          isIndexable: true,
+          category: { isIndexable: true },
+          OR: [
+            { title: { contains: q, mode: 'insensitive' } },
+            { excerpt: { contains: q, mode: 'insensitive' } },
+            { contentMarkdown: { contains: q, mode: 'insensitive' } },
+          ],
+        },
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          excerpt: true,
+          readingTime: true,
+          coverImageUrl: true,
+          isSponsored: true,
+          sponsorName: true,
+          category: { select: { name: true } },
+          series: { select: { title: true } },
+        },
+        orderBy: { publishedAt: 'desc' },
+        take: 8,
+      }),
+      prisma.glossaryTerm.findMany({
+        where: {
+          OR: [
+            { term: { contains: q, mode: 'insensitive' } },
+            { shortDef: { contains: q, mode: 'insensitive' } },
+            { definition: { contains: q, mode: 'insensitive' } },
+            { category: { contains: q, mode: 'insensitive' } },
+          ],
+        },
+        select: { id: true, term: true, slug: true, category: true, shortDef: true },
+        orderBy: { term: 'asc' },
+        take: 6,
+      }),
+    ]);
 
     const totalResults = articles.length + glossaryTerms.length;
 

@@ -1,8 +1,11 @@
 import React from 'react';
+import type { Metadata } from 'next';
+import { absoluteUrl } from '@/lib/site';
 
-export const metadata = {
-  title: 'Ketentuan Layanan & Komentar | SlashJournal',
+export const metadata: Metadata = {
+  title: 'Ketentuan Layanan & Komentar',
   description: 'Aturan etika berkomentar, tanggung jawab pengguna, dan pedoman platform.',
+  alternates: { canonical: absoluteUrl('/terms') },
 };
 
 export default function TermsPage() {

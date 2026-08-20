@@ -7,9 +7,30 @@ import { Search as SearchIcon, FileText, Sparkles, ArrowRight, BookOpen, Clock, 
 import { PageIntro } from '@/components/layout/PageIntro';
 import { ArticleRow } from '@/components/content/ArticleRow';
 
+type SearchArticle = {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  publishedAt: Date | null;
+  createdAt: Date;
+  readingTime: number;
+  coverImageUrl: string | null;
+  category: { name: string };
+};
+
+type SearchTerm = {
+  id: string;
+  slug: string;
+  term: string;
+  category: string;
+  shortDef: string;
+};
+
 export const metadata: Metadata = {
   title: 'Pencarian Artikel & Glosarium — SlashJournal',
   description: 'Cari panduan arsitektur sistem, modul rekayasa, dan istilah glosarium teknis.',
+  robots: { index: false, follow: true },
 };
 
 export default async function SearchPage({
@@ -20,40 +41,50 @@ export default async function SearchPage({
   const { q, tab = 'all' } = await searchParams;
   const query = q?.trim() || '';
 
-  let articles: any[] = [];
-  let terms: any[] = [];
+  let articles: SearchArticle[] = [];
+  let terms: SearchTerm[] = [];
 
   if (query) {
-    // Search articles with PostgreSQL case-insensitive mode
-    articles = await prisma.article.findMany({
-      where: {
-        status: 'PUBLISHED',
-        OR: [
-          { title: { contains: query, mode: 'insensitive' } },
-          { excerpt: { contains: query, mode: 'insensitive' } },
-          { contentMarkdown: { contains: query, mode: 'insensitive' } },
-        ],
-      },
-      include: {
-        category: true,
-        author: true,
-        series: true,
-      },
-      orderBy: { publishedAt: 'desc' },
-    });
-
-    // Search glossary terms with case-insensitive mode
-    terms = await prisma.glossaryTerm.findMany({
-      where: {
-        OR: [
-          { term: { contains: query, mode: 'insensitive' } },
-          { shortDef: { contains: query, mode: 'insensitive' } },
-          { definition: { contains: query, mode: 'insensitive' } },
-          { category: { contains: query, mode: 'insensitive' } },
-        ],
-      },
-      orderBy: { term: 'asc' },
-    });
+    [articles, terms] = await Promise.all([
+      prisma.article.findMany({
+        where: {
+          status: 'PUBLISHED',
+          isIndexable: true,
+          category: { isIndexable: true },
+          OR: [
+            { title: { contains: query, mode: 'insensitive' } },
+            { excerpt: { contains: query, mode: 'insensitive' } },
+            { contentMarkdown: { contains: query, mode: 'insensitive' } },
+          ],
+        },
+        select: {
+          id: true,
+          slug: true,
+          title: true,
+          excerpt: true,
+          publishedAt: true,
+          createdAt: true,
+          readingTime: true,
+          coverImageUrl: true,
+          category: { select: { name: true } },
+        },
+        orderBy: { publishedAt: 'desc' },
+        take: 50,
+      }),
+      prisma.glossaryTerm.findMany({
+        where: {
+          OR: [
+            { term: { contains: query, mode: 'insensitive' } },
+            { shortDef: { contains: query, mode: 'insensitive' } },
+            { definition: { contains: query, mode: 'insensitive' } },
+            { category: { contains: query, mode: 'insensitive' } },
+          ],
+        },
+        select: { id: true, slug: true, term: true, category: true, shortDef: true },
+        orderBy: { term: 'asc' },
+        take: 50,
+      }),
+    ]);
   }
 
   const showArticles = tab === 'all' || tab === 'articles';

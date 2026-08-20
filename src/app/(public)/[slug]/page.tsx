@@ -17,8 +17,13 @@ import { SponsoredBadge } from '@/components/ads/SponsoredBadge';
 import { SidebarStickyAd } from '@/components/ads/SidebarStickyAd';
 import { Calendar, Clock, Eye, ArrowLeft, ArrowRight, Link as LinkIcon } from 'lucide-react';
 import type { Metadata } from 'next';
+import { absoluteUrl, siteConfig } from '@/lib/site';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { authorId, breadcrumbSchema, organizationId, websiteId } from '@/lib/structured-data';
+import { ArticleViewTracker } from '@/components/content/ArticleViewTracker';
+import { getPublishedArticle } from '@/lib/content-loaders';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 900;
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -26,20 +31,22 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const article = await prisma.article.findUnique({
-    where: { slug },
-  });
+  const article = await getPublishedArticle(slug);
 
-  if (!article) return { title: 'Artikel Tidak Ditemukan | SlashJournal' };
+  if (!article || article.status !== 'PUBLISHED') return { title: 'Artikel Tidak Ditemukan', robots: { index: false, follow: false } };
 
   return {
-    title: `${article.title} | SlashJournal`,
+    title: article.title,
     description: article.excerpt,
-    robots: article.isIndexable ? 'index, follow' : 'noindex, nofollow',
+    alternates: { canonical: absoluteUrl(`/${article.slug}`) },
+    robots: article.isIndexable && article.category.isIndexable ? 'index, follow' : 'noindex, nofollow',
     openGraph: {
       title: article.title,
       description: article.excerpt,
       type: 'article',
+      url: absoluteUrl(`/${article.slug}`),
+      siteName: siteConfig.name,
+      locale: siteConfig.locale,
       publishedTime: article.publishedAt?.toISOString() || article.createdAt.toISOString(),
       images: article.coverImageUrl ? [{ url: article.coverImageUrl }] : [],
     },
@@ -55,65 +62,32 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function ArticleDetailPage({ params }: PageProps) {
   const { slug } = await params;
 
-  const article = await prisma.article.findUnique({
-    where: { slug },
-    include: {
-      category: true,
-      series: {
-        include: {
-          articles: {
-            where: { status: 'PUBLISHED' },
-            orderBy: { seriesOrder: 'asc' },
-            select: { id: true, slug: true, title: true, seriesOrder: true },
-          },
-        },
-      },
-      author: true,
-      tags: { include: { tag: true } },
-      comments: {
-        include: { user: true },
-        orderBy: { createdAt: 'desc' },
-      },
-    },
-  });
+  const article = await getPublishedArticle(slug);
 
   if (!article || article.status !== 'PUBLISHED') {
     notFound();
   }
 
-  // Increment view count asynchronously
-  await prisma.article.update({
-    where: { id: article.id },
-    data: { viewCount: { increment: 1 } },
-  }).catch(() => {});
-
-  // Fetch glossary terms for WikiLink resolution
-  const glossaryTerms = await prisma.glossaryTerm.findMany({
-    select: { term: true, slug: true, shortDef: true, category: true },
-  });
-
-  // Fetch related stories for "Continue Reading"
-  const relatedArticles = await prisma.article.findMany({
-    where: {
-      status: 'PUBLISHED',
-      categoryId: article.categoryId,
-      id: { not: article.id },
-    },
-    orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }],
-    take: 3,
-    select: {
-      id: true,
-      slug: true,
-      title: true,
-      coverImageUrl: true,
-      publishedAt: true,
-      createdAt: true,
-      category: { select: { name: true, slug: true } },
-    },
-  });
-
-  // Fetch sticky sidebar ad
-  const sidebarAd = await prisma.adSlot.findUnique({ where: { slotName: 'sidebar_sticky' } });
+  const [glossaryTerms, relatedArticles, sidebarAd] = await Promise.all([
+    prisma.glossaryTerm.findMany({
+      select: { term: true, slug: true, shortDef: true, category: true },
+    }),
+    prisma.article.findMany({
+      where: { status: 'PUBLISHED', categoryId: article.categoryId, id: { not: article.id } },
+      orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }],
+      take: 3,
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        coverImageUrl: true,
+        publishedAt: true,
+        createdAt: true,
+        category: { select: { name: true, slug: true } },
+      },
+    }),
+    prisma.adSlot.findUnique({ where: { slotName: 'sidebar_sticky' } }),
+  ]);
 
   // Extract headings for Table of Contents
   const headings = extractHeadings(article.contentMarkdown);
@@ -142,28 +116,43 @@ export default async function ArticleDetailPage({ params }: PageProps) {
     author: {
       '@type': 'Person',
       name: article.author.displayName,
+      '@id': authorId,
+      url: absoluteUrl('/about#author'),
     },
     publisher: {
       '@type': 'Organization',
+      '@id': organizationId,
       name: 'SlashJournal',
+      url: siteConfig.url,
       logo: {
         '@type': 'ImageObject',
-        url: 'https://slashjournal.dev/logo.png',
+        url: absoluteUrl('/icon/Minimalist_SJ_monogram_logo_design_202608201741.png'),
       },
     },
     mainEntityOfPage: {
       '@type': 'WebPage',
-      '@id': `https://slashjournal.dev/${article.slug}`,
+      '@id': absoluteUrl(`/${article.slug}`),
     },
+    url: absoluteUrl(`/${article.slug}`),
+    inLanguage: siteConfig.locale,
+    articleSection: article.category.name,
+    keywords: article.tags.map(({ tag }) => tag.name),
+    isPartOf: { '@id': websiteId },
+    citation: extractExternalReferences(article.contentMarkdown),
   };
+  const breadcrumbJsonLd = breadcrumbSchema([
+    { name: 'Beranda', path: '/' },
+    { name: article.category.name, path: `/category/${article.category.slug}` },
+    ...(article.series ? [{ name: article.series.title, path: `/series/${article.series.slug}` }] : []),
+    { name: article.title, path: `/${article.slug}` },
+  ]);
 
   return (
     <div className="min-h-screen pb-20">
       {/* Schema.org Structured Data */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      <JsonLd data={jsonLd} />
+      <JsonLd data={breadcrumbJsonLd} />
+      <ArticleViewTracker articleId={article.id} />
 
       {/* Floating Sticky Reading Header on Scroll */}
       <StickyReadingHeader
@@ -199,6 +188,8 @@ export default async function ArticleDetailPage({ params }: PageProps) {
                 </Link>
               </>
             )}
+            <span aria-hidden="true" className="text-[var(--color-silver)]">/</span>
+            <span aria-current="page" className="max-w-48 truncate text-[var(--text-secondary)]">{article.title}</span>
           </nav>
 
           <BookmarkButton articleId={article.id} />
@@ -488,6 +479,11 @@ function extractHeadings(markdown: string) {
   }
 
   return headings;
+}
+
+function extractExternalReferences(markdown: string) {
+  const urls = markdown.match(/https?:\/\/[^\s)"'<>]+/g) || [];
+  return [...new Set(urls)];
 }
 
 function formatSourceType(source: string) {

@@ -53,10 +53,11 @@ export function CommandPalette() {
       return;
     }
 
+    const controller = new AbortController();
     const timer = setTimeout(async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`, { signal: controller.signal });
         const data = await res.json();
         setResults({
           articles: data.articles || [],
@@ -64,13 +65,16 @@ export function CommandPalette() {
         });
         setSelectedIndex(0);
       } catch (err) {
-        console.error('Search error:', err);
+        if (!(err instanceof DOMException && err.name === 'AbortError')) console.error('Search error:', err);
       } finally {
         setLoading(false);
       }
     }, 180);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
   }, [query]);
 
   const allItems = [

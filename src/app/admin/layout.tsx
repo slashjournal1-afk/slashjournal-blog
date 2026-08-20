@@ -13,6 +13,7 @@ import {
   Home,
   PenTool,
 } from 'lucide-react';
+import { BrandLogo } from '@/components/layout/BrandLogo';
 
 export const metadata = {
   title: 'Editorial CMS Workspace — SlashJournal',
@@ -48,9 +49,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             title="Kembali ke Beranda Utama SlashJournal"
             className="flex items-center gap-2.5 group p-1.5 -m-1.5 rounded-[14px] hover:bg-[var(--bg-card-muted)] transition-all"
           >
-            <div className="w-9 h-9 rounded-[12px] bg-[#09090b] text-white flex items-center justify-center font-mono font-bold text-sm shadow-xs group-hover:scale-105 group-hover:bg-[#ff5a00] transition-all dark:bg-white dark:text-[#09090b] dark:group-hover:bg-[#ff5a00] dark:group-hover:text-white">
-              //
-            </div>
+            <BrandLogo size={36} className="rounded-[12px]" />
             <div>
               <span className="text-[17px] font-extrabold text-[var(--text-primary)] tracking-tight block leading-none">
                 SLASH<span className="text-[#ff5a00]">JOURNAL</span>

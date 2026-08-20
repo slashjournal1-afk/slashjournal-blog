@@ -3,12 +3,17 @@ import Link from 'next/link';
 import { prisma } from '@/lib/db';
 import { ArrowRight } from 'lucide-react';
 import { PageIntro } from '@/components/layout/PageIntro';
+import type { Metadata } from 'next';
+import { absoluteUrl } from '@/lib/site';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { breadcrumbSchema } from '@/lib/structured-data';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 900;
 
-export const metadata = {
-  title: 'Seri Panduan Terkurasi | SlashJournal',
+export const metadata: Metadata = {
+  title: 'Seri Panduan Terkurasi',
   description: 'Kumpulan artikel mendalam yang saling menyambung dan dikurasi manual.',
+  alternates: { canonical: absoluteUrl('/series') },
 };
 
 export default async function SeriesIndexPage() {
@@ -17,7 +22,7 @@ export default async function SeriesIndexPage() {
     orderBy: { sortOrder: 'asc' },
     include: {
       articles: {
-        where: { status: 'PUBLISHED' },
+        where: { status: 'PUBLISHED', isIndexable: true, category: { isIndexable: true } },
         orderBy: { seriesOrder: 'asc' },
         select: { id: true, title: true, slug: true, readingTime: true },
       },
@@ -26,6 +31,12 @@ export default async function SeriesIndexPage() {
 
   return (
     <div className="min-h-screen max-w-[1200px] mx-auto px-4 sm:px-6 py-12">
+      <JsonLd data={breadcrumbSchema([{ name: 'Beranda', path: '/' }, { name: 'Seri', path: '/series' }])} />
+      <nav aria-label="Breadcrumb" className="mb-6 flex items-center gap-2 text-xs text-[#71717a] dark:text-[#a1a1aa]">
+        <Link href="/" className="hover:text-[#09090b] dark:hover:text-white">Beranda</Link>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">Seri</span>
+      </nav>
       <div className="mb-12"><PageIntro eyebrow="Jalur belajar" title="Seri panduan arsitektur" description="Tulisan yang dirancang berurutan dari prinsip fundamental hingga implementasi skala produksi." count={`${seriesList.length} seri`} /></div>
 
       <div className="space-y-8">

@@ -3,17 +3,28 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Shield, Sparkles, Terminal, Award, BookOpen, Layers, CheckCircle2, ArrowRight } from 'lucide-react';
 import { PageIntro } from '@/components/layout/PageIntro';
+import type { Metadata } from 'next';
+import { absoluteUrl } from '@/lib/site';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { authorId, organizationId } from '@/lib/structured-data';
 
-export const metadata = {
-  title: 'Tentang Penulis & Standar Rekayasa | SlashJournal',
+export const metadata: Metadata = {
+  title: 'Tentang Penulis & Standar Rekayasa',
   description: 'Profil penulis, latar belakang 15 tahun rekayasa sistem, dan komitmen kualitas konten.',
+  alternates: { canonical: absoluteUrl('/about') },
 };
 
 export default function AboutPage() {
+  const personSchema = {
+    '@context': 'https://schema.org', '@type': 'Person', '@id': authorId,
+    name: 'Choirul Arsitek', url: absoluteUrl('/about'), jobTitle: 'Software Architect',
+    worksFor: { '@id': organizationId },
+  };
   return (
     <div className="min-h-screen max-w-[1200px] mx-auto px-4 sm:px-6 py-12">
+      <JsonLd data={personSchema} />
       <div className="mb-12">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div id="author" className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center scroll-mt-24">
           <div className="lg:col-span-8 space-y-5"><PageIntro eyebrow="Tentang penulis dan arsitek" title="15 tahun merancang fondasi sistem dan antarmuka digital" description="SlashJournal adalah ruang publikasi independen tentang rekayasa sistem terdistribusi, integritas database transaksional, dan keputusan desain yang dapat dipertanggungjawabkan." /></div>
 
           <div className="lg:col-span-4 flex justify-center">

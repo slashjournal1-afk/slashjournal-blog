@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth';
 import { calculateReadingTime, slugify } from '@/lib/utils';
 import { recordAuditLog } from '@/lib/audit';
+import { revalidatePath } from 'next/cache';
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -122,6 +123,11 @@ export async function POST(req: NextRequest) {
       details: `Membuat artikel "${title}" (${article.status})`,
       userId: user.id,
     });
+
+    revalidatePath('/');
+    revalidatePath('/category/[slug]', 'page');
+    revalidatePath('/series/[slug]', 'page');
+    if (article.status === 'PUBLISHED') revalidatePath(`/${article.slug}`);
 
     return NextResponse.json({ article }, { status: 201 });
   } catch (error: any) {

@@ -9,8 +9,18 @@ import { InFeedAd } from '@/components/ads/InFeedAd';
 import { ArticleRow } from '@/components/content/ArticleRow';
 import { ReferenceRail } from '@/components/content/ReferenceRail';
 import { SectionHeading } from '@/components/layout/SectionHeading';
+import type { Metadata } from 'next';
+import { absoluteUrl, siteConfig } from '@/lib/site';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { siteGraphSchema } from '@/lib/structured-data';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 300;
+
+export const metadata: Metadata = {
+  title: { absolute: 'SlashJournal — Catatan Arsitektur & Rekayasa Perangkat Lunak' },
+  description: siteConfig.description,
+  alternates: { canonical: absoluteUrl() },
+};
 
 const channelIcons = { 'rekayasa-sistem': Server, 'desain-antarmuka': Layout, 'jurnal-personal': BookOpen };
 
@@ -31,38 +41,33 @@ export default async function HomePage() {
     author: { select: { displayName: true } },
   } as const;
 
-  const recentArticles = await prisma.article.findMany({
-    where: { status: 'PUBLISHED' },
-    select: articleSelect,
-    orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }],
-    take: 18,
-  });
-
-  const popularArticles = await prisma.article.findMany({
-    where: { status: 'PUBLISHED' },
-    select: articleSelect,
-    orderBy: [{ viewCount: 'desc' }, { publishedAt: 'desc' }],
-    take: 12,
-  });
-
-  const categories = await prisma.category.findMany({
-    orderBy: { sortOrder: 'asc' },
-    include: { _count: { select: { articles: { where: { status: 'PUBLISHED' } } } } },
-  });
-
-  const seriesList = await prisma.series.findMany({
-    where: { isPublished: true },
-    orderBy: { sortOrder: 'asc' },
-    include: { _count: { select: { articles: { where: { status: 'PUBLISHED' } } } } },
-  });
-
-  const glossaryTerms = await prisma.glossaryTerm.findMany({
-    orderBy: { term: 'asc' },
-    take: 6,
-  });
-
-  const leaderboardAd = await prisma.adSlot.findUnique({ where: { slotName: 'leaderboard' } });
-  const inFeedAd = await prisma.adSlot.findUnique({ where: { slotName: 'in_feed' } });
+  const [recentArticles, popularArticles, categories, seriesList, glossaryTerms, leaderboardAd, inFeedAd] = await Promise.all([
+    prisma.article.findMany({
+      where: { status: 'PUBLISHED', isIndexable: true, category: { isIndexable: true } },
+      select: articleSelect,
+      orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }],
+      take: 18,
+    }),
+    prisma.article.findMany({
+      where: { status: 'PUBLISHED', isIndexable: true, category: { isIndexable: true } },
+      select: articleSelect,
+      orderBy: [{ viewCount: 'desc' }, { publishedAt: 'desc' }],
+      take: 12,
+    }),
+    prisma.category.findMany({
+      where: { isIndexable: true },
+      orderBy: { sortOrder: 'asc' },
+      include: { _count: { select: { articles: { where: { status: 'PUBLISHED' } } } } },
+    }),
+    prisma.series.findMany({
+      where: { isPublished: true },
+      orderBy: { sortOrder: 'asc' },
+      include: { _count: { select: { articles: { where: { status: 'PUBLISHED' } } } } },
+    }),
+    prisma.glossaryTerm.findMany({ orderBy: { term: 'asc' }, take: 6 }),
+    prisma.adSlot.findUnique({ where: { slotName: 'leaderboard' } }),
+    prisma.adSlot.findUnique({ where: { slotName: 'in_feed' } }),
+  ]);
 
   const [featured, ...rest] = recentArticles;
   const secondary = rest.slice(0, 3);
@@ -75,6 +80,7 @@ export default async function HomePage() {
 
   return (
     <div className="mx-auto min-h-screen max-w-editorial px-5 pb-24 sm:px-8">
+      <JsonLd data={siteGraphSchema()} />
       {/* 1. Featured Story */}
       {featured && (
         <section className="border-b border-[var(--border-color)] py-10 sm:py-14">

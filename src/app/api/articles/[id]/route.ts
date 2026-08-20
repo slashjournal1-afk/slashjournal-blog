@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth';
 import { calculateReadingTime, slugify } from '@/lib/utils';
 import { recordAuditLog } from '@/lib/audit';
+import { revalidatePath } from 'next/cache';
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -136,6 +137,11 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       userId: user.id,
     });
 
+    revalidatePath('/');
+    revalidatePath('/category/[slug]', 'page');
+    revalidatePath('/series/[slug]', 'page');
+    revalidatePath(`/${updated.slug}`);
+
     return NextResponse.json({ article: updated });
   } catch (error: any) {
     console.error('Failed to update article:', error);
@@ -159,6 +165,11 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
       details: `Menghapus artikel "${deleted.title}"`,
       userId: user.id,
     });
+
+    revalidatePath('/');
+    revalidatePath('/category/[slug]', 'page');
+    revalidatePath('/series/[slug]', 'page');
+    revalidatePath(`/${deleted.slug}`);
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

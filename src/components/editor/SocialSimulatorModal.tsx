@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { X, Search, Globe, Share2, Sparkles, Check, AlertCircle } from 'lucide-react';
+import { siteConfig } from '@/lib/site';
 
 interface SocialSimulatorModalProps {
   isOpen: boolean;
@@ -27,7 +28,7 @@ export function SocialSimulatorModal({
 
   if (!isOpen) return null;
 
-  const fullUrl = `https://slashjournal.dev/${slug || 'judul-artikel'}`;
+  const fullUrl = `${siteConfig.url}/${slug || 'judul-artikel'}`;
   const displayTitle = title || 'Judul Naskah Arsitektur Belum Ditentukan';
   const displayDesc = excerpt || 'Ringkasan eksekutif tulisan akan ditampilkan di sini sebagai cuplikan deskripsi mesin pencari dan kartu media sosial.';
 
@@ -108,7 +109,7 @@ export function SocialSimulatorModal({
                 <div className="w-4 h-4 rounded-full bg-[#ff5a00] text-white flex items-center justify-center text-[9px] font-bold">
                   //
                 </div>
-                <span className="font-medium text-[#09090b] dark:text-white">slashjournal.dev</span>
+                <span className="font-medium text-[#09090b] dark:text-white">{new URL(siteConfig.url).host}</span>
                 <span>›</span>
                 <span className="font-mono text-[#71717a] truncate max-w-[280px]">{slug || 'artikel'}</span>
               </div>
@@ -135,7 +136,7 @@ export function SocialSimulatorModal({
                 </div>
               )}
               <div className="p-4 space-y-1 bg-[#16181c]">
-                <p className="text-[10.5px] text-[#71767b] uppercase tracking-wider">slashjournal.dev</p>
+                <p className="text-[10.5px] text-[#71767b] uppercase tracking-wider">{new URL(siteConfig.url).host}</p>
                 <h5 className="text-xs sm:text-sm font-bold text-white leading-snug line-clamp-2">
                   {displayTitle}
                 </h5>
@@ -162,7 +163,7 @@ export function SocialSimulatorModal({
                   {displayTitle}
                 </h5>
                 <p className="text-[11px] text-[#71717a] dark:text-[#a1a1aa] uppercase font-semibold">
-                  slashjournal.dev • 3 mnt baca
+                  {new URL(siteConfig.url).host} • 3 mnt baca
                 </p>
               </div>
             </div>
