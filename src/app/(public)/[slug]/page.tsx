@@ -6,6 +6,7 @@ import { prisma } from '@/lib/db';
 import { formatDate } from '@/lib/utils';
 import { ArticleContentRenderer } from '@/components/content/ArticleContentRenderer';
 import { ScrollSpyTOC } from '@/components/wiki/ScrollSpyTOC';
+import { MobileTOC } from '@/components/wiki/MobileTOC';
 import { StickyReadingHeader } from '@/components/layout/StickyReadingHeader';
 import { ArticleReactions } from '@/components/content/ArticleReactions';
 import { NewsletterBox } from '@/components/content/NewsletterBox';
@@ -204,9 +205,9 @@ export default async function ArticleDetailPage({ params }: PageProps) {
         </div>
       </div>
 
-      <article className="mx-auto max-w-editorial px-5 sm:px-8">
+      <article className="mx-auto max-w-editorial px-4 sm:px-8">
         {/* Article Header */}
-        <header className="mx-auto max-w-[760px] pt-10 sm:pt-14">
+        <header className="mx-auto max-w-[760px] pt-8 sm:pt-14">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
             {article.isSponsored ? (
               <SponsoredBadge sponsorName={article.sponsorName} sponsorUrl={article.sponsorUrl} />
@@ -228,39 +229,39 @@ export default async function ArticleDetailPage({ params }: PageProps) {
             )}
           </div>
 
-          <h1 className="mt-5 font-display text-4xl font-medium leading-[1.06] tracking-tight text-[var(--text-primary)] sm:text-5xl lg:text-[56px]">
+          <h1 className="mt-4 sm:mt-5 font-display text-2xl sm:text-4xl md:text-5xl lg:text-[52px] font-semibold leading-[1.14] tracking-tight text-[var(--text-primary)]">
             {article.title}
           </h1>
 
           {article.excerpt && (
-            <p className="mt-6 font-display text-lg leading-relaxed text-[var(--text-secondary)] sm:text-xl">
+            <p className="mt-4 sm:mt-6 font-display text-base sm:text-lg lg:text-xl leading-relaxed text-[var(--text-secondary)]">
               {article.excerpt}
             </p>
           )}
 
           {/* Metadata Row */}
-          <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-y border-[var(--border-color)] py-5">
+          <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-y border-[var(--border-color)] py-4 sm:py-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-ink)] text-sm font-semibold text-white">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--color-ink)] text-sm font-bold text-white shadow-xs">
                 {article.author.displayName.charAt(0)}
               </div>
               <div>
-                <p className="text-sm font-medium text-[var(--text-primary)]">{article.author.displayName}</p>
-                <p className="text-xs text-[var(--text-muted)]">Penulis</p>
+                <p className="text-sm font-semibold text-[var(--text-primary)]">{article.author.displayName}</p>
+                <p className="text-xs text-[var(--text-muted)]">Penulis &amp; Arsitek</p>
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[var(--text-muted)]">
-              <span className="flex items-center gap-1.5">
-                <Calendar className="h-3.5 w-3.5 text-[var(--accent)]" />
+            <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--text-muted)]">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--bg-card-muted)] border border-[var(--border-color)] px-3 py-1 font-medium">
+                <Calendar className="h-3.5 w-3.5 text-[var(--accent)] shrink-0" />
                 {formatDate(article.publishedAt || article.createdAt)}
               </span>
-              <span className="flex items-center gap-1.5">
-                <Clock className="h-3.5 w-3.5 text-[var(--accent)]" />
-                {article.readingTime} menit baca
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--bg-card-muted)] border border-[var(--border-color)] px-3 py-1 font-medium">
+                <Clock className="h-3.5 w-3.5 text-[var(--accent)] shrink-0" />
+                {article.readingTime} mnt baca
               </span>
-              <span className="flex items-center gap-1.5">
-                <Eye className="h-3.5 w-3.5 text-[var(--accent)]" />
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--bg-card-muted)] border border-[var(--border-color)] px-3 py-1 font-medium">
+                <Eye className="h-3.5 w-3.5 text-[var(--accent)] shrink-0" />
                 {article.viewCount} pembaca
               </span>
             </div>
@@ -269,14 +270,14 @@ export default async function ArticleDetailPage({ params }: PageProps) {
 
         {/* Cover Image — wider than the reading column */}
         {article.coverImageUrl && (
-          <div className="mx-auto mt-10 max-w-[1000px]">
-            <div className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl bg-[var(--bg-card-muted)] sm:aspect-[16/9]">
+          <div className="mx-auto mt-8 sm:mt-10 max-w-[1000px]">
+            <div className="relative aspect-[16/10] w-full overflow-hidden rounded-[20px] sm:rounded-3xl bg-[var(--bg-card-muted)] border border-[var(--border-color)] sm:aspect-[16/9] shadow-xs">
               <Image
                 src={article.coverImageUrl}
                 alt={article.title}
                 fill
                 priority
-                unoptimized={Boolean(article.coverImageUrl?.startsWith('/uploads'))}
+                unoptimized={Boolean(article.coverImageUrl?.startsWith('/uploads') || article.coverImageUrl?.includes('supabase.co'))}
                 sizes="(min-width: 1000px) 1000px, 100vw"
                 className="object-cover"
               />
@@ -290,26 +291,32 @@ export default async function ArticleDetailPage({ params }: PageProps) {
         )}
 
         {/* Content + Sidebar */}
-        <div className="mt-12 grid gap-12 lg:grid-cols-[minmax(0,1fr)_280px] lg:gap-16">
+        <div className="mt-10 sm:mt-12 grid gap-10 lg:grid-cols-[minmax(0,1fr)_280px] lg:gap-16">
           {/* Main Article Body */}
           <div className="mx-auto w-full max-w-[720px] space-y-8">
+            {/* Mobile Collapsible Table of Contents */}
+            <MobileTOC headings={headings} />
+
             <InlineSelectionQuote articleTitle={article.title} />
 
             <div id="article-body" className="relative">
               <ArticleContentRenderer content={article.contentMarkdown} glossary={glossaryTerms} />
             </div>
 
-            {/* Tags */}
+            {/* Tags / Keywords */}
             {article.tags && article.tags.length > 0 && (
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[var(--border-color)] pt-7">
-                <span className="text-xs font-medium text-[var(--text-muted)]">Topik:</span>
+              <div className="flex flex-wrap items-center gap-2 border-t border-[var(--border-color)] pt-7">
+                <span className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)] mr-1">
+                  Kata Kunci:
+                </span>
                 {article.tags.map(({ tag }) => (
                   <Link
                     key={tag.id}
                     href={`/tag/${tag.slug}`}
-                    className="text-xs font-medium text-[var(--text-secondary)] transition-colors hover:text-[var(--accent)]"
+                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-[var(--bg-card-muted)] hover:bg-[var(--border-color)] border border-[var(--border-color)] text-xs font-semibold text-[var(--text-primary)] transition-all hover:scale-105 active:scale-95"
                   >
-                    #{tag.name}
+                    <span className="text-[var(--accent)] font-bold">#</span>
+                    <span>{tag.name}</span>
                   </Link>
                 ))}
               </div>
@@ -320,14 +327,17 @@ export default async function ArticleDetailPage({ params }: PageProps) {
 
             {/* Chapter Navigation in Series */}
             {(prevArticle || nextArticle) && (
-              <div className="grid grid-cols-1 gap-6 border-t border-[var(--border-color)] pt-8 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 border-t border-[var(--border-color)] pt-8 sm:grid-cols-2">
                 {prevArticle ? (
-                  <Link href={`/${prevArticle.slug}`} className="group">
+                  <Link
+                    href={`/${prevArticle.slug}`}
+                    className="group p-4 rounded-[20px] bg-[var(--bg-card-muted)] border border-[var(--border-color)] hover:border-[var(--accent)] transition-all block"
+                  >
                     <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)]">
                       <ArrowLeft className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-1" />
                       Bab Sebelumnya
                     </span>
-                    <span className="mt-2 block font-display text-lg font-medium leading-snug text-[var(--text-primary)] transition-colors group-hover:text-[var(--accent-hover)]">
+                    <span className="mt-2 block font-display text-base sm:text-lg font-medium leading-snug text-[var(--text-primary)] transition-colors group-hover:text-[var(--accent-hover)]">
                       {prevArticle.title}
                     </span>
                   </Link>
@@ -336,12 +346,15 @@ export default async function ArticleDetailPage({ params }: PageProps) {
                 )}
 
                 {nextArticle && (
-                  <Link href={`/${nextArticle.slug}`} className="group text-right sm:col-start-2">
+                  <Link
+                    href={`/${nextArticle.slug}`}
+                    className="group p-4 rounded-[20px] bg-[var(--bg-card-muted)] border border-[var(--border-color)] hover:border-[var(--accent)] transition-all block text-right sm:col-start-2"
+                  >
                     <span className="flex items-center justify-end gap-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--accent)]">
                       Bab Selanjutnya
                       <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
                     </span>
-                    <span className="mt-2 block font-display text-lg font-medium leading-snug text-[var(--text-primary)] transition-colors group-hover:text-[var(--accent-hover)]">
+                    <span className="mt-2 block font-display text-base sm:text-lg font-medium leading-snug text-[var(--text-primary)] transition-colors group-hover:text-[var(--accent-hover)]">
                       {nextArticle.title}
                     </span>
                   </Link>

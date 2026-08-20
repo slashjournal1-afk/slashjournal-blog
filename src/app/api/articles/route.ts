@@ -44,6 +44,7 @@ export async function POST(req: NextRequest) {
       excerpt,
       contentMarkdown,
       categoryId,
+      newCategoryName,
       seriesId,
       seriesOrder,
       coverImageUrl,
@@ -55,8 +56,23 @@ export async function POST(req: NextRequest) {
       tags = [],
     } = body;
 
-    if (!title || !contentMarkdown || !categoryId) {
-      return NextResponse.json({ error: 'Title, contentMarkdown, dan categoryId wajib diisi' }, { status: 400 });
+    let finalCategoryId = categoryId;
+    if (!finalCategoryId && newCategoryName) {
+      const catSlug = slugify(newCategoryName);
+      const newCat = await prisma.category.upsert({
+        where: { slug: catSlug },
+        update: {},
+        create: {
+          name: newCategoryName.trim(),
+          slug: catSlug,
+          icon: 'Layers',
+        },
+      });
+      finalCategoryId = newCat.id;
+    }
+
+    if (!title || !contentMarkdown || !finalCategoryId) {
+      return NextResponse.json({ error: 'Title, contentMarkdown, dan kategori wajib diisi' }, { status: 400 });
     }
 
     const generatedSlug = slug ? slugify(slug) : slugify(title);
@@ -68,7 +84,7 @@ export async function POST(req: NextRequest) {
         slug: generatedSlug,
         excerpt: excerpt || title,
         contentMarkdown,
-        categoryId,
+        categoryId: finalCategoryId,
         seriesId: seriesId || null,
         seriesOrder: seriesOrder ? parseInt(seriesOrder) : null,
         coverImageUrl: coverImageUrl || null,

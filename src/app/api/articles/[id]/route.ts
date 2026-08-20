@@ -44,6 +44,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       excerpt,
       contentMarkdown,
       categoryId,
+      newCategoryName,
       seriesId,
       seriesOrder,
       coverImageUrl,
@@ -52,9 +53,25 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       sponsorName,
       sponsorUrl,
       status,
+      tags,
       reviewNote,
       revisionNote,
     } = body;
+
+    let finalCategoryId = categoryId;
+    if (!finalCategoryId && newCategoryName) {
+      const catSlug = slugify(newCategoryName);
+      const newCat = await prisma.category.upsert({
+        where: { slug: catSlug },
+        update: {},
+        create: {
+          name: newCategoryName.trim(),
+          slug: catSlug,
+          icon: 'Layers',
+        },
+      });
+      finalCategoryId = newCat.id;
+    }
 
     // Snapshot revision if content changed
     if (contentMarkdown && contentMarkdown !== existing.contentMarkdown) {
@@ -77,7 +94,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         slug: slug !== undefined ? slugify(slug) : existing.slug,
         excerpt: excerpt !== undefined ? excerpt : existing.excerpt,
         contentMarkdown: contentMarkdown !== undefined ? contentMarkdown : existing.contentMarkdown,
-        categoryId: categoryId || existing.categoryId,
+        categoryId: finalCategoryId || existing.categoryId,
         seriesId: seriesId !== undefined ? seriesId : existing.seriesId,
         seriesOrder: seriesOrder !== undefined ? parseInt(seriesOrder) : existing.seriesOrder,
         coverImageUrl: coverImageUrl !== undefined ? coverImageUrl : existing.coverImageUrl,
@@ -92,6 +109,25 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         publishedAt: status === 'PUBLISHED' && !existing.publishedAt ? new Date() : existing.publishedAt,
       },
     });
+
+    // Handle tags update if provided
+    if (Array.isArray(tags)) {
+      await prisma.articleTag.deleteMany({ where: { articleId: id } });
+
+      for (const tagName of tags) {
+        if (!tagName || !tagName.trim()) continue;
+        const tagSlug = slugify(tagName.trim());
+        const tag = await prisma.tag.upsert({
+          where: { slug: tagSlug },
+          update: {},
+          create: { name: tagName.trim(), slug: tagSlug },
+        });
+
+        await prisma.articleTag.create({
+          data: { articleId: id, tagId: tag.id },
+        }).catch(() => {});
+      }
+    }
 
     await recordAuditLog({
       actorEmail: user.email,

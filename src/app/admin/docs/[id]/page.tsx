@@ -19,6 +19,11 @@ export default async function EditArticlePage({ params }: PageProps) {
 
   const article = await prisma.article.findUnique({
     where: { id },
+    include: {
+      tags: {
+        include: { tag: true },
+      },
+    },
   });
 
   if (!article) {
@@ -54,6 +59,7 @@ export default async function EditArticlePage({ params }: PageProps) {
           sponsorName: article.sponsorName,
           sponsorUrl: article.sponsorUrl,
           status: article.status,
+          tags: article.tags,
         }}
         categories={categories}
         seriesList={seriesList}
