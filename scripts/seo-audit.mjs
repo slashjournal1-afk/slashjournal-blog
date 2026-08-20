@@ -1,4 +1,4 @@
-let baseUrl = (process.env.SITE_URL || 'https://slashjournal.my.id').replace(/\/$/, '');
+let baseUrl = (process.env.SITE_URL || 'https://www.slashjournal.my.id').replace(/\/$/, '');
 
 async function fetchResponse(url, options = {}) {
   const response = await fetch(url, { redirect: 'manual', ...options });

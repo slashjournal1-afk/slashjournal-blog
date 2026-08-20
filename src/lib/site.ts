@@ -1,6 +1,6 @@
 export const siteConfig = {
   name: 'SlashJournal',
-  url: process.env.NEXT_PUBLIC_SITE_URL || 'https://slashjournal.my.id',
+  url: process.env.NEXT_PUBLIC_SITE_URL || 'https://www.slashjournal.my.id',
   locale: 'id-ID',
   language: 'id',
   description:
