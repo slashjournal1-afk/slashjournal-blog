@@ -1,4 +1,5 @@
 import { cookies } from 'next/headers';
+import crypto from 'node:crypto';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/db';
 import { UserSession, UserRole } from './types';
@@ -87,7 +88,6 @@ const RESET_SECRET = process.env.AUTH_SECRET || 'slashjournal-password-reset-sal
 export function generateResetToken(email: string): string {
   const exp = Date.now() + 60 * 60 * 1000; // 1 hour expiration
   const payload = `${email.toLowerCase().trim()}:${exp}`;
-  const crypto = require('crypto');
   const signature = crypto.createHmac('sha256', RESET_SECRET).update(payload).digest('hex');
   return Buffer.from(`${payload}:${signature}`).toString('base64url');
 }
@@ -106,7 +106,6 @@ export function verifyResetToken(token: string): { email: string; valid: boolean
       return { email, valid: false, error: 'Token pemulihan telah kedaluwarsa (berlaku 1 jam)' };
     }
 
-    const crypto = require('crypto');
     const expectedSig = crypto.createHmac('sha256', RESET_SECRET).update(`${email}:${exp}`).digest('hex');
     if (signature !== expectedSig) {
       return { email: '', valid: false, error: 'Tanda tangan token tidak valid atau telah dimanipulasi' };
@@ -117,4 +116,3 @@ export function verifyResetToken(token: string): { email: string; valid: boolean
     return { email: '', valid: false, error: 'Token tidak dapat diproses' };
   }
 }
-

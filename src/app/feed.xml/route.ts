@@ -1,15 +1,15 @@
 import { prisma } from '@/lib/db';
 import { NextResponse } from 'next/server';
+import { absoluteUrl } from '@/lib/site';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://slashjournal.dev';
-
   const articles = await prisma.article.findMany({
     where: {
       status: 'PUBLISHED',
       isIndexable: true,
+      category: { isIndexable: true },
       isSponsored: false, // Exclude advertorials per M5 standard
     },
     include: {
@@ -31,8 +31,8 @@ export async function GET() {
       return `
     <item>
       <title>${cleanTitle}</title>
-      <link>${baseUrl}/${art.slug}</link>
-      <guid isPermaLink="true">${baseUrl}/${art.slug}</guid>
+      <link>${absoluteUrl(`/${art.slug}`)}</link>
+      <guid isPermaLink="true">${absoluteUrl(`/${art.slug}`)}</guid>
       <description>${cleanExcerpt}</description>
       <author>${cleanAuthor}</author>
       <category>${cleanCategory}</category>
@@ -45,11 +45,11 @@ export async function GET() {
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>SlashJournal // Rekayasa Sistem &amp; Arsitektur Perangkat Lunak</title>
-    <link>${baseUrl}</link>
+    <link>${absoluteUrl()}</link>
     <description>Publikasi rekayasa sistem, arsitektur database, dan desain antarmuka.</description>
     <language>id-ID</language>
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
-    <atom:link href="${baseUrl}/feed.xml" rel="self" type="application/rss+xml"/>
+    <atom:link href="${absoluteUrl('/feed.xml')}" rel="self" type="application/rss+xml"/>
     ${rssItemsXml}
   </channel>
 </rss>`;

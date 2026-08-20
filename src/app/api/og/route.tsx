@@ -1,5 +1,6 @@
 import { ImageResponse } from 'next/og';
 import { NextRequest } from 'next/server';
+import { siteConfig } from '@/lib/site';
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -87,7 +88,7 @@ export async function GET(req: NextRequest) {
           }}
         >
           <span>Dokumentasi Arsitektur Sistem &amp; Rekayasa Software</span>
-          <span>slashjournal.dev</span>
+           <span>{new URL(siteConfig.url).host}</span>
         </div>
       </div>
     ),

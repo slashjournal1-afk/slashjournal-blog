@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { Mail, Send, CheckCircle2, MessageSquare, Sparkles, Shield, PenLine } from 'lucide-react';
 import { PageIntro } from '@/components/layout/PageIntro';
 
@@ -130,7 +131,7 @@ export default function ContactPage() {
             <p className="text-[11px] font-bold uppercase tracking-wide text-[var(--accent)]">Kontributor</p>
             <h3 className="text-base font-bold text-[#09090b] dark:text-white">Punya pengalaman produksi untuk dibagikan?</h3>
             <p className="text-xs text-[#52525b] dark:text-[#a1a1aa] leading-relaxed">Kirim proposal tulisan tentang sistem, database, backend, atau rekayasa antarmuka.</p>
-            <a href="/contact?subject=author" className="inline-flex items-center gap-2 text-xs font-bold text-[#09090b] dark:text-white hover:text-[var(--accent)]">Daftar menjadi penulis <Send className="w-3.5 h-3.5" /></a>
+             <Link href="/contact?subject=author" className="inline-flex items-center gap-2 text-xs font-bold text-[#09090b] dark:text-white hover:text-[var(--accent)]">Daftar menjadi penulis <Send className="w-3.5 h-3.5" /></Link>
           </div>
 
           <div className="rounded-[36px] bg-white dark:bg-[#18181b] border border-[#ececee] dark:border-[#27272a] p-8 space-y-4">

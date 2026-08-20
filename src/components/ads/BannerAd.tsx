@@ -2,7 +2,8 @@
 
 import React from 'react';
 import Image from 'next/image';
-import { ExternalLink, Sparkles, ArrowUpRight } from 'lucide-react';
+import Link from 'next/link';
+import { ArrowUpRight } from 'lucide-react';
 import { AdSlot } from '@/lib/types';
 
 interface BannerAdProps {
@@ -32,13 +33,13 @@ export function BannerAd({ ad, className = '' }: BannerAdProps) {
           </p>
         </div>
 
-        <a
+        <Link
           href="/contact?subject=sponsor"
           className="px-5 py-3 rounded-[14px] bg-[#09090b] dark:bg-white text-white dark:text-[#09090b] hover:bg-[#18181b] dark:hover:bg-zinc-200 text-xs font-bold shadow-awesomic-dark-btn transition-all shrink-0 flex items-center gap-2 active:scale-95 z-10"
         >
           <span>Pasang Iklan Terkurasi</span>
           <ArrowUpRight className="w-4 h-4 text-[var(--accent)]" />
-        </a>
+        </Link>
       </div>
     );
   }

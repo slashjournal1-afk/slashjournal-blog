@@ -5,10 +5,13 @@ import Image from 'next/image';
 import { prisma } from '@/lib/db';
 import { formatDate } from '@/lib/utils';
 import { ArticleContentRenderer } from '@/components/content/ArticleContentRenderer';
-import { ArrowLeft, GitFork, BookOpen, Clock, ArrowUpRight } from 'lucide-react';
+import { GitFork } from 'lucide-react';
 import type { Metadata } from 'next';
+import { absoluteUrl } from '@/lib/site';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { breadcrumbSchema } from '@/lib/structured-data';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600;
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -20,11 +23,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     where: { slug },
   });
 
-  if (!term) return { title: 'Istilah Tidak Ditemukan | SlashJournal' };
+  if (!term) return { title: 'Istilah Tidak Ditemukan', robots: { index: false, follow: false } };
 
   return {
-    title: `${term.term} — Glosarium Arsitektur | SlashJournal`,
+    title: `${term.term} — Glosarium Arsitektur`,
     description: term.shortDef,
+    alternates: { canonical: absoluteUrl(`/glossary/${term.slug}`) },
   };
 }
 
@@ -39,11 +43,22 @@ export default async function GlossaryDetailPage({ params }: PageProps) {
   if (!term) {
     notFound();
   }
+  const termSchema = {
+    '@context': 'https://schema.org', '@type': 'DefinedTerm',
+    name: term.term, description: term.shortDef, url: absoluteUrl(`/glossary/${term.slug}`),
+    inDefinedTermSet: { '@id': absoluteUrl('/glossary#term-set') }, inLanguage: 'id-ID',
+  };
+  const breadcrumbJsonLd = breadcrumbSchema([
+    { name: 'Beranda', path: '/' }, { name: 'Glosarium', path: '/glossary' },
+    { name: term.term, path: `/glossary/${term.slug}` },
+  ]);
 
   // Find articles that reference this term (bidirectional knowledge backlinks)
   const referencingArticles = await prisma.article.findMany({
     where: {
       status: 'PUBLISHED',
+      isIndexable: true,
+      category: { isIndexable: true },
       OR: [
         { contentMarkdown: { contains: `[[${term.slug}`, mode: 'insensitive' } },
         { contentMarkdown: { contains: `[[${term.term}`, mode: 'insensitive' } },
@@ -66,13 +81,15 @@ export default async function GlossaryDetailPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen max-w-[1200px] mx-auto px-4 sm:px-6 py-12">
-      <Link
-        href="/glossary"
-        className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#71717a] dark:text-[#a1a1aa] hover:text-[#09090b] dark:hover:text-white transition-colors mb-6"
-      >
-        <ArrowLeft className="w-3.5 h-3.5" />
-        Kembali ke Glosarium A-Z
-      </Link>
+      <JsonLd data={termSchema} />
+      <JsonLd data={breadcrumbJsonLd} />
+      <nav aria-label="Breadcrumb" className="mb-6 flex items-center gap-2 text-xs text-[#71717a] dark:text-[#a1a1aa]">
+        <Link href="/" className="hover:text-[#09090b] dark:hover:text-white">Beranda</Link>
+        <span aria-hidden="true">/</span>
+        <Link href="/glossary" className="hover:text-[#09090b] dark:hover:text-white">Glosarium</Link>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">{term.term}</span>
+      </nav>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
         {/* Main Definition Col */}

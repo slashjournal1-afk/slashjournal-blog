@@ -7,6 +7,7 @@ import { Bookmark, LogOut, Menu, Search, Shield, X, ChevronDown } from 'lucide-r
 import { useAuth } from '@/context/AuthContext';
 import { ThemeToggle } from './ThemeToggle';
 import { AuthModal } from '../auth/AuthModal';
+import { BrandLogo } from './BrandLogo';
 
 const primaryLinks = [
   { label: 'Tulisan', href: '/' },
@@ -41,9 +42,8 @@ export function Navbar() {
             className="flex shrink-0 items-center gap-1.5"
             aria-label="SlashJournal Beranda"
           >
-            <span className="font-display text-[22px] font-semibold leading-none tracking-tight text-[var(--text-primary)]">
-              SlashJournal
-            </span>
+            <BrandLogo size={34} />
+            <span className="font-display text-[22px] font-semibold leading-none tracking-tight text-[var(--text-primary)]">SlashJournal</span>
             <span className="mb-3 h-[3px] w-[3px] rounded-full bg-[var(--accent)]" aria-hidden="true" />
           </Link>
 

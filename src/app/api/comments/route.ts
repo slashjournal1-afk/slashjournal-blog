@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getCurrentUser, hasPermission } from '@/lib/auth';
+import { revalidatePath } from 'next/cache';
 
 export async function POST(req: Request) {
   const user = await getCurrentUser();
@@ -22,13 +23,17 @@ export async function POST(req: Request) {
         userId: user.id,
       },
       include: {
+        article: { select: { slug: true } },
         user: {
           select: { id: true, displayName: true, avatarUrl: true, role: true },
         },
       },
     });
 
-    return NextResponse.json({ success: true, comment });
+    revalidatePath(`/${comment.article.slug}`);
+
+    const { article: _article, ...publicComment } = comment;
+    return NextResponse.json({ success: true, comment: publicComment });
   } catch (err: any) {
     return NextResponse.json({ error: 'Gagal mengirim komentar' }, { status: 500 });
   }
@@ -42,7 +47,10 @@ export async function DELETE(req: Request) {
   const id = searchParams.get('id');
   if (!id) return NextResponse.json({ error: 'ID komentar diperlukan' }, { status: 400 });
 
-  const comment = await prisma.comment.findUnique({ where: { id } });
+  const comment = await prisma.comment.findUnique({
+    where: { id },
+    include: { article: { select: { slug: true } } },
+  });
   if (!comment) return NextResponse.json({ error: 'Komentar tidak ditemukan' }, { status: 404 });
 
   if (comment.userId !== user.id && !hasPermission(user.role, ['ADMIN', 'EDITOR'])) {
@@ -50,5 +58,6 @@ export async function DELETE(req: Request) {
   }
 
   await prisma.comment.delete({ where: { id } });
+  revalidatePath(`/${comment.article.slug}`);
   return NextResponse.json({ success: true });
 }

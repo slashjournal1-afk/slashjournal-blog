@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import { CookieSettingsButton } from '@/components/analytics/CookieSettingsButton';
+import { BrandLogo } from '@/components/layout/BrandLogo';
 
 const readingLinks = [
   { label: 'Tulisan', href: '/' },
@@ -25,15 +27,18 @@ export function Footer() {
               href="/"
               className="inline-flex items-center gap-1.5 font-display text-xl font-semibold tracking-tight text-[var(--text-primary)]"
             >
-              SlashJournal
-              <span className="mb-3 h-[3px] w-[3px] rounded-full bg-[var(--accent)]" aria-hidden="true" />
+              <BrandLogo size={30} />
+              <span>SlashJournal</span>
             </Link>
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-[var(--text-muted)]">
               Catatan produksi tentang sistem terdistribusi, rekayasa antarmuka, dan keputusan teknis yang layak dipahami.
             </p>
           </div>
           <FooterColumn title="Baca" links={readingLinks} />
-          <FooterColumn title="Dukungan & legal" links={supportLinks} />
+          <div>
+            <FooterColumn title="Dukungan & legal" links={supportLinks} />
+            <div className="mt-2.5"><CookieSettingsButton /></div>
+          </div>
         </div>
 
         <div className="mt-14 flex flex-col gap-3 border-t border-[var(--border-color)] pt-6 text-xs text-[var(--text-muted)] sm:flex-row sm:items-center sm:justify-between">

@@ -6,6 +6,9 @@ import { ThemeProvider } from '@/context/ThemeContext';
 import { AuthProvider } from '@/context/AuthContext';
 import { TopProgressBar } from '@/components/layout/TopProgressBar';
 import { CommandPalette } from '@/components/search/CommandPalette';
+import { GoogleTagManager } from '@/components/analytics/GoogleTagManager';
+import { GoogleConsent } from '@/components/analytics/GoogleConsent';
+import { siteConfig } from '@/lib/site';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -31,8 +34,7 @@ export const metadata: Metadata = {
     default: 'SlashJournal — Catatan Arsitektur & Rekayasa Perangkat Lunak',
     template: '%s — SlashJournal',
   },
-  description:
-    'Publikasi editorial tentang arsitektur sistem, rekayasa software terdistribusi, dan keputusan teknis yang layak dipahami.',
+  description: siteConfig.description,
   keywords: [
     'System Design',
     'Software Architecture',
@@ -41,15 +43,31 @@ export const metadata: Metadata = {
     'Microservices',
     'Distributed Systems',
   ],
-  authors: [{ name: 'Choirul Arsitek' }],
-  metadataBase: new URL('http://localhost:3000'),
+  authors: [{ name: 'Choirul Arsitek', url: siteConfig.url }],
+  metadataBase: new URL(siteConfig.url),
+  icons: {
+    icon: [
+      { url: '/icon/Minimalist_SJ_monogram_logo_design_202608201741.svg', type: 'image/svg+xml' },
+      { url: '/icon/favicon_io/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/icon/favicon_io/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/icon/Minimalist_SJ_monogram_logo_design_202608201741.ico', sizes: 'any' },
+    ],
+    apple: [{ url: '/icon/favicon_io/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
+  },
+  manifest: '/manifest.webmanifest',
+  verification: { google: siteConfig.verification },
+  robots: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1, 'max-video-preview': -1 },
   openGraph: {
     title: 'SlashJournal — Catatan Arsitektur & Rekayasa Perangkat Lunak',
     description:
       'Publikasi editorial tentang arsitektur sistem dan rekayasa software terstruktur.',
     type: 'website',
-    images: ['/api/og'],
+    url: siteConfig.url,
+    locale: siteConfig.locale,
+    siteName: siteConfig.name,
+    images: [{ url: '/api/og', width: 1200, height: 630, alt: siteConfig.name }],
   },
+  twitter: { card: 'summary_large_image', title: siteConfig.name, description: siteConfig.description, images: ['/api/og'] },
 };
 
 export default function RootLayout({
@@ -62,6 +80,7 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${newsreader.variable} ${jetbrainsMono.variable} min-h-screen flex flex-col antialiased bg-[var(--bg-primary)] text-[var(--text-primary)] transition-colors`}
       >
+        <GoogleTagManager />
         <ThemeProvider>
           <AuthProvider>
             <Suspense fallback={null}>
@@ -69,6 +88,7 @@ export default function RootLayout({
             </Suspense>
             <div className="flex-1 flex flex-col">{children}</div>
             <CommandPalette />
+            <GoogleConsent />
           </AuthProvider>
         </ThemeProvider>
       </body>

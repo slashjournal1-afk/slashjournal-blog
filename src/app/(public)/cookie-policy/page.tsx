@@ -1,8 +1,11 @@
 import React from 'react';
+import type { Metadata } from 'next';
+import { absoluteUrl } from '@/lib/site';
 
-export const metadata = {
-  title: 'Kebijakan Cookie & Sesi | SlashJournal',
+export const metadata: Metadata = {
+  title: 'Kebijakan Cookie & Sesi',
   description: 'Informasi penggunaan cookie fungsional dan penyimpanan sesi aman.',
+  alternates: { canonical: absoluteUrl('/cookie-policy') },
 };
 
 export default function CookiePolicyPage() {

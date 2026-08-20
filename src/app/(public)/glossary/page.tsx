@@ -3,12 +3,16 @@ import Link from 'next/link';
 import { prisma } from '@/lib/db';
 import { ArrowRight } from 'lucide-react';
 import { PageIntro } from '@/components/layout/PageIntro';
+import type { Metadata } from 'next';
+import { absoluteUrl } from '@/lib/site';
+import { JsonLd } from '@/components/seo/JsonLd';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600;
 
-export const metadata = {
-  title: 'Glosarium Istilah Arsitektur A-Z | SlashJournal',
+export const metadata: Metadata = {
+  title: 'Glosarium Istilah Arsitektur A-Z',
   description: 'Kamus teknis arsitektur perangkat lunak, database engineering, dan protokol terdistribusi.',
+  alternates: { canonical: absoluteUrl('/glossary') },
 };
 
 export default async function GlossaryIndexPage() {
@@ -25,9 +29,16 @@ export default async function GlossaryIndexPage() {
   }
 
   const sortedLetters = Object.keys(alphabetMap).sort();
+  const definedTermSet = {
+    '@context': 'https://schema.org', '@type': 'DefinedTermSet',
+    '@id': absoluteUrl('/glossary#term-set'), name: 'Glosarium Arsitektur dan Rekayasa',
+    url: absoluteUrl('/glossary'), inLanguage: 'id-ID',
+    hasDefinedTerm: terms.map((term) => ({ '@type': 'DefinedTerm', name: term.term, url: absoluteUrl(`/glossary/${term.slug}`) })),
+  };
 
   return (
     <div className="min-h-screen max-w-[1200px] mx-auto px-4 sm:px-6 py-12">
+      <JsonLd data={definedTermSet} />
       <div className="mb-12 space-y-6">
         <PageIntro eyebrow="Kamus teknis A-Z" title="Glosarium arsitektur dan rekayasa" description="Definisi padat yang terhubung langsung dari setiap naskah melalui WikiLink." count={`${terms.length} istilah`} />
 

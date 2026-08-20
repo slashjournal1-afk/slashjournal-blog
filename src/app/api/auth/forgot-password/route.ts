@@ -28,7 +28,7 @@ export async function POST(req: Request) {
     }
 
     const resetToken = generateResetToken(cleanEmail);
-    const origin = req.headers.get('origin') || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const origin = req.headers.get('origin') || process.env.NEXT_PUBLIC_APP_URL || 'https://slashjournal.my.id';
     const resetUrl = `${origin}/reset-password?token=${resetToken}`;
 
     return NextResponse.json({

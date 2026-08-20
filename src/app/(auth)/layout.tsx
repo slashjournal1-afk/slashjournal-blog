@@ -2,6 +2,10 @@ import React from 'react';
 import Link from 'next/link';
 import { ArrowLeft, ShieldCheck } from 'lucide-react';
 import { ThemeToggle } from '@/components/layout/ThemeToggle';
+import { BrandLogo } from '@/components/layout/BrandLogo';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -13,10 +17,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           className="flex items-center gap-1.5"
           title="Kembali ke Beranda Utama"
         >
-          <span className="font-display text-[22px] font-semibold leading-none tracking-tight text-[var(--text-primary)]">
-            SlashJournal
-          </span>
-          <span className="mb-3 h-[3px] w-[3px] rounded-full bg-[var(--accent)]" aria-hidden="true" />
+          <BrandLogo size={34} />
+          <span className="font-display text-[22px] font-semibold leading-none tracking-tight text-[var(--text-primary)]">SlashJournal</span>
         </Link>
 
         <div className="flex items-center gap-3">

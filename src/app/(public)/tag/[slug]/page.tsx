@@ -18,10 +18,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     where: { slug },
   });
 
-  if (!tag) return { title: 'Tag Tidak Ditemukan | SlashJournal' };
+  if (!tag) return { title: 'Tag Tidak Ditemukan', robots: { index: false, follow: false } };
 
   return {
-    title: `#${tag.name} | SlashJournal`,
+    title: `#${tag.name}`,
     description: `Koleksi tulisan dengan tag #${tag.name}`,
     robots: 'noindex, follow', // Tag archives are noindex per C6
   };
@@ -49,7 +49,7 @@ export default async function TagPage({ params }: PageProps) {
 
   const publishedArticles = tag.articles
     .map((at) => at.article)
-    .filter((a) => a.status === 'PUBLISHED');
+    .filter((a) => a.status === 'PUBLISHED' && a.isIndexable && a.category.isIndexable);
 
   return (
     <div className="min-h-screen max-w-[1200px] mx-auto px-4 sm:px-6 py-12">
