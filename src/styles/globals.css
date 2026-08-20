@@ -1,0 +1,224 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Editorial Palette (DESIGN.md) */
+  --color-ink: #171717;
+  --color-charcoal: #2a2a2a;
+  --color-graphite: #525252;
+  --color-stone: #737373;
+  --color-silver: #a3a3a3;
+  --color-rule: #e5e5e5;
+  --color-surface: #f7f6f3;
+  --color-paper: #ffffff;
+  --color-accent: #00a86b;
+  --color-accent-ink: #00805a;
+
+  /* Legacy aliases (kept for compatibility) */
+  --color-obsidian: #171717;
+  --color-graphite-legacy: #262626;
+  --color-ember: #00a86b;
+
+  /* Surfaces & Canvas */
+  --bg-primary: var(--color-surface);
+  --bg-card: var(--color-paper);
+  --bg-card-muted: #f2f1ec;
+  --text-primary: var(--color-ink);
+  --text-secondary: var(--color-charcoal);
+  --text-muted: var(--color-stone);
+  --border-color: var(--color-rule);
+  --border-subtle: #eeece7;
+  --ember-color: var(--color-accent);
+  --accent: var(--color-accent);
+  --accent-hover: var(--color-accent-ink);
+  --accent-soft: rgba(0, 168, 107, 0.08);
+  --accent-line: rgba(0, 168, 107, 0.35);
+}
+
+html.dark {
+  --bg-primary: #141413;
+  --bg-card: #1c1c1a;
+  --bg-card-muted: #22221f;
+  --text-primary: #f2f1ee;
+  --text-secondary: #d6d5d0;
+  --text-muted: #9d9c96;
+  --border-color: #2b2b28;
+  --border-subtle: #232320;
+  --ember-color: #16b877;
+  --accent: #16b877;
+  --accent-hover: #2ecb8a;
+  --accent-soft: rgba(22, 184, 119, 0.1);
+  --accent-line: rgba(22, 184, 119, 0.35);
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: rgba(0, 168, 107, 0.18);
+}
+
+.skip-link {
+  position: fixed;
+  left: 1rem;
+  top: 1rem;
+  z-index: 60;
+  transform: translateY(-200%);
+  border-radius: 10px;
+  background: var(--color-ink);
+  color: #ffffff;
+  padding: 0.75rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  transition: transform 160ms ease;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+:where(a, button, input, textarea, select):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+code, kbd, samp, pre {
+  font-family: var(--font-jetbrains-mono), monospace;
+}
+
+/* Editorial link treatment */
+.link-editorial {
+  position: relative;
+  text-decoration: none;
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 0% 1px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  transition: background-size 200ms ease-out;
+}
+
+.link-editorial:hover {
+  background-size: 100% 1px;
+}
+
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* ==========================================================================
+   Prism.js Syntax Highlighting Theme (One Dark Editorial)
+   ========================================================================== */
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+  color: #71717a;
+  font-style: italic;
+}
+
+.token.punctuation {
+  color: #a1a1aa;
+}
+
+.token.namespace {
+  opacity: 0.7;
+}
+
+.token.property,
+.token.tag,
+.token.boolean,
+.token.number,
+.token.constant,
+.token.symbol,
+.token.deleted {
+  color: #fb923c; /* Coral Orange */
+}
+
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin,
+.token.inserted {
+  color: #4ade80; /* Emerald Green */
+}
+
+.token.operator,
+.token.entity,
+.token.url,
+.language-css .token.string,
+.style .token.string {
+  color: #38bdf8; /* Sky Blue */
+}
+
+.token.atrule,
+.token.attr-value,
+.token.keyword {
+  color: #c084fc; /* Vibrant Violet / Purple */
+  font-weight: 600;
+}
+
+.token.function,
+.token.class-name {
+  color: #60a5fa; /* Vibrant Blue */
+  font-weight: 500;
+}
+
+.token.regex,
+.token.important,
+.token.variable {
+  color: #f43f5e; /* Rose */
+}
+
+.token.important,
+.token.bold {
+  font-weight: bold;
+}
+
+.token.italic {
+  font-style: italic;
+}
+
+.token.entity {
+  cursor: help;
+}
+

@@ -1,0 +1,242 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            String          @id @default(cuid())
+  email         String          @unique
+  name          String?
+  displayName   String
+  avatarUrl     String?
+  passwordHash  String?
+  provider      String          @default("LOCAL") // LOCAL, GOOGLE, GITHUB
+  providerId    String?
+  role          String          @default("READER") // ADMIN, EDITOR, AUTHOR, READER
+  isBlocked     Boolean         @default(false)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  articles      Article[]       @relation("AuthorArticles")
+  reviewedArticles Article[]    @relation("ReviewedArticles")
+  glossaryTerms GlossaryTerm[]
+  comments      Comment[]
+  bookmarks     Bookmark[]
+  feedbacks     ArticleFeedback[]
+  subscriptions Subscription[]
+  auditLogs     AuditLog[]
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  description String?
+  icon        String?
+  isIndexable Boolean   @default(true) // false for personal journal privacy (KB2)
+  sortOrder   Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  articles    Article[]
+}
+
+model Series {
+  id            String    @id @default(cuid())
+  title         String
+  slug          String    @unique
+  description   String?
+  coverImageUrl String?
+  isPublished   Boolean   @default(true)
+  sortOrder     Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  articles      Article[]
+}
+
+model Tag {
+  id        String       @id @default(cuid())
+  name      String       @unique
+  slug      String       @unique
+  createdAt DateTime     @default(now())
+
+  articles  ArticleTag[]
+}
+
+model ArticleTag {
+  articleId String
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  tagId     String
+  tag       Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([articleId, tagId])
+  @@index([tagId])
+}
+
+model Article {
+  id                   String            @id @default(cuid())
+  title                String
+  slug                 String            @unique
+  excerpt              String
+  contentMarkdown      String
+  status               String            @default("DRAFT") // DRAFT, IN_REVIEW, PUBLISHED, ARCHIVED
+  isSponsored          Boolean           @default(false)
+  sponsorName          String?
+  sponsorUrl           String?
+  coverImageUrl        String?
+  coverImageSourceType String?           // 'SELF_SHOT', 'FREE_STOCK', 'AI_GENERATED' (C4 & CM7)
+  readingTime          Int               @default(3)
+  viewCount            Int               @default(0)
+  helpfulVotes         Int               @default(0)
+  unhelpfulVotes       Int               @default(0)
+  isIndexable          Boolean           @default(true)
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+  publishedAt          DateTime?
+
+  categoryId           String
+  category             Category          @relation(fields: [categoryId], references: [id])
+  seriesId             String?
+  series               Series?           @relation(fields: [seriesId], references: [id], onDelete: SetNull)
+  seriesOrder          Int?              @default(0)
+
+  authorId             String
+  author               User              @relation("AuthorArticles", fields: [authorId], references: [id])
+  reviewerId           String?
+  reviewer             User?             @relation("ReviewedArticles", fields: [reviewerId], references: [id])
+  reviewNote           String?
+
+  tags                 ArticleTag[]
+  comments             Comment[]
+  bookmarks            Bookmark[]
+  feedbacks            ArticleFeedback[]
+  revisions            ArticleRevision[]
+
+  @@index([status, publishedAt])
+  @@index([categoryId, status])
+  @@index([seriesId, seriesOrder])
+  @@index([authorId])
+}
+
+model GlossaryTerm {
+  id          String   @id @default(cuid())
+  term        String   @unique
+  slug        String   @unique
+  category    String   // Arsitektur, Algoritma, Database, Frontend, dll.
+  shortDef    String   // Ringkasan untuk popover preview [[WikiLink]]
+  definition  String   // Definisi lengkap markdown
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id])
+
+  @@index([category])
+}
+
+model Comment {
+  id          String       @id @default(cuid())
+  content     String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  articleId   String
+  article     Article      @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([articleId, createdAt])
+  @@index([userId])
+}
+
+model Bookmark {
+  id        String     @id @default(cuid())
+  createdAt DateTime   @default(now())
+
+  userId    String
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  articleId String
+  article   Article    @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, articleId])
+  @@index([userId])
+}
+
+model ArticleFeedback {
+  id        String     @id @default(cuid())
+  isHelpful Boolean
+  reaction  String?    // '🚀', '💡', '❤️', '🔥', '👏'
+  createdAt DateTime   @default(now())
+
+  articleId String
+  article   Article    @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  userId    String?
+  user      User?      @relation(fields: [userId], references: [id])
+
+  @@index([articleId])
+}
+
+model AdSlot {
+  id          String   @id @default(cuid())
+  slotName    String   @unique // 'leaderboard', 'in_feed', 'sidebar_sticky'
+  title       String
+  description String?
+  imageUrl    String?
+  targetUrl   String
+  sponsorName String
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Subscription {
+  id        String   @id @default(cuid())
+  email     String
+  topic     String   @default("all")
+  createdAt DateTime @default(now())
+
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+}
+
+model SearchQueryLog {
+  id           String   @id @default(cuid())
+  query        String
+  resultsCount Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  @@index([query])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  action     String
+  actorEmail String
+  details    String
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id])
+
+  @@index([action, createdAt])
+}
+
+model ArticleRevision {
+  id              String   @id @default(cuid())
+  title           String
+  contentMarkdown String
+  note            String?
+  createdAt       DateTime @default(now())
+
+  articleId       String
+  article         Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@index([articleId, createdAt])
+}

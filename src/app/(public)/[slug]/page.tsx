@@ -1,0 +1,491 @@
+import React from 'react';
+import { notFound } from 'next/navigation';
+import Image from 'next/image';
+import Link from 'next/link';
+import { prisma } from '@/lib/db';
+import { formatDate } from '@/lib/utils';
+import { ArticleContentRenderer } from '@/components/content/ArticleContentRenderer';
+import { ScrollSpyTOC } from '@/components/wiki/ScrollSpyTOC';
+import { StickyReadingHeader } from '@/components/layout/StickyReadingHeader';
+import { ArticleReactions } from '@/components/content/ArticleReactions';
+import { NewsletterBox } from '@/components/content/NewsletterBox';
+import { InlineSelectionQuote } from '@/components/content/InlineSelectionQuote';
+import { BookmarkButton } from '@/components/wiki/BookmarkButton';
+import { CommentSection } from '@/components/comments/CommentSection';
+import { SponsoredBadge } from '@/components/ads/SponsoredBadge';
+import { SidebarStickyAd } from '@/components/ads/SidebarStickyAd';
+import { Calendar, Clock, Eye, ArrowLeft, ArrowRight, Link as LinkIcon } from 'lucide-react';
+import type { Metadata } from 'next';
+
+export const dynamic = 'force-dynamic';
+
+interface PageProps {
+  params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const article = await prisma.article.findUnique({
+    where: { slug },
+  });
+
+  if (!article) return { title: 'Artikel Tidak Ditemukan | SlashJournal' };
+
+  return {
+    title: `${article.title} | SlashJournal`,
+    description: article.excerpt,
+    robots: article.isIndexable ? 'index, follow' : 'noindex, nofollow',
+    openGraph: {
+      title: article.title,
+      description: article.excerpt,
+      type: 'article',
+      publishedTime: article.publishedAt?.toISOString() || article.createdAt.toISOString(),
+      images: article.coverImageUrl ? [{ url: article.coverImageUrl }] : [],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: article.title,
+      description: article.excerpt,
+      images: article.coverImageUrl ? [article.coverImageUrl] : [],
+    },
+  };
+}
+
+export default async function ArticleDetailPage({ params }: PageProps) {
+  const { slug } = await params;
+
+  const article = await prisma.article.findUnique({
+    where: { slug },
+    include: {
+      category: true,
+      series: {
+        include: {
+          articles: {
+            where: { status: 'PUBLISHED' },
+            orderBy: { seriesOrder: 'asc' },
+            select: { id: true, slug: true, title: true, seriesOrder: true },
+          },
+        },
+      },
+      author: true,
+      tags: { include: { tag: true } },
+      comments: {
+        include: { user: true },
+        orderBy: { createdAt: 'desc' },
+      },
+    },
+  });
+
+  if (!article || article.status !== 'PUBLISHED') {
+    notFound();
+  }
+
+  // Increment view count asynchronously
+  await prisma.article.update({
+    where: { id: article.id },
+    data: { viewCount: { increment: 1 } },
+  }).catch(() => {});
+
+  // Fetch glossary terms for WikiLink resolution
+  const glossaryTerms = await prisma.glossaryTerm.findMany({
+    select: { term: true, slug: true, shortDef: true, category: true },
+  });
+
+  // Fetch related stories for "Continue Reading"
+  const relatedArticles = await prisma.article.findMany({
+    where: {
+      status: 'PUBLISHED',
+      categoryId: article.categoryId,
+      id: { not: article.id },
+    },
+    orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }],
+    take: 3,
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+      coverImageUrl: true,
+      publishedAt: true,
+      createdAt: true,
+      category: { select: { name: true, slug: true } },
+    },
+  });
+
+  // Fetch sticky sidebar ad
+  const sidebarAd = await prisma.adSlot.findUnique({ where: { slotName: 'sidebar_sticky' } });
+
+  // Extract headings for Table of Contents
+  const headings = extractHeadings(article.contentMarkdown);
+
+  // Determine Previous & Next chapters in the series
+  let prevArticle: { title: string; slug: string; seriesOrder?: number | null } | null = null;
+  let nextArticle: { title: string; slug: string; seriesOrder?: number | null } | null = null;
+
+  if (article.series?.articles) {
+    const currentIndex = article.series.articles.findIndex((a) => a.id === article.id);
+    if (currentIndex > 0) prevArticle = article.series.articles[currentIndex - 1];
+    if (currentIndex >= 0 && currentIndex < article.series.articles.length - 1) {
+      nextArticle = article.series.articles[currentIndex + 1];
+    }
+  }
+
+  // Schema.org JSON-LD Structured Data
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'TechArticle',
+    headline: article.title,
+    description: article.excerpt,
+    image: article.coverImageUrl ? [article.coverImageUrl] : [],
+    datePublished: article.publishedAt?.toISOString() || article.createdAt.toISOString(),
+    dateModified: article.updatedAt.toISOString(),
+    author: {
+      '@type': 'Person',
+      name: article.author.displayName,
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'SlashJournal',
+      logo: {
+        '@type': 'ImageObject',
+        url: 'https://slashjournal.dev/logo.png',
+      },
+    },
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': `https://slashjournal.dev/${article.slug}`,
+    },
+  };
+
+  return (
+    <div className="min-h-screen pb-20">
+      {/* Schema.org Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
+      {/* Floating Sticky Reading Header on Scroll */}
+      <StickyReadingHeader
+        articleId={article.id}
+        title={article.title}
+        slug={article.slug}
+        authorName={article.author.displayName}
+        readingTime={article.readingTime}
+      />
+
+      {/* Breadcrumb */}
+      <div className="border-b border-[var(--border-color)]">
+        <div className="mx-auto flex max-w-editorial items-center justify-between gap-4 px-5 py-4 text-xs text-[var(--text-muted)] sm:px-8">
+          <nav aria-label="Breadcrumb" className="flex items-center gap-2">
+            <Link href="/" className="transition-colors hover:text-[var(--text-primary)]">
+              Beranda
+            </Link>
+            <span aria-hidden="true" className="text-[var(--color-silver)]">/</span>
+            <Link
+              href={`/category/${article.category.slug}`}
+              className="font-medium transition-colors hover:text-[var(--text-primary)]"
+            >
+              {article.category.name}
+            </Link>
+            {article.series && (
+              <>
+                <span aria-hidden="true" className="text-[var(--color-silver)]">/</span>
+                <Link
+                  href={`/series/${article.series.slug}`}
+                  className="font-medium transition-colors hover:text-[var(--text-primary)]"
+                >
+                  {article.series.title}
+                </Link>
+              </>
+            )}
+          </nav>
+
+          <BookmarkButton articleId={article.id} />
+        </div>
+      </div>
+
+      <article className="mx-auto max-w-editorial px-5 sm:px-8">
+        {/* Article Header */}
+        <header className="mx-auto max-w-[760px] pt-10 sm:pt-14">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+            {article.isSponsored ? (
+              <SponsoredBadge sponsorName={article.sponsorName} sponsorUrl={article.sponsorUrl} />
+            ) : (
+              <Link
+                href={`/category/${article.category.slug}`}
+                className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--accent)] link-editorial"
+              >
+                {article.category.name}
+              </Link>
+            )}
+            {article.series && (
+              <Link
+                href={`/series/${article.series.slug}`}
+                className="text-xs font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)]"
+              >
+                Seri: {article.series.title} · Bagian {article.seriesOrder || 1}
+              </Link>
+            )}
+          </div>
+
+          <h1 className="mt-5 font-display text-4xl font-medium leading-[1.06] tracking-tight text-[var(--text-primary)] sm:text-5xl lg:text-[56px]">
+            {article.title}
+          </h1>
+
+          {article.excerpt && (
+            <p className="mt-6 font-display text-lg leading-relaxed text-[var(--text-secondary)] sm:text-xl">
+              {article.excerpt}
+            </p>
+          )}
+
+          {/* Metadata Row */}
+          <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-y border-[var(--border-color)] py-5">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-ink)] text-sm font-semibold text-white">
+                {article.author.displayName.charAt(0)}
+              </div>
+              <div>
+                <p className="text-sm font-medium text-[var(--text-primary)]">{article.author.displayName}</p>
+                <p className="text-xs text-[var(--text-muted)]">Penulis</p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[var(--text-muted)]">
+              <span className="flex items-center gap-1.5">
+                <Calendar className="h-3.5 w-3.5 text-[var(--accent)]" />
+                {formatDate(article.publishedAt || article.createdAt)}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Clock className="h-3.5 w-3.5 text-[var(--accent)]" />
+                {article.readingTime} menit baca
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Eye className="h-3.5 w-3.5 text-[var(--accent)]" />
+                {article.viewCount} pembaca
+              </span>
+            </div>
+          </div>
+        </header>
+
+        {/* Cover Image — wider than the reading column */}
+        {article.coverImageUrl && (
+          <div className="mx-auto mt-10 max-w-[1000px]">
+            <div className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl bg-[var(--bg-card-muted)] sm:aspect-[16/9]">
+              <Image
+                src={article.coverImageUrl}
+                alt={article.title}
+                fill
+                priority
+                unoptimized={Boolean(article.coverImageUrl?.startsWith('/uploads'))}
+                sizes="(min-width: 1000px) 1000px, 100vw"
+                className="object-cover"
+              />
+            </div>
+            {article.coverImageSourceType && (
+              <p className="mt-2 text-right text-xs text-[var(--text-muted)]">
+                Sumber visual: <span className="font-medium">{formatSourceType(article.coverImageSourceType)}</span>
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Content + Sidebar */}
+        <div className="mt-12 grid gap-12 lg:grid-cols-[minmax(0,1fr)_280px] lg:gap-16">
+          {/* Main Article Body */}
+          <div className="mx-auto w-full max-w-[720px] space-y-8">
+            <InlineSelectionQuote articleTitle={article.title} />
+
+            <div id="article-body" className="relative">
+              <ArticleContentRenderer content={article.contentMarkdown} glossary={glossaryTerms} />
+            </div>
+
+            {/* Tags */}
+            {article.tags && article.tags.length > 0 && (
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[var(--border-color)] pt-7">
+                <span className="text-xs font-medium text-[var(--text-muted)]">Topik:</span>
+                {article.tags.map(({ tag }) => (
+                  <Link
+                    key={tag.id}
+                    href={`/tag/${tag.slug}`}
+                    className="text-xs font-medium text-[var(--text-secondary)] transition-colors hover:text-[var(--accent)]"
+                  >
+                    #{tag.name}
+                  </Link>
+                ))}
+              </div>
+            )}
+
+            {/* Reader Reactions */}
+            <ArticleReactions articleId={article.id} />
+
+            {/* Chapter Navigation in Series */}
+            {(prevArticle || nextArticle) && (
+              <div className="grid grid-cols-1 gap-6 border-t border-[var(--border-color)] pt-8 sm:grid-cols-2">
+                {prevArticle ? (
+                  <Link href={`/${prevArticle.slug}`} className="group">
+                    <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)]">
+                      <ArrowLeft className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-1" />
+                      Bab Sebelumnya
+                    </span>
+                    <span className="mt-2 block font-display text-lg font-medium leading-snug text-[var(--text-primary)] transition-colors group-hover:text-[var(--accent-hover)]">
+                      {prevArticle.title}
+                    </span>
+                  </Link>
+                ) : (
+                  <span className="hidden sm:block" />
+                )}
+
+                {nextArticle && (
+                  <Link href={`/${nextArticle.slug}`} className="group text-right sm:col-start-2">
+                    <span className="flex items-center justify-end gap-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--accent)]">
+                      Bab Selanjutnya
+                      <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+                    </span>
+                    <span className="mt-2 block font-display text-lg font-medium leading-snug text-[var(--text-primary)] transition-colors group-hover:text-[var(--accent-hover)]">
+                      {nextArticle.title}
+                    </span>
+                  </Link>
+                )}
+              </div>
+            )}
+
+            {/* Newsletter */}
+            <NewsletterBox className="border-t border-[var(--border-color)] pt-8" />
+
+            {/* Comments */}
+            <CommentSection
+              articleId={article.id}
+              initialComments={article.comments.map((c) => ({
+                id: c.id,
+                content: c.content,
+                createdAt: c.createdAt,
+                updatedAt: c.updatedAt,
+                articleId: c.articleId,
+                userId: c.userId,
+                user: {
+                  id: c.user.id,
+                  displayName: c.user.displayName,
+                  avatarUrl: c.user.avatarUrl,
+                  role: c.user.role as any,
+                },
+              }))}
+            />
+          </div>
+
+          {/* Sticky Right Sidebar */}
+          <aside className="hidden lg:block">
+            <div className="space-y-10 lg:sticky lg:top-24">
+              <ScrollSpyTOC headings={headings} />
+
+              {/* Author */}
+              <div className="border-t border-[var(--border-color)] pt-6">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--color-ink)] text-base font-semibold text-white">
+                    {article.author.displayName.charAt(0)}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-[var(--text-primary)]">
+                      {article.author.displayName}
+                    </p>
+                    <p className="text-xs text-[var(--text-muted)]">Penulis &amp; Arsitek</p>
+                  </div>
+                </div>
+                <p className="mt-4 text-sm leading-relaxed text-[var(--text-muted)]">
+                  Menulis panduan arsitektur perangkat lunak dengan fokus pada keandalan sistem dan kesederhanaan desain.
+                </p>
+                <Link
+                  href="/about"
+                  className="mt-3 inline-block text-xs font-medium text-[var(--accent)] transition-colors hover:text-[var(--accent-hover)]"
+                >
+                  Profil Lengkap →
+                </Link>
+              </div>
+
+              <SidebarStickyAd ad={sidebarAd} />
+            </div>
+          </aside>
+        </div>
+
+        {/* Related Stories */}
+        {relatedArticles.length > 0 && (
+          <section className="mt-20 border-t border-[var(--border-color)] pt-12" aria-labelledby="related-title">
+            <h2
+              id="related-title"
+              className="font-display text-2xl font-medium tracking-tight text-[var(--text-primary)]"
+            >
+              Lanjutkan Membaca
+            </h2>
+            <div className="mt-8 grid gap-10 sm:grid-cols-3 sm:gap-8">
+              {relatedArticles.map((rel) => (
+                <article key={rel.id}>
+                  <Link
+                    href={`/${rel.slug}`}
+                    className="group relative block aspect-[3/2] overflow-hidden rounded-xl bg-[var(--bg-card-muted)]"
+                  >
+                    {rel.coverImageUrl ? (
+                      <Image
+                        src={rel.coverImageUrl}
+                        alt={rel.title}
+                        fill
+                        sizes="(min-width: 640px) 33vw, 100vw"
+                        className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center font-display text-4xl text-[var(--color-silver)]" aria-hidden="true">
+                        //
+                      </div>
+                    )}
+                  </Link>
+                  <div className="mt-4">
+                    <Link
+                      href={`/category/${rel.category.slug}`}
+                      className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--accent)]"
+                    >
+                      {rel.category.name}
+                    </Link>
+                    <h3 className="mt-2 font-display text-lg font-medium leading-snug tracking-tight text-[var(--text-primary)] transition-colors hover:text-[var(--accent-hover)]">
+                      <Link href={`/${rel.slug}`}>{rel.title}</Link>
+                    </h3>
+                    <p className="mt-2 text-xs text-[var(--text-muted)]">
+                      {formatDate(rel.publishedAt || rel.createdAt)}
+                    </p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
+      </article>
+    </div>
+  );
+}
+
+function extractHeadings(markdown: string) {
+  const lines = markdown.split('\n');
+  const headings: { text: string; id: string; level: number }[] = [];
+
+  for (const line of lines) {
+    const match = line.match(/^(#{2,3})\s+(.+)$/);
+    if (match) {
+      const level = match[1].length;
+      const text = match[2].trim();
+      const id = text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+      headings.push({ text, id, level });
+    }
+  }
+
+  return headings;
+}
+
+function formatSourceType(source: string) {
+  switch (source) {
+    case 'SELF_SHOT':
+      return 'Dokumentasi / Foto Sendiri';
+    case 'FREE_STOCK':
+      return 'Stok Lisensi Bebas Royalty';
+    case 'AI_GENERATED':
+      return 'Ilustrasi AI Berlabel';
+    default:
+      return source;
+  }
+}

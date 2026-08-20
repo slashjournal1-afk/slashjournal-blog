@@ -1,0 +1,54 @@
+import React from 'react';
+import { cn } from '@/lib/utils';
+
+export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'primary' | 'secondary' | 'ghost' | 'pill' | 'ember' | 'danger';
+  size?: 'sm' | 'md' | 'lg';
+  asChild?: boolean;
+}
+
+export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant = 'primary', size = 'md', children, ...props }, ref) => {
+    const baseStyles =
+      'inline-flex items-center justify-center font-medium transition-all duration-150 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none cursor-pointer select-none';
+
+    const variants = {
+      // Primary Action: #09090b filled, white text, 14px radius, subtle hairline & inset highlight
+      primary:
+        'bg-obsidian text-white border border-[#2c2e34] shadow-subtle hover:bg-[#18181b] rounded-btn',
+      // Secondary: light canvas button with 1px border
+      secondary:
+        'bg-snow text-graphite border border-cloud hover:bg-paper rounded-btn',
+      // Ghost: transparent button
+      ghost:
+        'text-iron hover:text-obsidian hover:bg-mist/30 rounded-btn',
+      // Pill: 10000px radius for nav & prominent links
+      pill:
+        'bg-obsidian text-snow rounded-pill hover:bg-slate px-5 py-2 border border-cloud/20',
+      // Ember Accent: Confetti-orange
+      ember:
+        'bg-ember text-snow rounded-btn hover:bg-[#e04f00]',
+      // Danger:
+      danger:
+        'bg-red-600 text-white hover:bg-red-700 rounded-btn',
+    };
+
+    const sizes = {
+      sm: 'text-[13px] px-3 py-1.5 gap-1.5',
+      md: 'text-[14px] px-4 py-2.5 gap-2',
+      lg: 'text-[15px] px-6 py-3 gap-2.5',
+    };
+
+    return (
+      <button
+        ref={ref}
+        className={cn(baseStyles, variants[variant], sizes[size], className)}
+        {...props}
+      >
+        {children}
+      </button>
+    );
+  }
+);
+
+Button.displayName = 'Button';
