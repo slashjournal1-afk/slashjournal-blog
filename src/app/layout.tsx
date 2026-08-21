@@ -9,6 +9,7 @@ import { CommandPalette } from '@/components/search/CommandPalette';
 import { GoogleTagManager } from '@/components/analytics/GoogleTagManager';
 import { GoogleConsent } from '@/components/analytics/GoogleConsent';
 import { siteConfig } from '@/lib/site';
+import { Toaster } from 'sonner';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -109,6 +110,7 @@ export default function RootLayout({
             <div className="flex-1 flex flex-col">{children}</div>
             <CommandPalette />
             <GoogleConsent />
+            <Toaster position="top-right" richColors closeButton expand={false} />
           </AuthProvider>
         </ThemeProvider>
       </body>
