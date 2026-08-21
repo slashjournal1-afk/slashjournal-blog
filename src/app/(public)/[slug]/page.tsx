@@ -2,7 +2,6 @@ import React from 'react';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { prisma } from '@/lib/db';
 import { formatDate } from '@/lib/utils';
 import { ArticleContentRenderer } from '@/components/content/ArticleContentRenderer';
 import { ScrollSpyTOC } from '@/components/wiki/ScrollSpyTOC';
@@ -15,13 +14,13 @@ import { BookmarkButton } from '@/components/wiki/BookmarkButton';
 import { CommentSection } from '@/components/comments/CommentSection';
 import { SponsoredBadge } from '@/components/ads/SponsoredBadge';
 import { SidebarStickyAd } from '@/components/ads/SidebarStickyAd';
-import { Calendar, Clock, Eye, ArrowLeft, ArrowRight, Link as LinkIcon } from 'lucide-react';
+import { Calendar, Clock, Eye, ArrowLeft, ArrowRight } from 'lucide-react';
 import type { Metadata } from 'next';
 import { absoluteUrl, siteConfig } from '@/lib/site';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { authorId, breadcrumbSchema, organizationId, websiteId } from '@/lib/structured-data';
 import { ArticleViewTracker } from '@/components/content/ArticleViewTracker';
-import { getArticleComments, getCachedGlossaryItems, getCachedSidebarAd, getPublishedArticle, getRelatedArticles } from '@/lib/content-loaders';
+import { getCachedGlossaryItems, getCachedSidebarAd, getPublishedArticle, getRelatedArticles } from '@/lib/content-loaders';
 
 export const revalidate = 900;
 
@@ -33,7 +32,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { slug } = await params;
   const article = await getPublishedArticle(slug);
 
-  if (!article || article.status !== 'PUBLISHED') return { title: 'Artikel Tidak Ditemukan', robots: { index: false, follow: false } };
+  if (!article || article.status !== 'PUBLISHED') {
+    return { title: 'Artikel Tidak Ditemukan', robots: { index: false, follow: false } };
+  }
+
+  const publishedIso = article.publishedAt
+    ? new Date(article.publishedAt).toISOString()
+    : new Date(article.createdAt).toISOString();
 
   return {
     title: article.title,
@@ -47,7 +52,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       url: absoluteUrl(`/${article.slug}`),
       siteName: siteConfig.name,
       locale: siteConfig.locale,
-      publishedTime: article.publishedAt?.toISOString() || article.createdAt.toISOString(),
+      publishedTime: publishedIso,
       images: article.coverImageUrl
         ? [{ url: article.coverImageUrl, alt: article.title }]
         : [
@@ -85,7 +90,7 @@ export default async function ArticleDetailPage({ params }: PageProps) {
   ]);
 
   // Extract headings for Table of Contents
-  const headings = extractHeadings(article.contentMarkdown);
+  const headings = extractHeadings(article.contentMarkdown || '');
 
   // Determine Previous & Next chapters in the series
   let prevArticle: { title: string; slug: string; seriesOrder?: number | null } | null = null;
@@ -99,6 +104,11 @@ export default async function ArticleDetailPage({ params }: PageProps) {
     }
   }
 
+  const publishedIso = article.publishedAt
+    ? new Date(article.publishedAt).toISOString()
+    : new Date(article.createdAt).toISOString();
+  const modifiedIso = new Date(article.updatedAt).toISOString();
+
   // Schema.org JSON-LD Structured Data
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -106,8 +116,8 @@ export default async function ArticleDetailPage({ params }: PageProps) {
     headline: article.title,
     description: article.excerpt,
     image: article.coverImageUrl ? [article.coverImageUrl] : [],
-    datePublished: article.publishedAt?.toISOString() || article.createdAt.toISOString(),
-    dateModified: article.updatedAt.toISOString(),
+    datePublished: publishedIso,
+    dateModified: modifiedIso,
     author: {
       '@type': 'Person',
       name: article.author.displayName,
@@ -133,7 +143,7 @@ export default async function ArticleDetailPage({ params }: PageProps) {
     articleSection: article.category.name,
     keywords: article.tags.map(({ tag }) => tag.name),
     isPartOf: { '@id': websiteId },
-    citation: extractExternalReferences(article.contentMarkdown),
+    citation: extractExternalReferences(article.contentMarkdown || ''),
   };
   const breadcrumbJsonLd = breadcrumbSchema([
     { name: 'Beranda', path: '/' },
