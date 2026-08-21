@@ -24,6 +24,7 @@ function updateConsent(choice: ConsentChoice) {
   });
   window.dataLayer.push({ event: 'consent_update', analytics_storage: choice });
   localStorage.setItem(STORAGE_KEY, choice);
+  if (choice === 'granted') window.dispatchEvent(new CustomEvent('slashjournal:analytics-consent'));
 }
 
 export function GoogleConsent() {

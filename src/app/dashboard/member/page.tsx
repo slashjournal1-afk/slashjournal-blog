@@ -35,9 +35,13 @@ export default async function MemberDashboardPage() {
       orderBy: { createdAt: 'desc' },
       include: {
         article: {
-          include: {
-            category: true,
-            author: { select: { displayName: true } },
+          select: {
+            id: true,
+            slug: true,
+            title: true,
+            coverImageUrl: true,
+            readingTime: true,
+            category: { select: { name: true } },
           },
         },
       },
@@ -54,6 +58,7 @@ export default async function MemberDashboardPage() {
     }),
     prisma.subscription.findFirst({
       where: { email: user.email },
+      select: { topic: true },
     }),
   ]);
 

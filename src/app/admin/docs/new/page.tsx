@@ -12,16 +12,17 @@ export default async function NewArticlePage() {
     redirect('/admin');
   }
 
-  const categories = await prisma.category.findMany({
-    orderBy: { sortOrder: 'asc' },
-    select: { id: true, name: true, isIndexable: true },
-  });
-
-  const seriesList = await prisma.series.findMany({
-    where: { isPublished: true },
-    orderBy: { sortOrder: 'asc' },
-    select: { id: true, title: true },
-  });
+  const [categories, seriesList] = await Promise.all([
+    prisma.category.findMany({
+      orderBy: { sortOrder: 'asc' },
+      select: { id: true, name: true, isIndexable: true },
+    }),
+    prisma.series.findMany({
+      where: { isPublished: true },
+      orderBy: { sortOrder: 'asc' },
+      select: { id: true, title: true },
+    }),
+  ]);
 
   return (
     <div className="space-y-6">

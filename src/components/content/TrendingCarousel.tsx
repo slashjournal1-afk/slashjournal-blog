@@ -90,26 +90,25 @@ export function TrendingCarousel({ articles }: { articles: TrendingArticle[] }) 
           <div>
             <div className="flex items-center justify-between gap-4"><span className="font-mono text-[11px] font-bold uppercase tracking-wide text-[var(--ember-color)]">// artikel paling dibaca</span><span className="font-mono text-xs text-[var(--text-muted)]">{position}</span></div>
             <p className="mt-8 text-xs font-semibold text-[var(--text-muted)]">{activeArticle.category.name}</p>
-            <h1 aria-live="polite" className="mt-3 text-3xl font-bold leading-[1.05] tracking-tight text-[var(--text-primary)] sm:text-5xl">{activeArticle.title}</h1>
+             <h1 className="mt-3 text-3xl font-bold leading-[1.05] tracking-tight text-[var(--text-primary)] sm:text-5xl">{activeArticle.title}</h1>
             <p className="mt-5 text-sm leading-relaxed text-[var(--text-muted)] sm:text-base">{activeArticle.excerpt}</p>
           </div>
 
           <div className="mt-8">
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[var(--text-muted)]"><span>{activeArticle.readingTime} menit baca</span><span aria-hidden="true">/</span><span className="font-mono">{activeArticle.viewCount.toLocaleString('id-ID')} pembaca</span></div>
             <div className="mt-6 flex flex-wrap items-center gap-3"><Link href={`/${activeArticle.slug}`} className="inline-flex min-h-11 items-center gap-2 rounded-[14px] bg-[var(--color-obsidian)] px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-[var(--color-graphite)] dark:bg-white dark:text-[var(--color-obsidian)]">Baca artikel <ArrowRight className="h-4 w-4" /></Link><button type="button" onClick={() => moveTo(activeIndex - 1)} className="inline-flex h-11 w-11 items-center justify-center rounded-[14px] border border-[var(--border-color)] text-[var(--text-primary)] hover:bg-[var(--bg-card-muted)]" aria-label="Artikel sebelumnya"><ArrowLeft className="h-4 w-4" /></button><button type="button" onClick={() => moveTo(activeIndex + 1)} className="inline-flex h-11 w-11 items-center justify-center rounded-[14px] border border-[var(--border-color)] text-[var(--text-primary)] hover:bg-[var(--bg-card-muted)]" aria-label="Artikel berikutnya"><ArrowRight className="h-4 w-4" /></button></div>
-            <div className="mt-6 flex items-center gap-2" role="tablist" aria-label="Pilihan artikel trending">{articles.map((article, index) => <button key={article.id} type="button" role="tab" aria-selected={index === activeIndex} aria-label={`Tampilkan artikel trending ${index + 1}`} onClick={() => moveTo(index)} className={`h-2.5 rounded-full transition-all ${index === activeIndex ? 'w-8 bg-[var(--ember-color)]' : 'w-2.5 bg-[var(--border-color)] hover:bg-[var(--text-muted)]'}`} />)}</div>
+             <div className="mt-6 flex items-center gap-2" aria-label="Pilihan artikel trending">{articles.map((article, index) => <button key={article.id} type="button" aria-pressed={index === activeIndex} aria-label={`Tampilkan artikel trending ${index + 1}`} onClick={() => moveTo(index)} className={`h-2.5 rounded-full transition-all ${index === activeIndex ? 'w-8 bg-[var(--ember-color)]' : 'w-2.5 bg-[var(--border-color)] hover:bg-[var(--text-muted)]'}`} />)}</div>
           </div>
         </div>
       </div>
 
-      <div className="border-t border-[var(--border-color)] px-4 py-4 sm:px-6" role="tablist" aria-label="Artikel trending lainnya">
+      <div className="border-t border-[var(--border-color)] px-4 py-4 sm:px-6" aria-label="Artikel trending lainnya">
         <div className="flex gap-3 overflow-x-auto pb-1 lg:grid lg:grid-cols-5">
           {articles.map((article, index) => (
             <button
               key={article.id}
               type="button"
-              role="tab"
-              aria-selected={index === activeIndex}
+              aria-pressed={index === activeIndex}
               aria-label={`Tampilkan artikel trending ${index + 1}: ${article.title}`}
               onClick={() => moveTo(index)}
               className={`group min-w-[148px] rounded-[14px] border p-2 text-left transition-opacity lg:min-w-0 ${

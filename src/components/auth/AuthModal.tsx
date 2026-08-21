@@ -5,7 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import { X, AlertCircle, CheckCircle2, Loader2, KeyRound, Mail, User } from 'lucide-react';
 
 export function AuthModal() {
-  const { isAuthModalOpen, closeAuthModal, refreshUser } = useAuth();
+  const { isAuthModalOpen, closeAuthModal, completeLogin } = useAuth();
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -37,10 +37,8 @@ export function AuthModal() {
       if (!res.ok) throw new Error(data.error || 'Autentikasi gagal');
 
       setSuccessMsg(mode === 'login' ? 'Login berhasil!' : 'Pendaftaran berhasil!');
-      await refreshUser();
-      setTimeout(() => {
-        closeAuthModal();
-      }, 700);
+      completeLogin(data.user);
+      closeAuthModal();
     } catch (err: any) {
       setError(err.message || 'Terjadi kesalahan sistem');
     } finally {

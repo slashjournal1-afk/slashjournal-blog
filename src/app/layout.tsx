@@ -65,9 +65,29 @@ export const metadata: Metadata = {
     url: siteConfig.url,
     locale: siteConfig.locale,
     siteName: siteConfig.name,
-    images: [{ url: '/api/og', width: 1200, height: 630, alt: siteConfig.name }],
+    images: [
+      {
+        url: '/og-image.jpeg',
+        width: 1200,
+        height: 630,
+        alt: 'SlashJournal — Catatan Arsitektur & Rekayasa Perangkat Lunak',
+        type: 'image/jpeg',
+      },
+    ],
   },
-  twitter: { card: 'summary_large_image', title: siteConfig.name, description: siteConfig.description, images: ['/api/og'] },
+  twitter: {
+    card: 'summary_large_image',
+    title: siteConfig.name,
+    description: siteConfig.description,
+    images: [
+      {
+        url: '/og-image.jpeg',
+        width: 1200,
+        height: 630,
+        alt: 'SlashJournal — Catatan Arsitektur & Rekayasa Perangkat Lunak',
+      },
+    ],
+  },
 };
 
 export default function RootLayout({

@@ -3,6 +3,22 @@ import { prisma } from '@/lib/db';
 import { getCurrentUser, hasPermission } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 
+export async function GET(req: Request) {
+  const articleId = new URL(req.url).searchParams.get('articleId');
+  if (!articleId) return NextResponse.json({ comments: [] }, { status: 400 });
+
+  const comments = await prisma.comment.findMany({
+    where: { articleId },
+    orderBy: { createdAt: 'desc' },
+    take: 20,
+    include: {
+      user: { select: { id: true, displayName: true, avatarUrl: true, role: true } },
+    },
+  });
+
+  return NextResponse.json({ comments });
+}
+
 export async function POST(req: Request) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: 'Silakan login terlebih dahulu' }, { status: 401 });

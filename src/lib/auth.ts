@@ -3,6 +3,7 @@ import crypto from 'node:crypto';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/db';
 import { UserSession, UserRole } from './types';
+import { cache } from 'react';
 
 export const AUTH_COOKIE_NAME = 'slash_kb_token';
 
@@ -46,7 +47,7 @@ export async function verifyPassword(plain: string, hash: string): Promise<boole
   return bcrypt.compare(plain, hash);
 }
 
-export async function getCurrentUser(): Promise<UserSession | null> {
+async function getCurrentUserInternal(): Promise<UserSession | null> {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get(AUTH_COOKIE_NAME)?.value;
@@ -76,6 +77,8 @@ export async function getCurrentUser(): Promise<UserSession | null> {
     return null;
   }
 }
+
+export const getCurrentUser = cache(getCurrentUserInternal);
 
 export function hasPermission(currentRole: UserRole, allowedRoles: UserRole[]): boolean {
   if (currentRole === 'ADMIN') return true;

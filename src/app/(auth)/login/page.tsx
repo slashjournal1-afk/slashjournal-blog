@@ -12,7 +12,7 @@ function LoginForm() {
   const redirectUrl = searchParams.get('redirect') || searchParams.get('callbackUrl');
   const isResetSuccess = searchParams.get('reset') === 'success';
 
-  const { refreshUser, user } = useAuth();
+  const { user } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -54,19 +54,15 @@ function LoginForm() {
       if (!res.ok) throw new Error(data.error || 'Autentikasi gagal');
 
       setSuccessMsg('Login berhasil! Mengalihkan ke ruang kerja...');
-      await refreshUser();
-
-      setTimeout(() => {
-        if (redirectUrl) {
-          router.push(redirectUrl);
-        } else if (data.user?.role === 'ADMIN') {
-          router.push('/dashboard/superadmin');
-        } else if (data.user?.role === 'EDITOR' || data.user?.role === 'AUTHOR') {
-          router.push('/dashboard/creator');
-        } else {
-          router.push('/dashboard/member');
-        }
-      }, 500);
+      if (redirectUrl) {
+        router.replace(redirectUrl);
+      } else if (data.user?.role === 'ADMIN') {
+        router.replace('/dashboard/superadmin');
+      } else if (data.user?.role === 'EDITOR' || data.user?.role === 'AUTHOR') {
+        router.replace('/dashboard/creator');
+      } else {
+        router.replace('/dashboard/member');
+      }
     } catch (err: any) {
       setError(err.message || 'Terjadi kesalahan saat masuk');
     } finally {

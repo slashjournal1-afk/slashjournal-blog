@@ -55,7 +55,7 @@ export async function GET(req: NextRequest) {
     const totalResults = articles.length + glossaryTerms.length;
 
     // Log telemetry query asynchronously
-    prisma.searchQueryLog
+    void prisma.searchQueryLog
       .create({
         data: {
           query: q,
