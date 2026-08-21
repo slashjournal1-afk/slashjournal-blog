@@ -701,11 +701,12 @@ export function SlashEditor({
     setHistoryIndex(0);
     if (coverFileInputRef.current) coverFileInputRef.current.value = '';
     if (typeof window !== 'undefined') {
-      localStorage.removeItem(LOCAL_DRAFT_KEY);
+      localStorage.removeItem(draftStorageKey);
+      localStorage.removeItem('slash_draft_new');
     }
     setHasLocalDraft(false);
     setLastAutoSaved(null);
-  }, [LOCAL_DRAFT_KEY]);
+  }, [draftStorageKey]);
 
   // In-Content Image Insertion Helper (Inserts at exact cursor position)
   const handleInsertImageMarkdown = useCallback((markdown: string) => {
