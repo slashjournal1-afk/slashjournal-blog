@@ -8,6 +8,7 @@ import { SocialSimulatorModal } from './SocialSimulatorModal';
 import { InsertImageModal } from './InsertImageModal';
 import { TagInput } from './TagInput';
 import { NewCategoryModal } from './NewCategoryModal';
+import { NewSeriesModal } from './NewSeriesModal';
 import { ArticleContentRenderer } from '@/components/content/ArticleContentRenderer';
 import {
   Save,
@@ -186,6 +187,8 @@ export function SlashEditor({
     }
     return [];
   });
+  const [seriesListState, setSeriesListState] = useState(seriesList);
+  const [isSeriesModalOpen, setIsSeriesModalOpen] = useState(false);
   const [seriesId, setSeriesId] = useState(initialArticle?.seriesId || '');
   const [seriesOrder, setSeriesOrder] = useState(initialArticle?.seriesOrder || 1);
   const [coverImageUrl, setCoverImageUrl] = useState(initialArticle?.coverImageUrl || '');
@@ -958,20 +961,37 @@ export function SlashEditor({
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-[#09090b] dark:text-white uppercase tracking-wider">
-                  Seri Panduan (Opsional)
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-[#09090b] dark:text-white uppercase tracking-wider">
+                    Seri Panduan (Opsional)
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setIsSeriesModalOpen(true)}
+                    className="text-[11px] font-bold text-[#ff5a00] hover:underline flex items-center gap-0.5"
+                  >
+                    <Plus className="w-3 h-3" />
+                    <span>Seri Baru</span>
+                  </button>
+                </div>
                 <select
                   value={seriesId}
-                  onChange={(e) => setSeriesId(e.target.value)}
+                  onChange={(e) => {
+                    if (e.target.value === '__NEW__') {
+                      setIsSeriesModalOpen(true);
+                    } else {
+                      setSeriesId(e.target.value);
+                    }
+                  }}
                   className="w-full px-4 py-3 rounded-[14px] bg-[#f4f4f5] dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-xs font-semibold text-[#09090b] dark:text-white focus:outline-none focus:border-[#ff5a00]"
                 >
                   <option value="">Bukan Bagian dari Seri</option>
-                  {seriesList.map((s) => (
+                  {seriesListState.map((s) => (
                     <option key={s.id} value={s.id}>
                       {s.title}
                     </option>
                   ))}
+                  <option value="__NEW__">+ Tambah Seri Baru...</option>
                 </select>
               </div>
 
@@ -1438,6 +1458,20 @@ export function SlashEditor({
           });
           setCategoryId(newCat.id);
           setSuccessMsg(`Kategori baru "${newCat.name}" berhasil dibuat dan dipilih!`);
+        }}
+      />
+
+      {/* Dynamic Series Creation Modal */}
+      <NewSeriesModal
+        isOpen={isSeriesModalOpen}
+        onClose={() => setIsSeriesModalOpen(false)}
+        onCreated={(newSer) => {
+          setSeriesListState((prev) => {
+            if (prev.some((s) => s.id === newSer.id)) return prev;
+            return [...prev, newSer];
+          });
+          setSeriesId(newSer.id);
+          setSuccessMsg(`Seri panduan baru "${newSer.title}" berhasil dibuat dan dipilih!`);
         }}
       />
     </div>
