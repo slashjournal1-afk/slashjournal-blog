@@ -21,7 +21,7 @@ import { absoluteUrl, siteConfig } from '@/lib/site';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { authorId, breadcrumbSchema, organizationId, websiteId } from '@/lib/structured-data';
 import { ArticleViewTracker } from '@/components/content/ArticleViewTracker';
-import { getPublishedArticle } from '@/lib/content-loaders';
+import { getArticleComments, getCachedGlossaryItems, getCachedSidebarAd, getPublishedArticle, getRelatedArticles } from '@/lib/content-loaders';
 
 export const revalidate = 900;
 
@@ -48,13 +48,23 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       siteName: siteConfig.name,
       locale: siteConfig.locale,
       publishedTime: article.publishedAt?.toISOString() || article.createdAt.toISOString(),
-      images: article.coverImageUrl ? [{ url: article.coverImageUrl }] : [],
+      images: article.coverImageUrl
+        ? [{ url: article.coverImageUrl, alt: article.title }]
+        : [
+            {
+              url: '/og-image.jpeg',
+              width: 1200,
+              height: 630,
+              alt: article.title,
+              type: 'image/jpeg',
+            },
+          ],
     },
     twitter: {
       card: 'summary_large_image',
       title: article.title,
       description: article.excerpt,
-      images: article.coverImageUrl ? [article.coverImageUrl] : [],
+      images: article.coverImageUrl ? [article.coverImageUrl] : ['/og-image.jpeg'],
     },
   };
 }
@@ -69,24 +79,9 @@ export default async function ArticleDetailPage({ params }: PageProps) {
   }
 
   const [glossaryTerms, relatedArticles, sidebarAd] = await Promise.all([
-    prisma.glossaryTerm.findMany({
-      select: { term: true, slug: true, shortDef: true, category: true },
-    }),
-    prisma.article.findMany({
-      where: { status: 'PUBLISHED', categoryId: article.categoryId, id: { not: article.id } },
-      orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }],
-      take: 3,
-      select: {
-        id: true,
-        slug: true,
-        title: true,
-        coverImageUrl: true,
-        publishedAt: true,
-        createdAt: true,
-        category: { select: { name: true, slug: true } },
-      },
-    }),
-    prisma.adSlot.findUnique({ where: { slotName: 'sidebar_sticky' } }),
+    getCachedGlossaryItems(),
+    getRelatedArticles(article.categoryId, article.id),
+    getCachedSidebarAd(),
   ]);
 
   // Extract headings for Table of Contents
@@ -359,20 +354,7 @@ export default async function ArticleDetailPage({ params }: PageProps) {
             {/* Comments */}
             <CommentSection
               articleId={article.id}
-              initialComments={article.comments.map((c) => ({
-                id: c.id,
-                content: c.content,
-                createdAt: c.createdAt,
-                updatedAt: c.updatedAt,
-                articleId: c.articleId,
-                userId: c.userId,
-                user: {
-                  id: c.user.id,
-                  displayName: c.user.displayName,
-                  avatarUrl: c.user.avatarUrl,
-                  role: c.user.role as any,
-                },
-              }))}
+              initialComments={[]}
             />
           </div>
 

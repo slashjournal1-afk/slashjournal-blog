@@ -17,29 +17,23 @@ export default async function EditArticlePage({ params }: PageProps) {
     redirect('/admin');
   }
 
-  const article = await prisma.article.findUnique({
-    where: { id },
-    include: {
-      tags: {
-        include: { tag: true },
-      },
-    },
-  });
+  const [article, categories, seriesList] = await Promise.all([
+    prisma.article.findUnique({
+      where: { id },
+      include: { tags: { include: { tag: true } } },
+    }),
+    prisma.category.findMany({
+      orderBy: { sortOrder: 'asc' },
+      select: { id: true, name: true, isIndexable: true },
+    }),
+    prisma.series.findMany({
+      where: { isPublished: true },
+      orderBy: { sortOrder: 'asc' },
+      select: { id: true, title: true },
+    }),
+  ]);
 
-  if (!article) {
-    notFound();
-  }
-
-  const categories = await prisma.category.findMany({
-    orderBy: { sortOrder: 'asc' },
-    select: { id: true, name: true, isIndexable: true },
-  });
-
-  const seriesList = await prisma.series.findMany({
-    where: { isPublished: true },
-    orderBy: { sortOrder: 'asc' },
-    select: { id: true, title: true },
-  });
+  if (!article) notFound();
 
   return (
     <div className="space-y-6">

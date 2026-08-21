@@ -31,36 +31,39 @@ export default async function SuperAdminDashboardPage() {
   }
 
   const [
-    totalUsers,
     usersByRole,
-    totalArticles,
     articlesByStatus,
-    inReviewCount,
     totalViewsResult,
     recentUsers,
     recentArticles,
     zeroResults,
   ] = await Promise.all([
-    prisma.user.count(),
     prisma.user.groupBy({
       by: ['role'],
       _count: { id: true },
     }),
-    prisma.article.count(),
     prisma.article.groupBy({
       by: ['status'],
       _count: { id: true },
     }),
-    prisma.article.count({ where: { status: 'IN_REVIEW' } }),
     prisma.article.aggregate({ _sum: { viewCount: true } }),
     prisma.user.findMany({
       orderBy: { createdAt: 'desc' },
       take: 8,
+      select: { id: true, email: true, displayName: true, role: true, createdAt: true },
     }),
     prisma.article.findMany({
       orderBy: { updatedAt: 'desc' },
       take: 8,
-      include: { author: true, category: true },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        status: true,
+        updatedAt: true,
+        author: { select: { displayName: true } },
+        category: { select: { name: true } },
+      },
     }),
     prisma.searchQueryLog.findMany({
       where: { resultsCount: 0 },
@@ -74,10 +77,15 @@ export default async function SuperAdminDashboardPage() {
     return acc;
   }, {} as Record<string, number>);
 
+  const totalUsers = Object.values(roleCountMap).reduce((sum, count) => sum + count, 0);
+
   const statusCountMap = articlesByStatus.reduce((acc, curr) => {
     acc[curr.status] = curr._count.id;
     return acc;
   }, {} as Record<string, number>);
+
+  const totalArticles = Object.values(statusCountMap).reduce((sum, count) => sum + count, 0);
+  const inReviewCount = statusCountMap.IN_REVIEW || 0;
 
   return (
     <div className="space-y-10">

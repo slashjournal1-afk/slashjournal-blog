@@ -30,23 +30,32 @@ export default async function CreatorDashboardPage() {
   // Fetch only articles authored by current user
   const [
     myArticles,
-    draftCount,
-    inReviewCount,
-    publishedCount,
+    articleStatusCounts,
     viewsResult,
     helpfulVotesResult,
   ] = await Promise.all([
     prisma.article.findMany({
       where: { authorId: user.id },
       orderBy: { updatedAt: 'desc' },
-      include: {
-        category: true,
-        reviewer: { select: { displayName: true } },
+      take: 20,
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        status: true,
+        reviewNote: true,
+        readingTime: true,
+        updatedAt: true,
+        viewCount: true,
+        helpfulVotes: true,
+        category: { select: { name: true } },
       },
     }),
-    prisma.article.count({ where: { authorId: user.id, status: 'DRAFT' } }),
-    prisma.article.count({ where: { authorId: user.id, status: 'IN_REVIEW' } }),
-    prisma.article.count({ where: { authorId: user.id, status: 'PUBLISHED' } }),
+    prisma.article.groupBy({
+      by: ['status'],
+      where: { authorId: user.id },
+      _count: { id: true },
+    }),
     prisma.article.aggregate({
       where: { authorId: user.id },
       _sum: { viewCount: true },
@@ -57,6 +66,9 @@ export default async function CreatorDashboardPage() {
     }),
   ]);
 
+  const draftCount = articleStatusCounts.find((item) => item.status === 'DRAFT')?._count.id || 0;
+  const inReviewCount = articleStatusCounts.find((item) => item.status === 'IN_REVIEW')?._count.id || 0;
+  const publishedCount = articleStatusCounts.find((item) => item.status === 'PUBLISHED')?._count.id || 0;
   const totalViews = viewsResult._sum.viewCount || 0;
   const totalHelpful = helpfulVotesResult._sum.helpfulVotes || 0;
 

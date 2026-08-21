@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { formatDateTime } from '@/lib/utils';
 import { MessageSquare, Send, Trash2, ShieldCheck, AlertCircle } from 'lucide-react';
@@ -30,6 +30,16 @@ export function CommentSection({ articleId, docId, initialComments }: CommentSec
   const [content, setContent] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!targetId) return;
+    const controller = new AbortController();
+    fetch(`/api/comments?articleId=${encodeURIComponent(targetId)}`, { signal: controller.signal })
+      .then((res) => res.ok ? res.json() : { comments: [] })
+      .then((data) => setComments(data.comments || []))
+      .catch(() => {});
+    return () => controller.abort();
+  }, [targetId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
