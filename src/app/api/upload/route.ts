@@ -95,14 +95,23 @@ export async function POST(req: NextRequest) {
       const supabase = createAdminClient();
       const bucketName = process.env.SUPABASE_STORAGE_BUCKET || 'slashjournal';
 
-      // Ensure bucket exists and is public
+      // Ensure bucket exists, is public, and has adequate size limit
       try {
         const { data: buckets } = await supabase.storage.listBuckets();
-        if (buckets && !buckets.some((b) => b.name === bucketName)) {
-          await supabase.storage.createBucket(bucketName, { public: true });
+        const existing = buckets?.find((b) => b.name === bucketName);
+        if (!existing) {
+          await supabase.storage.createBucket(bucketName, {
+            public: true,
+            fileSizeLimit: 10485760, // 10MB
+          });
+        } else if (!existing.public) {
+          await supabase.storage.updateBucket(bucketName, {
+            public: true,
+            fileSizeLimit: 10485760, // 10MB
+          });
         }
       } catch (bucketCheckErr) {
-        // Continue if bucket listing is restricted or already exists
+        // Continue if bucket listing is restricted
       }
 
       // Upload to bucket under target folder

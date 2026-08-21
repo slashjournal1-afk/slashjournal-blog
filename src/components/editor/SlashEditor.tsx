@@ -10,6 +10,7 @@ import { TagInput } from './TagInput';
 import { NewCategoryModal } from './NewCategoryModal';
 import { NewSeriesModal } from './NewSeriesModal';
 import { ArticleContentRenderer } from '@/components/content/ArticleContentRenderer';
+import { toast } from 'sonner';
 import {
   Save,
   Send,
@@ -229,8 +230,6 @@ export function SlashEditor({
 
   const [saving, setSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   // Synchronize state when initialArticle changes or is loaded from server
   useEffect(() => {
@@ -375,7 +374,9 @@ export function SlashEditor({
         if (parsed.sponsorUrl) setSponsorUrl(parsed.sponsorUrl);
 
         setHasLocalDraft(false);
-        setSuccessMsg('Draf dari penyimpanan lokal berhasil dipulihkan!');
+        toast.success('Draf Lokal Dipulihkan', {
+          description: 'Salinan naskah dari penyimpanan peramban berhasil dimuat kembali.',
+        });
       }
     } catch {}
   };
@@ -679,6 +680,33 @@ export function SlashEditor({
     }, 40);
   };
 
+  // Clear / Reset Canvas Editor & All Form Fields
+  const handleClearEditorForm = useCallback(() => {
+    setTitle('');
+    setSlug('');
+    setIsSlugManual(false);
+    setExcerpt('');
+    setContentMarkdown('');
+    setCoverImageUrl('');
+    setIsCoverError(false);
+    setCoverImageSourceType('FREE_STOCK');
+    setTags([]);
+    setSeriesId('');
+    setSeriesOrder(1);
+    setIsSponsored(false);
+    setSponsorName('');
+    setSponsorUrl('');
+    setStatus('DRAFT');
+    setHistory([{ content: '', cursor: 0 }]);
+    setHistoryIndex(0);
+    if (coverFileInputRef.current) coverFileInputRef.current.value = '';
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(LOCAL_DRAFT_KEY);
+    }
+    setHasLocalDraft(false);
+    setLastAutoSaved(null);
+  }, [LOCAL_DRAFT_KEY]);
+
   // In-Content Image Insertion Helper (Inserts at exact cursor position)
   const handleInsertImageMarkdown = useCallback((markdown: string) => {
     if (!textareaRef.current) {
@@ -687,7 +715,7 @@ export function SlashEditor({
         pushHistorySnapshot(updated, updated.length, true);
         return updated;
       });
-      setSuccessMsg('Gambar berhasil disisipkan ke naskah!');
+      toast.success('Gambar berhasil disisipkan ke naskah!');
       return;
     }
 
@@ -700,7 +728,7 @@ export function SlashEditor({
 
     setContentMarkdown(updated);
     pushHistorySnapshot(updated, newCursor, true);
-    setSuccessMsg('Gambar berhasil disisipkan ke posisi kursor!');
+    toast.success('Gambar berhasil disisipkan ke posisi kursor!');
 
     setTimeout(() => {
       if (textareaRef.current) {
@@ -716,7 +744,6 @@ export function SlashEditor({
     if (!file) return;
 
     setUploadingImage(true);
-    setErrorMsg(null);
 
     try {
       const formData = new FormData();
@@ -738,13 +765,15 @@ export function SlashEditor({
       if (isCover) {
         setCoverImageUrl(data.url);
         setIsCoverError(false);
-        setSuccessMsg('Gambar sampul berhasil diunggah dan dikonversi ke WebP!');
+        toast.success('Gambar sampul berhasil diunggah dan dikonversi ke WebP!');
       } else {
         const imgMarkdown = `\n\n![${data.altText || data.originalName}](${data.url})\n`;
         handleInsertImageMarkdown(imgMarkdown);
       }
     } catch (err: any) {
-      setErrorMsg(err.message || 'Gagal memproses gambar');
+      toast.error('Gagal Mengunggah Gambar', {
+        description: err.message || 'Terjadi kesalahan saat memproses gambar.',
+      });
     } finally {
       setUploadingImage(false);
       e.target.value = '';
@@ -755,7 +784,7 @@ export function SlashEditor({
     setCoverImageUrl('');
     setIsCoverError(false);
     if (coverFileInputRef.current) coverFileInputRef.current.value = '';
-    setSuccessMsg('Gambar sampul berhasil dihapus dari naskah.');
+    toast.info('Gambar sampul berhasil dihapus dari naskah.');
   };
 
   const handleCopyCoverUrl = async () => {
@@ -763,14 +792,13 @@ export function SlashEditor({
     try {
       await navigator.clipboard.writeText(coverImageUrl);
       setIsCopiedCoverUrl(true);
+      toast.success('Tautan URL gambar sampul berhasil disalin!');
       setTimeout(() => setIsCopiedCoverUrl(false), 2000);
     } catch {}
   };
 
   const handleSave = async (targetStatus?: string) => {
     setSaving(true);
-    setErrorMsg(null);
-    setSuccessMsg(null);
 
     const nextStatus = targetStatus || status;
 
@@ -808,20 +836,40 @@ export function SlashEditor({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Gagal menyimpan naskah');
 
-      setStatus(nextStatus);
-      setSuccessMsg(
-        nextStatus === 'PUBLISHED'
-          ? 'Naskah berhasil diterbitkan secara publik!'
-          : nextStatus === 'IN_REVIEW'
-          ? 'Naskah dikirim ke Antrean Review Redaksi.'
-          : 'Draf naskah berhasil disimpan di server.'
-      );
+      if (nextStatus === 'PUBLISHED') {
+        toast.success('Naskah Berhasil Diterbitkan Secara Publik!', {
+          description: `Artikel "${title}" kini aktif dan dapat dibaca publik. Form & kanvas editor telah otomatis dikosongkan untuk pembuatan naskah baru.`,
+          duration: 6000,
+        });
 
-      if (!initialArticle?.id && data.article?.id) {
-        router.push(`/admin/docs/${data.article.id}`);
+        // Automatically clear editor & form fields
+        handleClearEditorForm();
+
+        // If editing existing document, navigate to clean /admin/docs/new
+        if (initialArticle?.id) {
+          router.push('/admin/docs/new');
+        }
+      } else if (nextStatus === 'IN_REVIEW') {
+        setStatus('IN_REVIEW');
+        toast.info('Naskah Dikirim ke Antrean Review', {
+          description: 'Naskah berhasil masuk ke antrean review redaksi.',
+        });
+        if (!initialArticle?.id && data.article?.id) {
+          router.push(`/admin/docs/${data.article.id}`);
+        }
+      } else {
+        setStatus('DRAFT');
+        toast.success('Draf Naskah Tersimpan', {
+          description: 'Draf naskah berhasil disimpan di server.',
+        });
+        if (!initialArticle?.id && data.article?.id) {
+          router.push(`/admin/docs/${data.article.id}`);
+        }
       }
     } catch (err: any) {
-      setErrorMsg(err.message || 'Terjadi kesalahan saat menyimpan naskah');
+      toast.error('Gagal Menyimpan Naskah', {
+        description: err.message || 'Terjadi kesalahan saat memproses naskah.',
+      });
     } finally {
       setSaving(false);
     }
@@ -929,20 +977,6 @@ export function SlashEditor({
               Abaikan
             </button>
           </div>
-        </div>
-      )}
-
-      {/* Notifications */}
-      {successMsg && (
-        <div className="p-4 rounded-[20px] bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 text-xs font-semibold text-emerald-800 dark:text-emerald-300 flex items-center gap-2 animate-in fade-in">
-          <CheckCircle2 className="w-4 h-4 shrink-0" />
-          <span>{successMsg}</span>
-        </div>
-      )}
-
-      {errorMsg && (
-        <div className="p-4 rounded-[20px] bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 text-xs font-semibold text-red-800 dark:text-red-300 animate-in fade-in">
-          {errorMsg}
         </div>
       )}
 
@@ -1730,7 +1764,7 @@ export function SlashEditor({
             return [...prev, newCat];
           });
           setCategoryId(newCat.id);
-          setSuccessMsg(`Kategori baru "${newCat.name}" berhasil dibuat dan dipilih!`);
+          toast.success(`Kategori baru "${newCat.name}" berhasil dibuat dan dipilih!`);
         }}
       />
 
@@ -1744,7 +1778,7 @@ export function SlashEditor({
             return [...prev, newSer];
           });
           setSeriesId(newSer.id);
-          setSuccessMsg(`Seri panduan baru "${newSer.title}" berhasil dibuat dan dipilih!`);
+          toast.success(`Seri panduan baru "${newSer.title}" berhasil dibuat dan dipilih!`);
         }}
       />
     </div>
