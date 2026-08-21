@@ -41,6 +41,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     ? new Date(article.publishedAt).toISOString()
     : new Date(article.createdAt).toISOString();
 
+  // Resolve dynamic absolute OpenGraph & Twitter Card image URL
+  const ogImageUrl = article.coverImageUrl
+    ? article.coverImageUrl.startsWith('http://') || article.coverImageUrl.startsWith('https://')
+      ? article.coverImageUrl
+      : absoluteUrl(article.coverImageUrl)
+    : absoluteUrl('/og-image.jpeg');
+
   return {
     title: article.title,
     description: article.excerpt,
@@ -54,23 +61,20 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       siteName: siteConfig.name,
       locale: siteConfig.locale,
       publishedTime: publishedIso,
-      images: article.coverImageUrl
-        ? [{ url: article.coverImageUrl, alt: article.title }]
-        : [
-            {
-              url: '/og-image.jpeg',
-              width: 1200,
-              height: 630,
-              alt: article.title,
-              type: 'image/jpeg',
-            },
-          ],
+      images: [
+        {
+          url: ogImageUrl,
+          alt: article.title,
+          width: 1200,
+          height: 630,
+        },
+      ],
     },
     twitter: {
       card: 'summary_large_image',
       title: article.title,
       description: article.excerpt,
-      images: article.coverImageUrl ? [article.coverImageUrl] : ['/og-image.jpeg'],
+      images: [ogImageUrl],
     },
   };
 }
@@ -115,13 +119,20 @@ export default async function ArticleDetailPage({ params }: PageProps) {
     : new Date(article.createdAt).toISOString();
   const modifiedIso = new Date(article.updatedAt).toISOString();
 
+  // Resolve absolute image for Google Schema.org
+  const articleSchemaImage = article.coverImageUrl
+    ? article.coverImageUrl.startsWith('http://') || article.coverImageUrl.startsWith('https://')
+      ? article.coverImageUrl
+      : absoluteUrl(article.coverImageUrl)
+    : absoluteUrl('/og-image.jpeg');
+
   // Schema.org JSON-LD Structured Data
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'TechArticle',
     headline: article.title,
     description: article.excerpt,
-    image: article.coverImageUrl ? [article.coverImageUrl] : [],
+    image: [articleSchemaImage],
     datePublished: publishedIso,
     dateModified: modifiedIso,
     author: {
@@ -270,18 +281,19 @@ export default async function ArticleDetailPage({ params }: PageProps) {
           </div>
         </header>
 
-        {/* Cover Image — wider than the reading column */}
+        {/* Cover Image — wider than the reading column, full uncropped presentation */}
         {article.coverImageUrl && (
           <div className="mx-auto mt-8 sm:mt-10 max-w-[1000px]">
-            <div className="relative aspect-[16/10] w-full overflow-hidden rounded-[20px] sm:rounded-3xl bg-[var(--bg-card-muted)] border border-[var(--border-color)] sm:aspect-[16/9] shadow-xs">
+            <div className="relative w-full overflow-hidden rounded-[20px] sm:rounded-3xl bg-[var(--bg-card-muted)] border border-[var(--border-color)] shadow-xs flex items-center justify-center p-1 sm:p-2">
               <Image
                 src={article.coverImageUrl}
                 alt={article.title}
-                fill
+                width={1200}
+                height={675}
                 priority
                 unoptimized={Boolean(article.coverImageUrl?.startsWith('/uploads') || article.coverImageUrl?.includes('supabase.co'))}
                 sizes="(min-width: 1000px) 1000px, 100vw"
-                className="object-cover"
+                className="w-full h-auto max-h-[620px] object-contain rounded-[16px] sm:rounded-[20px]"
               />
             </div>
             {article.coverImageSourceType && (

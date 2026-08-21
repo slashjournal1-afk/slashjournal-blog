@@ -128,7 +128,7 @@ export function SocialSimulatorModal({
             <div className="rounded-[20px] bg-black border border-[#2f3336] overflow-hidden text-white space-y-0 max-w-md mx-auto">
               {coverImageUrl ? (
                 <div className="relative w-full h-44 bg-zinc-900">
-                  <Image src={coverImageUrl} alt={displayTitle} fill className="object-cover" />
+                  <Image src={coverImageUrl} alt={displayTitle} fill unoptimized className="object-cover" />
                 </div>
               ) : (
                 <div className="w-full h-36 bg-zinc-900 flex items-center justify-center font-mono text-xl text-[#ff5a00]">
@@ -151,7 +151,7 @@ export function SocialSimulatorModal({
             <div className="rounded-[20px] bg-white dark:bg-[#1b1f23] border border-[#ececee] dark:border-[#27272a] overflow-hidden max-w-md mx-auto">
               {coverImageUrl ? (
                 <div className="relative w-full h-44 bg-zinc-100 dark:bg-zinc-800">
-                  <Image src={coverImageUrl} alt={displayTitle} fill className="object-cover" />
+                  <Image src={coverImageUrl} alt={displayTitle} fill unoptimized className="object-cover" />
                 </div>
               ) : (
                 <div className="w-full h-36 bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center font-mono text-xl text-[#ff5a00]">
