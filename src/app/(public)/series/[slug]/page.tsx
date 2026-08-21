@@ -23,10 +23,29 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (!series || !series.isPublished) return { title: 'Seri Tidak Ditemukan', robots: { index: false, follow: false } };
 
+  const ogImageUrl = series.coverImageUrl
+    ? series.coverImageUrl.startsWith('http://') || series.coverImageUrl.startsWith('https://')
+      ? series.coverImageUrl
+      : absoluteUrl(series.coverImageUrl)
+    : absoluteUrl('/og-image.jpeg');
+
   return {
     title: series.title,
     description: series.description || 'Seri panduan terkurasi.',
     alternates: { canonical: absoluteUrl(`/series/${series.slug}`) },
+    openGraph: {
+      title: series.title,
+      description: series.description || 'Seri panduan terkurasi.',
+      type: 'website',
+      url: absoluteUrl(`/series/${series.slug}`),
+      images: [{ url: ogImageUrl, alt: series.title }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: series.title,
+      description: series.description || 'Seri panduan terkurasi.',
+      images: [ogImageUrl],
+    },
   };
 }
 

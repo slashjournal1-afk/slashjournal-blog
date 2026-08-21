@@ -46,6 +46,11 @@ import {
   Redo2,
   Globe,
   Plus,
+  Trash2,
+  Copy,
+  Check,
+  ExternalLink,
+  ArrowUpDown,
 } from 'lucide-react';
 import { slugify, calculateReadingTime } from '@/lib/utils';
 
@@ -169,6 +174,7 @@ export function SlashEditor({
 }: SlashEditorProps) {
   const router = useRouter();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const previewContainerRef = useRef<HTMLDivElement>(null);
   const coverFileInputRef = useRef<HTMLInputElement>(null);
   const inlineFileInputRef = useRef<HTMLInputElement>(null);
 
@@ -195,11 +201,15 @@ export function SlashEditor({
   const [coverImageSourceType, setCoverImageSourceType] = useState(
     initialArticle?.coverImageSourceType || 'FREE_STOCK'
   );
+  const [isCoverError, setIsCoverError] = useState(false);
+  const [isCopiedCoverUrl, setIsCopiedCoverUrl] = useState(false);
   const [isSponsored, setIsSponsored] = useState(initialArticle?.isSponsored || false);
   const [sponsorName, setSponsorName] = useState(initialArticle?.sponsorName || '');
   const [sponsorUrl, setSponsorUrl] = useState(initialArticle?.sponsorUrl || '');
   const [status, setStatus] = useState(initialArticle?.status || 'DRAFT');
   const [viewMode, setViewMode] = useState<'edit' | 'split' | 'preview'>('split');
+  const [isSyncScrollEnabled, setIsSyncScrollEnabled] = useState(true);
+  const isSyncingScrollRef = useRef<'left' | 'right' | null>(null);
   const [showMetadata, setShowMetadata] = useState(true);
   const [isSocialModalOpen, setIsSocialModalOpen] = useState(false);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
@@ -221,6 +231,73 @@ export function SlashEditor({
   const [uploadingImage, setUploadingImage] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+  // Synchronize state when initialArticle changes or is loaded from server
+  useEffect(() => {
+    if (initialArticle) {
+      if (initialArticle.title !== undefined) setTitle(initialArticle.title || '');
+      if (initialArticle.slug !== undefined) setSlug(initialArticle.slug || '');
+      if (initialArticle.excerpt !== undefined) setExcerpt(initialArticle.excerpt || '');
+      if (initialArticle.contentMarkdown !== undefined) setContentMarkdown(initialArticle.contentMarkdown || DEFAULT_DEMO_CONTENT);
+      if (initialArticle.categoryId !== undefined) setCategoryId(initialArticle.categoryId || categories[0]?.id || '');
+      if (initialArticle.seriesId !== undefined) setSeriesId(initialArticle.seriesId || '');
+      if (initialArticle.seriesOrder !== undefined) setSeriesOrder(initialArticle.seriesOrder || 1);
+      if (initialArticle.coverImageUrl !== undefined) {
+        setCoverImageUrl(initialArticle.coverImageUrl || '');
+        setIsCoverError(false);
+      }
+      if (initialArticle.coverImageSourceType !== undefined) {
+        setCoverImageSourceType(initialArticle.coverImageSourceType || 'FREE_STOCK');
+      }
+      if (initialArticle.status !== undefined) setStatus(initialArticle.status || 'DRAFT');
+      if (initialArticle.isSponsored !== undefined) setIsSponsored(Boolean(initialArticle.isSponsored));
+      if (initialArticle.sponsorName !== undefined) setSponsorName(initialArticle.sponsorName || '');
+      if (initialArticle.sponsorUrl !== undefined) setSponsorUrl(initialArticle.sponsorUrl || '');
+    }
+  }, [initialArticle, categories]);
+
+  // Synchronized scroll handlers between Editor textarea and Preview container
+  const handleEditorScroll = useCallback(() => {
+    if (!isSyncScrollEnabled || isSyncingScrollRef.current === 'right') return;
+    if (!textareaRef.current || !previewContainerRef.current) return;
+
+    const textarea = textareaRef.current;
+    const preview = previewContainerRef.current;
+
+    const maxScrollTextarea = textarea.scrollHeight - textarea.clientHeight;
+    if (maxScrollTextarea <= 0) return;
+
+    const scrollRatio = textarea.scrollTop / maxScrollTextarea;
+    const maxScrollPreview = preview.scrollHeight - preview.clientHeight;
+
+    isSyncingScrollRef.current = 'left';
+    preview.scrollTop = scrollRatio * maxScrollPreview;
+
+    requestAnimationFrame(() => {
+      isSyncingScrollRef.current = null;
+    });
+  }, [isSyncScrollEnabled]);
+
+  const handlePreviewScroll = useCallback(() => {
+    if (!isSyncScrollEnabled || isSyncingScrollRef.current === 'left') return;
+    if (!textareaRef.current || !previewContainerRef.current) return;
+
+    const textarea = textareaRef.current;
+    const preview = previewContainerRef.current;
+
+    const maxScrollPreview = preview.scrollHeight - preview.clientHeight;
+    if (maxScrollPreview <= 0) return;
+
+    const scrollRatio = preview.scrollTop / maxScrollPreview;
+    const maxScrollTextarea = textarea.scrollHeight - textarea.clientHeight;
+
+    isSyncingScrollRef.current = 'right';
+    textarea.scrollTop = scrollRatio * maxScrollTextarea;
+
+    requestAnimationFrame(() => {
+      isSyncingScrollRef.current = null;
+    });
+  }, [isSyncScrollEnabled]);
 
   // Check for local draft on mount
   useEffect(() => {
@@ -660,6 +737,7 @@ export function SlashEditor({
 
       if (isCover) {
         setCoverImageUrl(data.url);
+        setIsCoverError(false);
         setSuccessMsg('Gambar sampul berhasil diunggah dan dikonversi ke WebP!');
       } else {
         const imgMarkdown = `\n\n![${data.altText || data.originalName}](${data.url})\n`;
@@ -671,6 +749,22 @@ export function SlashEditor({
       setUploadingImage(false);
       e.target.value = '';
     }
+  };
+
+  const handleRemoveCoverImage = () => {
+    setCoverImageUrl('');
+    setIsCoverError(false);
+    if (coverFileInputRef.current) coverFileInputRef.current.value = '';
+    setSuccessMsg('Gambar sampul berhasil dihapus dari naskah.');
+  };
+
+  const handleCopyCoverUrl = async () => {
+    if (!coverImageUrl) return;
+    try {
+      await navigator.clipboard.writeText(coverImageUrl);
+      setIsCopiedCoverUrl(true);
+      setTimeout(() => setIsCopiedCoverUrl(false), 2000);
+    } catch {}
   };
 
   const handleSave = async (targetStatus?: string) => {
@@ -1015,55 +1109,206 @@ export function SlashEditor({
               <TagInput tags={tags} onChange={setTags} />
             </div>
 
-            {/* Cover Image Upload (WebP) & Source Type */}
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
-              <div className="md:col-span-8 space-y-1.5">
-                <label className="text-xs font-bold text-[#09090b] dark:text-white uppercase tracking-wider flex items-center justify-between">
-                  <span>Gambar Sampul (Auto WebP Converter)</span>
-                  <span className="text-[10px] text-[#71717a]">JPG, PNG ➔ WebP Modern</span>
-                </label>
-
-                <div className="flex gap-2">
-                  <input
-                    type="url"
-                    value={coverImageUrl}
-                    onChange={(e) => setCoverImageUrl(e.target.value)}
-                    placeholder="https://... atau klik Unggah File Sampul"
-                    className="flex-1 px-4 py-3 rounded-[14px] bg-[#f4f4f5] dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-xs text-[#09090b] dark:text-white focus:outline-none"
-                  />
-                  <input
-                    ref={coverFileInputRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => handleImageUpload(e, true)}
-                  />
-                  <button
-                    type="button"
-                    disabled={uploadingImage}
-                    onClick={() => coverFileInputRef.current?.click()}
-                    className="px-4 py-3 rounded-[14px] bg-[#09090b] dark:bg-white text-white dark:text-[#09090b] hover:bg-[#18181b] dark:hover:bg-zinc-200 text-xs font-bold transition-all shadow-xs shrink-0 flex items-center gap-2 active:scale-95"
-                  >
-                    {uploadingImage ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5 text-[#ff5a00]" />}
-                    <span>Unggah WebP</span>
-                  </button>
+            {/* Cover Image Manager Card (WebP, Preview, Change, Remove & Source Attribution) */}
+            <div className="p-4 sm:p-5 rounded-[24px] bg-[#fafafa] dark:bg-[#151518] border border-[#ececee] dark:border-[#27272a] space-y-4 shadow-2xs">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#ececee] dark:border-[#27272a] pb-3">
+                <div className="flex items-center gap-2">
+                  <span className="p-1 rounded-[8px] bg-orange-500/10 text-[#ff5a00]">
+                    <ImageIcon className="w-4 h-4" />
+                  </span>
+                  <label className="text-xs font-bold text-[#09090b] dark:text-white uppercase tracking-wider">
+                    Gambar Sampul Naskah (Cover Art)
+                  </label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10.5px] px-2.5 py-0.5 rounded-full font-mono font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                    Auto-WebP Converter
+                  </span>
                 </div>
               </div>
 
-              <div className="md:col-span-4 space-y-1.5">
-                <label className="text-xs font-bold text-[#09090b] dark:text-white uppercase tracking-wider">
-                  Sumber Visual (C4 &amp; CM7)
-                </label>
-                <select
-                  value={coverImageSourceType}
-                  onChange={(e) => setCoverImageSourceType(e.target.value)}
-                  className="w-full px-4 py-3 rounded-[14px] bg-[#f4f4f5] dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-xs font-semibold text-[#09090b] dark:text-white focus:outline-none"
-                >
-                  <option value="FREE_STOCK">Stok Bebas Royalty (Unsplash)</option>
-                  <option value="SELF_SHOT">Dokumentasi / Foto Sendiri</option>
-                  <option value="AI_GENERATED">Ilustrasi AI Berlabel</option>
-                </select>
-              </div>
+              {/* Hidden File Input */}
+              <input
+                ref={coverFileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => handleImageUpload(e, true)}
+              />
+
+              {coverImageUrl ? (
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
+                  {/* Visual Thumbnail Card */}
+                  <div className="md:col-span-4 lg:col-span-3 relative aspect-[16/10] rounded-[18px] overflow-hidden border border-[#ececee] dark:border-[#3f3f46] bg-zinc-100 dark:bg-zinc-800/80 group">
+                    <img
+                      src={coverImageUrl}
+                      alt={title || 'Cover'}
+                      onLoad={() => setIsCoverError(false)}
+                      onError={() => setIsCoverError(true)}
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+
+                    {isCoverError && (
+                      <div className="absolute inset-0 bg-red-950/80 text-white text-[11px] font-medium p-3 flex flex-col items-center justify-center text-center">
+                        <AlertTriangle className="w-5 h-5 text-red-400 mb-1" />
+                        <span>Gambar gagal dimuat dari URL</span>
+                      </div>
+                    )}
+
+                    <div className="absolute top-2 left-2 px-2 py-0.5 rounded-[6px] bg-black/60 backdrop-blur-md text-[9.5px] font-mono font-bold text-white">
+                      Aktif
+                    </div>
+                  </div>
+
+                  {/* Actions & Details */}
+                  <div className="md:col-span-8 lg:col-span-9 space-y-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        type="button"
+                        disabled={uploadingImage}
+                        onClick={() => coverFileInputRef.current?.click()}
+                        className="px-3.5 py-2 rounded-[12px] bg-[#09090b] dark:bg-white text-white dark:text-[#09090b] hover:bg-[#18181b] dark:hover:bg-zinc-200 text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 active:scale-95"
+                      >
+                        {uploadingImage ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Upload className="w-3.5 h-3.5 text-[#ff5a00]" />
+                        )}
+                        <span>Ganti Gambar</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={handleCopyCoverUrl}
+                        className="px-3.5 py-2 rounded-[12px] bg-white dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-xs font-bold text-[#09090b] dark:text-white hover:border-[#ff5a00] transition-colors flex items-center gap-1.5 active:scale-95"
+                        title="Salin tautan gambar sampul"
+                      >
+                        {isCopiedCoverUrl ? (
+                          <>
+                            <Check className="w-3.5 h-3.5 text-emerald-500" />
+                            <span className="text-emerald-600 dark:text-emerald-400">Tersalin!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3.5 h-3.5 text-[#71717a]" />
+                            <span>Salin URL</span>
+                          </>
+                        )}
+                      </button>
+
+                      <a
+                        href={coverImageUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="px-3 py-2 rounded-[12px] bg-white dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-xs font-bold text-[#71717a] hover:text-[#09090b] dark:hover:text-white hover:border-[#ff5a00] transition-colors flex items-center gap-1"
+                        title="Buka gambar di tab baru"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        <span>Lihat</span>
+                      </a>
+
+                      <button
+                        type="button"
+                        onClick={handleRemoveCoverImage}
+                        className="px-3.5 py-2 rounded-[12px] bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/60 text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-100 transition-colors flex items-center gap-1.5 active:scale-95"
+                        title="Hapus gambar sampul ini"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Hapus Cover</span>
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                      <div className="space-y-1">
+                        <label className="text-[10.5px] font-bold text-[#71717a] uppercase tracking-wider">
+                          Tautan URL Gambar
+                        </label>
+                        <input
+                          type="url"
+                          value={coverImageUrl}
+                          onChange={(e) => {
+                            setCoverImageUrl(e.target.value);
+                            setIsCoverError(false);
+                          }}
+                          placeholder="https://... atau /uploads/..."
+                          className="w-full px-3.5 py-2.5 rounded-[12px] bg-white dark:bg-[#18181b] border border-[#ececee] dark:border-[#3f3f46] text-xs font-mono text-[#09090b] dark:text-white focus:outline-none focus:border-[#ff5a00]"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10.5px] font-bold text-[#71717a] uppercase tracking-wider">
+                          Atribusi Sumber Visual (C4 &amp; CM7)
+                        </label>
+                        <select
+                          value={coverImageSourceType}
+                          onChange={(e) => setCoverImageSourceType(e.target.value)}
+                          className="w-full px-3.5 py-2.5 rounded-[12px] bg-white dark:bg-[#18181b] border border-[#ececee] dark:border-[#3f3f46] text-xs font-semibold text-[#09090b] dark:text-white focus:outline-none"
+                        >
+                          <option value="FREE_STOCK">Stok Bebas Royalti (Unsplash / Pexels)</option>
+                          <option value="SELF_SHOT">Dokumentasi / Screenshot Sendiri</option>
+                          <option value="AI_GENERATED">Ilustrasi AI Berlabel</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+                  <div
+                    onClick={() => coverFileInputRef.current?.click()}
+                    className="md:col-span-7 border-2 border-dashed border-[#ececee] dark:border-[#3f3f46] hover:border-[#ff5a00] rounded-[20px] p-5 text-center cursor-pointer transition-colors bg-white dark:bg-[#18181b] space-y-2 group"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-orange-50 dark:bg-orange-950/40 text-[#ff5a00] flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
+                      {uploadingImage ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : (
+                        <Upload className="w-5 h-5" />
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-[#09090b] dark:text-white">
+                        {uploadingImage ? 'Sedang Memproses Gambar...' : 'Klik untuk Mengunggah Foto Sampul'}
+                      </p>
+                      <p className="text-[10.5px] text-[#71717a]">
+                        JPG, PNG, GIF ➔ Dikonversi otomatis ke format modern WebP
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="md:col-span-5 space-y-3">
+                    <div className="space-y-1">
+                      <label className="text-[10.5px] font-bold text-[#71717a] uppercase tracking-wider">
+                        Atau Masukkan URL Langsung
+                      </label>
+                      <input
+                        type="url"
+                        value={coverImageUrl}
+                        onChange={(e) => {
+                          setCoverImageUrl(e.target.value);
+                          setIsCoverError(false);
+                        }}
+                        placeholder="https://images.unsplash.com/photo-..."
+                        className="w-full px-3.5 py-2.5 rounded-[12px] bg-white dark:bg-[#18181b] border border-[#ececee] dark:border-[#3f3f46] text-xs text-[#09090b] dark:text-white focus:outline-none focus:border-[#ff5a00]"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10.5px] font-bold text-[#71717a] uppercase tracking-wider">
+                        Sumber Visual (C4 &amp; CM7)
+                      </label>
+                      <select
+                        value={coverImageSourceType}
+                        onChange={(e) => setCoverImageSourceType(e.target.value)}
+                        className="w-full px-3.5 py-2.5 rounded-[12px] bg-white dark:bg-[#18181b] border border-[#ececee] dark:border-[#3f3f46] text-xs font-semibold text-[#09090b] dark:text-white focus:outline-none"
+                      >
+                        <option value="FREE_STOCK">Stok Bebas Royalti (Unsplash)</option>
+                        <option value="SELF_SHOT">Dokumentasi / Foto Sendiri</option>
+                        <option value="AI_GENERATED">Ilustrasi AI Berlabel</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Sponsored Post Toggle (M5) */}
@@ -1270,7 +1515,24 @@ export function SlashEditor({
           </div>
 
           {/* Right Toolbar Controls: Image Upload & View Switcher */}
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Sync Scroll Toggle Button */}
+            {viewMode === 'split' && (
+              <button
+                type="button"
+                onClick={() => setIsSyncScrollEnabled((prev) => !prev)}
+                className={`px-3 py-1.5 rounded-[10px] text-xs font-bold transition-all flex items-center gap-1.5 active:scale-95 ${
+                  isSyncScrollEnabled
+                    ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60 shadow-2xs'
+                    : 'bg-[#f4f4f5] dark:bg-[#27272a] text-[#71717a] hover:text-[#09090b] dark:hover:text-white'
+                }`}
+                title="Sinkronisasi Gulir Antara Editor Markdown & Pratinjau Canvas"
+              >
+                <ArrowUpDown className={`w-3.5 h-3.5 ${isSyncScrollEnabled ? 'text-emerald-500' : 'text-[#71717a]'}`} />
+                <span>Sync Scroll: {isSyncScrollEnabled ? 'ON' : 'OFF'}</span>
+              </button>
+            )}
+
             <button
               type="button"
               onClick={() => setIsImageModalOpen(true)}
@@ -1324,19 +1586,19 @@ export function SlashEditor({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 relative">
           {/* Left Panel: Markdown Text Editor */}
           {(viewMode === 'edit' || viewMode === 'split') && (
-            <div className={`${viewMode === 'split' ? 'lg:col-span-6' : 'lg:col-span-12'} relative`}>
+            <div className={`${viewMode === 'split' ? 'lg:col-span-6' : 'lg:col-span-12'} flex flex-col h-[760px] relative`}>
               <textarea
                 ref={textareaRef}
                 value={contentMarkdown}
                 onChange={handleTextChange}
                 onKeyDown={handleKeyDown}
-                rows={28}
-                className="w-full font-mono text-xs sm:text-sm p-6 rounded-[28px] bg-white dark:bg-[#18181b] border border-[#ececee] dark:border-[#27272a] focus:outline-none focus:border-[#ff5a00] leading-relaxed text-[#09090b] dark:text-white resize-y shadow-xs min-h-[680px]"
+                onScroll={handleEditorScroll}
+                className="flex-1 w-full font-mono text-xs sm:text-sm p-6 rounded-[28px] bg-white dark:bg-[#18181b] border border-[#ececee] dark:border-[#27272a] focus:outline-none focus:border-[#ff5a00] leading-relaxed text-[#09090b] dark:text-white resize-none shadow-xs overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-300 dark:scrollbar-thumb-zinc-700"
                 placeholder="Mulai menulis arsitektur sistem di sini... Ketik '/' untuk membuka blok Notion-style. Pintasan: Ctrl+Z (Undo), Ctrl+Y (Redo), Ctrl+B (Tebal), Ctrl+I (Miring), Ctrl+K (WikiLink), Tab (Indentasi)."
               ></textarea>
 
               {/* Shortcut Bar & Realtime Stats */}
-              <div className="mt-2 px-3.5 py-2 rounded-[14px] bg-[#f4f4f5] dark:bg-[#1f1f23] border border-[#ececee] dark:border-[#27272a] flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono text-[#71717a]">
+              <div className="mt-2 px-3.5 py-2 rounded-[14px] bg-[#f4f4f5] dark:bg-[#1f1f23] border border-[#ececee] dark:border-[#27272a] flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono text-[#71717a] shrink-0">
                 <div className="flex flex-wrap items-center gap-3">
                   <span className="flex items-center gap-1" title="Batalkan perubahan terakhir">
                     <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-[#27272a] border border-[#d4d4d8] dark:border-[#3f3f46] text-[#09090b] dark:text-white text-[10px] font-semibold shadow-2xs">Ctrl+Z</kbd> Undo
@@ -1383,16 +1645,25 @@ export function SlashEditor({
           {/* Right Panel: Live Rendered Output */}
           {(viewMode === 'preview' || viewMode === 'split') && (
             <div
+              ref={previewContainerRef}
+              onScroll={handlePreviewScroll}
               className={`${
                 viewMode === 'split' ? 'lg:col-span-6' : 'lg:col-span-12'
-              } p-6 sm:p-8 rounded-[28px] bg-white dark:bg-[#18181b] border border-[#ececee] dark:border-[#27272a] shadow-xs overflow-y-auto max-h-[850px] min-h-[680px]`}
+              } h-[760px] p-6 sm:p-8 rounded-[28px] bg-white dark:bg-[#18181b] border border-[#ececee] dark:border-[#27272a] shadow-xs overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-300 dark:scrollbar-thumb-zinc-700`}
             >
               <div className="text-[10.5px] font-bold uppercase tracking-wider text-[#71717a] pb-3 border-b border-[#ececee] dark:border-[#27272a] mb-6 flex items-center justify-between">
                 <span className="flex items-center gap-1.5">
                   <Eye className="w-3.5 h-3.5 text-[#ff5a00]" />
                   Pratinjau Arsitektur &amp; Diagram Interaktif
                 </span>
-                <span className="font-mono text-emerald-600 dark:text-emerald-400">● Live Render</span>
+                <div className="flex items-center gap-2">
+                  {viewMode === 'split' && isSyncScrollEnabled && (
+                    <span className="text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-[6px] border border-emerald-200 dark:border-emerald-800/50">
+                      ⇕ Synced Scroll
+                    </span>
+                  )}
+                  <span className="font-mono text-emerald-600 dark:text-emerald-400">● Live Render</span>
+                </div>
               </div>
 
               {/* Title & Excerpt in Preview */}
@@ -1409,15 +1680,17 @@ export function SlashEditor({
                 </div>
               )}
 
-              {/* Cover Image in Preview */}
-              {coverImageUrl && (
-                <div className="mb-6 rounded-[24px] overflow-hidden relative h-56 border border-[#ececee] dark:border-[#27272a]">
+              {/* Cover Image in Preview — Full uncropped presentation */}
+              {coverImageUrl && !isCoverError && (
+                <div className="mb-6 rounded-[24px] overflow-hidden relative border border-[#ececee] dark:border-[#27272a] bg-[#fafafa] dark:bg-[#151518] p-1.5 flex items-center justify-center">
                   <Image
                     src={coverImageUrl}
                     alt={title || 'Cover'}
-                    fill
-                    unoptimized={Boolean(coverImageUrl.startsWith('/uploads') || coverImageUrl.startsWith('data:'))}
-                    className="object-cover"
+                    width={1200}
+                    height={675}
+                    unoptimized
+                    onError={() => setIsCoverError(true)}
+                    className="w-full h-auto max-h-[480px] object-contain rounded-[18px]"
                   />
                 </div>
               )}

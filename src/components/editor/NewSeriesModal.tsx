@@ -204,7 +204,7 @@ export function NewSeriesModal({
           </div>
 
           {/* Cover Image */}
-          <div className="space-y-1">
+          <div className="space-y-2">
             <label className="text-[11px] font-bold uppercase tracking-wider text-[#09090b] dark:text-white flex items-center justify-between">
               <span>Gambar Sampul Seri (Opsional)</span>
               <span className="text-[10px] text-[#71717a]">Auto WebP</span>
@@ -238,6 +238,16 @@ export function NewSeriesModal({
                 <span>Upload WebP</span>
               </button>
             </div>
+
+            {coverImageUrl && (
+              <div className="relative w-full rounded-[14px] overflow-hidden border border-[#ececee] dark:border-[#3f3f46] bg-[#f4f4f5] dark:bg-[#18181b] p-1 flex items-center justify-center">
+                <img
+                  src={coverImageUrl}
+                  alt="Pratinjau Sampul Seri"
+                  className="w-full h-auto max-h-40 object-contain rounded-[10px]"
+                />
+              </div>
+            )}
           </div>
 
           {/* Published Toggle */}

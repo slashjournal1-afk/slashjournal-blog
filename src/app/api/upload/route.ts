@@ -95,6 +95,16 @@ export async function POST(req: NextRequest) {
       const supabase = createAdminClient();
       const bucketName = process.env.SUPABASE_STORAGE_BUCKET || 'slashjournal';
 
+      // Ensure bucket exists and is public
+      try {
+        const { data: buckets } = await supabase.storage.listBuckets();
+        if (buckets && !buckets.some((b) => b.name === bucketName)) {
+          await supabase.storage.createBucket(bucketName, { public: true });
+        }
+      } catch (bucketCheckErr) {
+        // Continue if bucket listing is restricted or already exists
+      }
+
       // Upload to bucket under target folder
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from(bucketName)
@@ -119,13 +129,23 @@ export async function POST(req: NextRequest) {
 
     // 2. Fallback to local storage in public/uploads/${targetFolder} if Supabase upload was not successful
     if (!publicUrl) {
-      const uploadDir = path.join(process.cwd(), 'public', 'uploads', targetFolder);
+      const uploadsBaseDir = path.join(process.cwd(), 'public', 'uploads');
+      const uploadDir = path.join(uploadsBaseDir, targetFolder);
       if (!fs.existsSync(uploadDir)) {
         fs.mkdirSync(uploadDir, { recursive: true });
       }
 
       const filePath = path.join(uploadDir, filename);
       fs.writeFileSync(filePath, webpBuffer);
+      
+      // Also copy to flat uploads directory for maximum backward compatibility
+      try {
+        const flatFilePath = path.join(uploadsBaseDir, filename);
+        if (!fs.existsSync(flatFilePath)) {
+          fs.writeFileSync(flatFilePath, webpBuffer);
+        }
+      } catch {}
+
       publicUrl = `/uploads/${targetFolder}/${filename}`;
       storageProvider = 'local';
     }
