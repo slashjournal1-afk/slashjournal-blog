@@ -11,6 +11,12 @@ import { BrandLogo } from './BrandLogo';
 
 const primaryLinks = [
   { label: 'Tulisan', href: '/' },
+  { label: 'Seri', href: '/series' },
+  { label: 'Glosarium', href: '/glossary' },
+];
+
+const secondaryLinks = [
+  { label: 'Semua Tulisan', href: '/' },
   { label: 'Rekayasa Sistem', href: '/category/rekayasa-sistem' },
   { label: 'Desain Antarmuka', href: '/category/desain-antarmuka' },
   { label: 'Seri', href: '/series' },
@@ -35,7 +41,7 @@ export function Navbar() {
   return (
     <>
       <header className="sticky top-0 z-40 border-b border-[var(--border-color)] bg-[var(--bg-primary)]/90 backdrop-blur-md transition-colors duration-200">
-        <div className="mx-auto flex h-[68px] max-w-editorial items-center justify-between gap-6 px-5 sm:px-8">
+        <div className="mx-auto flex h-[64px] max-w-editorial items-center justify-between gap-4 px-4 sm:px-8">
           {/* Masthead */}
           <Link
             href="/"
@@ -48,7 +54,7 @@ export function Navbar() {
           </Link>
 
           {/* Topics */}
-          <nav aria-label="Navigasi Utama" className="hidden items-center gap-6 lg:flex">
+          <nav aria-label="Navigasi utama" className="hidden items-center gap-6 lg:flex">
             {primaryLinks.map((link) => {
               const active =
                 link.href === '/'
@@ -75,7 +81,7 @@ export function Navbar() {
             <button
               type="button"
               onClick={openSearch}
-              className="flex h-9 items-center gap-2 rounded-lg px-3 text-[13px] text-[var(--text-muted)] transition-colors duration-150 hover:text-[var(--text-primary)]"
+              className="flex min-h-11 items-center gap-2 rounded-lg px-3 text-[13px] text-[var(--text-muted)] transition-colors duration-150 hover:text-[var(--text-primary)]"
               aria-label="Cari artikel dan konsep"
               title="Cari (Ctrl + K)"
             >
@@ -93,7 +99,7 @@ export function Navbar() {
                 <button
                   type="button"
                   onClick={() => setIsAccountOpen((open) => !open)}
-                  className="flex h-9 items-center gap-2 rounded-lg px-2 text-[13px] font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--bg-card-muted)]"
+                  className="flex min-h-11 items-center gap-2 rounded-lg px-2 text-[13px] font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--bg-card-muted)]"
                   aria-expanded={isAccountOpen}
                   aria-haspopup="menu"
                 >
@@ -184,7 +190,7 @@ export function Navbar() {
                   e.preventDefault();
                   openAuthModal();
                 }}
-                className="hidden h-9 items-center rounded-lg px-3.5 text-[13px] font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--bg-card-muted)] sm:inline-flex"
+                className="hidden min-h-11 items-center rounded-lg px-3.5 text-[13px] font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--bg-card-muted)] sm:inline-flex"
               >
                 Masuk
               </Link>
@@ -194,7 +200,7 @@ export function Navbar() {
             <button
               type="button"
               onClick={() => setIsMenuOpen((open) => !open)}
-              className="flex h-9 w-9 items-center justify-center rounded-lg text-[var(--text-primary)] transition-colors hover:bg-[var(--bg-card-muted)] lg:hidden"
+              className="flex h-11 w-11 items-center justify-center rounded-lg text-[var(--text-primary)] transition-colors hover:bg-[var(--bg-card-muted)] lg:hidden"
               aria-label={isMenuOpen ? 'Tutup menu' : 'Buka menu'}
               aria-expanded={isMenuOpen}
             >
@@ -203,11 +209,33 @@ export function Navbar() {
           </div>
         </div>
 
+        <nav aria-label="Kanal dan topik" className="border-t border-[var(--border-color)]">
+          <div className="scrollbar-none mx-auto flex max-w-editorial overflow-x-auto px-4 sm:px-8">
+            {secondaryLinks.map((link) => {
+              const active = link.href === '/' ? pathname === '/' : pathname.startsWith(link.href);
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  aria-current={active ? 'page' : undefined}
+                  className={`relative flex min-h-11 shrink-0 items-center px-3 text-xs transition-colors first:pl-0 sm:px-4 ${
+                    active
+                      ? 'font-semibold text-[var(--text-primary)] after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:bg-[var(--accent)] first:after:left-0'
+                      : 'font-medium text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
+          </div>
+        </nav>
+
         {/* Mobile Flyout Drawer */}
         {isMenuOpen && (
-          <div className="max-h-[calc(100vh-68px)] overflow-y-auto border-t border-[var(--border-color)] bg-[var(--bg-primary)] px-5 py-5 lg:hidden animate-in slide-in-from-top-2 duration-150">
+          <div className="max-h-[calc(100vh-108px)] overflow-y-auto border-t border-[var(--border-color)] bg-[var(--bg-primary)] px-5 py-5 lg:hidden animate-in slide-in-from-top-2 duration-150">
             <nav aria-label="Navigasi Mobile" className="space-y-1">
-              {primaryLinks.map((link) => {
+              {secondaryLinks.map((link) => {
                 const active =
                   link.href === '/'
                     ? pathname === '/'

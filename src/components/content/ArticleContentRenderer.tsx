@@ -34,7 +34,7 @@ export function ArticleContentRenderer({
   const tokens = tokenizeMarkdownBlocks(normalized);
 
   return (
-    <div className={`space-y-6 ${className}`}>
+    <div className={`article-prose min-w-0 max-w-full space-y-6 ${className}`}>
       {tokens.map((token, idx) => renderToken(token, idx, glossary))}
     </div>
   );
@@ -457,8 +457,8 @@ function renderToken(token: MarkdownToken, idx: number, glossary: GlossaryItem[]
           key={idx}
           className="my-8 overflow-hidden rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] shadow-xs"
         >
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+          <div className="max-w-full overflow-x-auto">
+            <table className="w-full min-w-[520px] text-left text-sm">
               <thead className="border-b border-[var(--border-color)] bg-[var(--bg-card-muted)] text-[12px] uppercase tracking-wider text-[var(--text-muted)]">
                 <tr>
                   {tableData.headers.map((h, hIdx) => (

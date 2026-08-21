@@ -97,7 +97,7 @@ export function MultiTabCode({ tabs: propTabs, rawContent, rawCode, defaultLangu
   return (
     <div className="my-6 rounded-[24px] border border-[#27272a] bg-[#0c0c0e] text-[#f4f4f5] overflow-hidden shadow-md transition-all">
       {/* Top Header: Tabs & Quick Action Controls */}
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#27272a] bg-[#141416] px-4 py-2.5">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#27272a] bg-[#141416] px-3 py-2.5 sm:px-4">
         {/* Left: Tab Switches */}
         <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-0.5">
           {tabs.map((tab, idx) => (
@@ -160,7 +160,7 @@ export function MultiTabCode({ tabs: propTabs, rawContent, rawCode, defaultLangu
       </div>
 
       {/* Code Display Area with Line Numbers & Diff Highlighting */}
-      <div className={`p-4 overflow-x-auto font-mono leading-relaxed flex gap-4 ${fontSize === 'sm' ? 'text-[13px]' : 'text-[12px]'}`}>
+        <div className={`min-w-0 max-w-full overflow-x-auto p-3 font-mono leading-relaxed flex gap-4 sm:p-4 ${fontSize === 'sm' ? 'text-[13px]' : 'text-[12px]'}`}>
         {/* Line Numbers Gutter */}
         <div className="select-none text-right text-[#52525b] font-mono pr-3 border-r border-[#27272a]/80 shrink-0">
           {codeLines.map((_, i) => (

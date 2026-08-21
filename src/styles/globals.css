@@ -61,6 +61,20 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/* Long technical tokens may wrap in prose while code and tables keep local scrolling. */
+.article-prose,
+.article-prose a,
+.article-prose p,
+.article-prose li {
+  overflow-wrap: anywhere;
+}
+
+.article-prose img,
+.article-prose svg,
+.article-prose iframe {
+  max-width: 100%;
+}
+
 ::selection {
   background: rgba(0, 168, 107, 0.18);
 }
@@ -221,4 +235,3 @@ code, kbd, samp, pre {
 .token.entity {
   cursor: help;
 }
-

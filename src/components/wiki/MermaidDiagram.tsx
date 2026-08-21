@@ -150,7 +150,7 @@ export function MermaidDiagram({ chart, code }: MermaidDiagramProps) {
         </div>
 
         {/* Render Area */}
-        <div className="p-6 overflow-x-auto flex items-center justify-center min-h-[180px] bg-white dark:bg-[#18181b]">
+        <div className="max-w-full overflow-x-auto p-4 flex items-center justify-center min-h-[180px] bg-white dark:bg-[#18181b] sm:p-6">
           {error ? (
             <div className="text-center text-red-500 text-xs py-4">
               <p>{error}</p>
