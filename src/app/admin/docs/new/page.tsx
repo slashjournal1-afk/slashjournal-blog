@@ -18,8 +18,7 @@ export default async function NewArticlePage() {
       select: { id: true, name: true, isIndexable: true },
     }),
     prisma.series.findMany({
-      where: { isPublished: true },
-      orderBy: { sortOrder: 'asc' },
+      orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }],
       select: { id: true, title: true },
     }),
   ]);

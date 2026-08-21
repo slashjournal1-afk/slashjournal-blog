@@ -4,6 +4,7 @@ import { getCurrentUser } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { formatDateTime } from '@/lib/utils';
+import { CreatorSeriesSection } from '@/components/admin/CreatorSeriesSection';
 import {
   PenTool,
   Plus,
@@ -16,6 +17,7 @@ import {
   ThumbsUp,
   ArrowUpRight,
   Edit3,
+  BookOpen,
 } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
@@ -27,12 +29,13 @@ export default async function CreatorDashboardPage() {
     redirect('/dashboard/member');
   }
 
-  // Fetch only articles authored by current user
+  // Fetch articles authored by current user and all available series
   const [
     myArticles,
     articleStatusCounts,
     viewsResult,
     helpfulVotesResult,
+    seriesList,
   ] = await Promise.all([
     prisma.article.findMany({
       where: { authorId: user.id },
@@ -63,6 +66,16 @@ export default async function CreatorDashboardPage() {
     prisma.article.aggregate({
       where: { authorId: user.id },
       _sum: { helpfulVotes: true },
+    }),
+    prisma.series.findMany({
+      orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }],
+      include: {
+        _count: {
+          select: {
+            articles: { where: { status: 'PUBLISHED' } },
+          },
+        },
+      },
     }),
   ]);
 
@@ -289,6 +302,9 @@ export default async function CreatorDashboardPage() {
           </div>
         )}
       </div>
+
+      {/* Series Management Section */}
+      <CreatorSeriesSection initialSeries={seriesList} />
     </div>
   );
 }

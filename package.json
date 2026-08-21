@@ -13,7 +13,8 @@
     "seo:audit": "node scripts/seo-audit.mjs",
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
-    "prisma:seed": "tsx prisma/seed.ts"
+    "prisma:seed": "tsx prisma/seed.ts",
+    "db:migrate-data": "tsx scripts/migrate-db.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.4.1",
