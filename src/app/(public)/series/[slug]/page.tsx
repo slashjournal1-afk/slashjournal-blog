@@ -63,7 +63,7 @@ export default async function SeriesDetailPage({ params }: PageProps) {
     },
   });
 
-  if (!series) {
+  if (!series || !series.isPublished) {
     notFound();
   }
   const breadcrumbJsonLd = breadcrumbSchema([

@@ -13,6 +13,7 @@
     "seo:audit": "node scripts/seo-audit.mjs",
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
+    "prisma:deploy": "prisma migrate deploy",
     "prisma:seed": "tsx prisma/seed.ts",
     "db:migrate-data": "tsx scripts/migrate-db.ts"
   },
@@ -26,6 +27,7 @@
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
     "@types/sharp": "^0.31.1",
+    "@vercel/blob": "^2.8.0",
     "autoprefixer": "^10.5.4",
     "bcryptjs": "^3.0.3",
     "clsx": "^2.1.1",

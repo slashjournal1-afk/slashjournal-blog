@@ -1,19 +1,21 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { generateResetToken } from '@/lib/auth';
+import { jsonError } from '@/lib/api-errors';
+import { z } from 'zod';
+import crypto from 'node:crypto';
 
 export async function POST(req: Request) {
   try {
-    const { email } = await req.json();
-
-    if (!email || typeof email !== 'string' || !email.includes('@')) {
+    const parsed = z.object({ email: z.string().trim().email().max(320) }).safeParse(await req.json());
+    if (!parsed.success) {
       return NextResponse.json(
         { error: 'Masukkan alamat email yang valid' },
         { status: 400 }
       );
     }
 
-    const cleanEmail = email.toLowerCase().trim();
+    const cleanEmail = parsed.data.email.toLowerCase().trim();
     const user = await prisma.user.findUnique({
       where: { email: cleanEmail },
       select: { id: true, email: true, isBlocked: true, passwordHash: true },
@@ -28,21 +30,25 @@ export async function POST(req: Request) {
     }
 
     const resetToken = generateResetToken(cleanEmail);
+    const tokenHash = crypto.createHash('sha256').update(resetToken).digest('hex');
+    await prisma.passwordResetToken.deleteMany({ where: { email: cleanEmail, usedAt: null } });
+    await prisma.passwordResetToken.create({
+      data: { tokenHash, email: cleanEmail, expiresAt: new Date(Date.now() + 60 * 60 * 1000) },
+    });
     const origin = req.headers.get('origin') || process.env.NEXT_PUBLIC_APP_URL || 'https://www.slashjournal.my.id';
     const resetUrl = `${origin}/reset-password?token=${resetToken}`;
 
-    return NextResponse.json({
+    const response: { success: true; message: string; resetUrl?: string; token?: string } = {
       success: true,
       message: 'Instruksi pemulihan kata sandi berhasil dibuat.',
-      // In development, return the link directly for instant testing
-      resetUrl,
-      token: resetToken,
-    });
-  } catch (err: any) {
+    };
+    if (process.env.NODE_ENV !== 'production') {
+      response.resetUrl = resetUrl;
+      response.token = resetToken;
+    }
+    return NextResponse.json(response);
+  } catch (err: unknown) {
     console.error('Forgot password error:', err);
-    return NextResponse.json(
-      { error: 'Terjadi kesalahan sistem saat memproses permintaan' },
-      { status: 500 }
-    );
+    return jsonError('Terjadi kesalahan sistem saat memproses permintaan', 500, err);
   }
 }

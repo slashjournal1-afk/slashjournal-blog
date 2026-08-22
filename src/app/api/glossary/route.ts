@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getCurrentUser, hasPermission } from '@/lib/auth';
 import { slugify } from '@/lib/utils';
+import { jsonError } from '@/lib/api-errors';
 
 export async function GET() {
   const terms = await prisma.glossaryTerm.findMany({
@@ -39,7 +40,7 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ success: true, term: created });
-  } catch (err: any) {
-    return NextResponse.json({ error: 'Gagal menyimpan istilah glosarium' }, { status: 500 });
+  } catch (err: unknown) {
+    return jsonError('Gagal menyimpan istilah glosarium', 500, err);
   }
 }

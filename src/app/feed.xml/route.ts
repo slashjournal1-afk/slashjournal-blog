@@ -1,20 +1,19 @@
 import { prisma } from '@/lib/db';
 import { NextResponse } from 'next/server';
 import { absoluteUrl } from '@/lib/site';
+import { publicArticleWhere } from '@/lib/visibility';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   const articles = await prisma.article.findMany({
     where: {
-      status: 'PUBLISHED',
-      isIndexable: true,
-      category: { isIndexable: true },
+      ...publicArticleWhere,
       isSponsored: false, // Exclude advertorials per M5 standard
     },
     include: {
-      author: true,
-      category: true,
+      author: { select: { displayName: true } },
+      category: { select: { name: true } },
     },
     orderBy: { publishedAt: 'desc' },
     take: 30,

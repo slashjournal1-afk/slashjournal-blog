@@ -4,12 +4,14 @@ import { getCurrentUser } from '@/lib/auth';
 import { slugify } from '@/lib/utils';
 import { recordAuditLog } from '@/lib/audit';
 import { revalidatePath } from 'next/cache';
+import { jsonError } from '@/lib/api-errors';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
     const series = await prisma.series.findMany({
+      where: { isPublished: true },
       orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }],
       include: {
         _count: {
@@ -21,9 +23,9 @@ export async function GET() {
     });
 
     return NextResponse.json({ series });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Failed to fetch series:', error);
-    return NextResponse.json({ error: error.message || 'Internal error' }, { status: 500 });
+    return jsonError('Gagal mengambil seri', 500, error);
   }
 }
 
@@ -98,8 +100,8 @@ export async function POST(req: NextRequest) {
       { series: newSeries, message: 'Seri panduan baru berhasil dibuat!' },
       { status: 201 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Failed to create series:', error);
-    return NextResponse.json({ error: error.message || 'Gagal membuat seri panduan baru' }, { status: 500 });
+    return jsonError('Gagal membuat seri panduan baru', 500, error);
   }
 }

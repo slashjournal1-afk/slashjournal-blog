@@ -4,6 +4,8 @@ import { getCurrentUser } from '@/lib/auth';
 import { calculateReadingTime, slugify } from '@/lib/utils';
 import { recordAuditLog } from '@/lib/audit';
 import { revalidatePath } from 'next/cache';
+import { jsonError } from '@/lib/api-errors';
+import { publicArticleWhere } from '@/lib/visibility';
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -11,17 +13,18 @@ export async function GET(req: NextRequest) {
   const categorySlug = searchParams.get('category');
   const seriesSlug = searchParams.get('series');
 
-  const where: any = {};
-  if (status) where.status = status;
-  if (categorySlug) where.category = { slug: categorySlug };
-  if (seriesSlug) where.series = { slug: seriesSlug };
+  const user = await getCurrentUser();
+  const canReadEditorial = user && ['ADMIN', 'EDITOR', 'AUTHOR'].includes(user.role);
+  const where = canReadEditorial && status
+    ? { status, ...(categorySlug ? { category: { slug: categorySlug } } : {}), ...(seriesSlug ? { series: { slug: seriesSlug } } : {}) }
+    : { ...publicArticleWhere, ...(categorySlug ? { category: { slug: categorySlug } } : {}), ...(seriesSlug ? { series: { slug: seriesSlug } } : {}) };
 
   const articles = await prisma.article.findMany({
     where,
     include: {
       category: true,
       series: true,
-      author: true,
+      author: { select: { id: true, displayName: true, avatarUrl: true } },
       tags: { include: { tag: true } },
       _count: { select: { comments: true, bookmarks: true } },
     },
@@ -130,8 +133,8 @@ export async function POST(req: NextRequest) {
     if (article.status === 'PUBLISHED') revalidatePath(`/${article.slug}`);
 
     return NextResponse.json({ article }, { status: 201 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Failed to create article:', error);
-    return NextResponse.json({ error: error.message || 'Internal error' }, { status: 500 });
+    return jsonError('Gagal membuat artikel', 500, error);
   }
 }

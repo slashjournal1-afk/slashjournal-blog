@@ -3,12 +3,14 @@ import { prisma } from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth';
 import { slugify } from '@/lib/utils';
 import { recordAuditLog } from '@/lib/audit';
+import { jsonError } from '@/lib/api-errors';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
     const categories = await prisma.category.findMany({
+      where: { isIndexable: true },
       orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
       include: {
         _count: {
@@ -20,9 +22,9 @@ export async function GET() {
     });
 
     return NextResponse.json({ categories });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Failed to fetch categories:', error);
-    return NextResponse.json({ error: error.message || 'Internal error' }, { status: 500 });
+    return jsonError('Gagal mengambil kategori', 500, error);
   }
 }
 
@@ -73,8 +75,8 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ category, message: 'Kategori baru berhasil dibuat!' }, { status: 201 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Failed to create category:', error);
-    return NextResponse.json({ error: error.message || 'Gagal membuat kategori baru' }, { status: 500 });
+    return jsonError('Gagal membuat kategori baru', 500, error);
   }
 }

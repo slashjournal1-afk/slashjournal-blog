@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth';
 import { slugify } from '@/lib/utils';
+import { jsonError } from '@/lib/api-errors';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,13 +11,15 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const query = searchParams.get('q') || '';
 
-    const where: any = {};
+    const where: Record<string, unknown> = {
+      articles: { some: { article: { status: 'PUBLISHED', isIndexable: true, category: { isIndexable: true } } } },
+    };
     if (query) {
       where.name = { contains: query, mode: 'insensitive' };
     }
 
     const tags = await prisma.tag.findMany({
-      where,
+          where: where as never,
       orderBy: { name: 'asc' },
       include: {
         _count: {
@@ -29,9 +32,9 @@ export async function GET(req: NextRequest) {
     });
 
     return NextResponse.json({ tags });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Failed to fetch tags:', error);
-    return NextResponse.json({ error: error.message || 'Internal error' }, { status: 500 });
+    return jsonError('Gagal mengambil tag', 500, error);
   }
 }
 
@@ -62,8 +65,8 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ tag }, { status: 201 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Failed to create tag:', error);
-    return NextResponse.json({ error: error.message || 'Internal error' }, { status: 500 });
+    return jsonError('Gagal membuat tag', 500, error);
   }
 }

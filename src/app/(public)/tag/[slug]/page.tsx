@@ -5,6 +5,7 @@ import { formatDate } from '@/lib/utils';
 import { PageIntro } from '@/components/layout/PageIntro';
 import { ArticleRow } from '@/components/content/ArticleRow';
 import type { Metadata } from 'next';
+import { publicArticleWhere } from '@/lib/visibility';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,11 +35,8 @@ export default async function TagPage({ params }: PageProps) {
     where: { slug },
     include: {
       articles: {
-        include: {
-          article: {
-            include: { category: true },
-          },
-        },
+        where: { article: publicArticleWhere },
+        include: { article: { include: { category: true } } },
       },
     },
   });
@@ -47,9 +45,7 @@ export default async function TagPage({ params }: PageProps) {
     notFound();
   }
 
-  const publishedArticles = tag.articles
-    .map((at) => at.article)
-    .filter((a) => a.status === 'PUBLISHED' && a.isIndexable && a.category.isIndexable);
+  const publishedArticles = tag.articles.map((at) => at.article);
 
   return (
     <div className="min-h-screen max-w-[1200px] mx-auto px-4 sm:px-6 py-12">

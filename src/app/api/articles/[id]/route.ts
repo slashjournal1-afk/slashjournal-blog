@@ -4,21 +4,28 @@ import { getCurrentUser } from '@/lib/auth';
 import { calculateReadingTime, slugify } from '@/lib/utils';
 import { recordAuditLog } from '@/lib/audit';
 import { revalidatePath } from 'next/cache';
+import { jsonError } from '@/lib/api-errors';
+import { publicArticleWhere } from '@/lib/visibility';
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const user = await getCurrentUser();
+  const canReadEditorial = user && ['ADMIN', 'EDITOR', 'AUTHOR'].includes(user.role);
   const article = await prisma.article.findUnique({
     where: { id },
     include: {
       category: true,
       series: true,
-      author: true,
+      author: { select: { id: true, displayName: true, avatarUrl: true } },
       tags: { include: { tag: true } },
       revisions: { orderBy: { createdAt: 'desc' }, take: 10 },
     },
   });
 
   if (!article) return NextResponse.json({ error: 'Article not found' }, { status: 404 });
+  if (!canReadEditorial && (article.status !== 'PUBLISHED' || !article.isIndexable || !article.category.isIndexable)) {
+    return NextResponse.json({ error: 'Article not found' }, { status: 404 });
+  }
   return NextResponse.json({ article });
 }
 
@@ -143,9 +150,9 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     revalidatePath(`/${updated.slug}`);
 
     return NextResponse.json({ article: updated });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Failed to update article:', error);
-    return NextResponse.json({ error: error.message || 'Internal error' }, { status: 500 });
+    return jsonError('Gagal memperbarui artikel', 500, error);
   }
 }
 
@@ -172,8 +179,8 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     revalidatePath(`/${deleted.slug}`);
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Failed to delete article:', error);
-    return NextResponse.json({ error: error.message || 'Internal error' }, { status: 500 });
+    return jsonError('Gagal menghapus artikel', 500, error);
   }
 }

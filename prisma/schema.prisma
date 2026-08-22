@@ -203,6 +203,19 @@ model Subscription {
 
   userId    String?
   user      User?    @relation(fields: [userId], references: [id])
+
+  @@unique([email, topic])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  email     String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([email, expiresAt])
 }
 
 model SearchQueryLog {
