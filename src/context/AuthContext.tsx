@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { UserSession } from '@/lib/types';
+import { pushDataLayer } from '@/lib/data-layer';
 
 interface AuthContextType {
   user: UserSession | null;
@@ -48,6 +49,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     refreshUser();
+    const params = new URLSearchParams(window.location.search);
+    const authResult = params.get('auth');
+    const method = params.get('method');
+    if (authResult === 'oauth-success' && method) {
+      pushDataLayer('login', { method });
+      window.history.replaceState({}, '', window.location.pathname + window.location.hash);
+    }
   }, []);
 
   const logout = async () => {

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { X, AlertCircle, CheckCircle2, Loader2, KeyRound, Mail, User } from 'lucide-react';
+import { pushDataLayer } from '@/lib/data-layer';
 
 export function AuthModal() {
   const { isAuthModalOpen, closeAuthModal, completeLogin } = useAuth();
@@ -37,6 +38,7 @@ export function AuthModal() {
       if (!res.ok) throw new Error(data.error || 'Autentikasi gagal');
 
       setSuccessMsg(mode === 'login' ? 'Login berhasil!' : 'Pendaftaran berhasil!');
+      pushDataLayer(mode === 'login' ? 'login' : 'sign_up', { method: 'password' });
       completeLogin(data.user);
       closeAuthModal();
     } catch (err: any) {

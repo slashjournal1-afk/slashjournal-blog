@@ -40,6 +40,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     { label: 'Overview Superadmin', href: '/dashboard/superadmin', icon: Shield },
     { label: 'Antrean Review Draf', href: '/admin/review-queue', icon: Inbox },
     { label: 'Telemetri & Kata Kunci', href: '/admin/telemetry', icon: Activity },
+    { label: 'Google Analytics & AdSense', href: '/dashboard/superadmin/analytics', icon: Activity },
     { label: 'Log Audit & Keamanan', href: '/admin/audit-logs', icon: FileText },
     { label: 'Studio Penulis (Creator)', href: '/dashboard/creator', icon: PenTool },
   ];

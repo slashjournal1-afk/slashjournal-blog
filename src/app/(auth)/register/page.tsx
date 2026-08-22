@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { Mail, KeyRound, User, Eye, EyeOff, Loader2, AlertCircle, CheckCircle2, Check, Sparkles } from 'lucide-react';
+import { pushDataLayer } from '@/lib/data-layer';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -65,6 +66,7 @@ export default function RegisterPage() {
       if (!res.ok) throw new Error(data.error || 'Pendaftaran akun gagal');
 
       setSuccessMsg('Pendaftaran berhasil! Menyiapkan ruang kerja Anda...');
+      pushDataLayer('sign_up', { method: 'password' });
       await refreshUser();
 
       setTimeout(() => {

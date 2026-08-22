@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 import { AdSlot } from '@/lib/types';
+import { GoogleAdSense } from './GoogleAdSense';
 
 interface InFeedAdProps {
   ad?: AdSlot | null;
@@ -14,9 +15,9 @@ interface InFeedAdProps {
 export function InFeedAd({ ad, className = '' }: InFeedAdProps) {
   if (!ad || !ad.isActive) {
     return (
-      <div
-        className={`rounded-[36px] bg-gradient-to-b from-[#f4f4f5]/60 to-white dark:from-[#18181b]/60 dark:to-[#121214] border border-dashed border-[#d4d4d8] dark:border-[#3f3f46] p-7 flex flex-col justify-between shadow-xs ${className}`}
-      >
+      <div className={className}>
+        <GoogleAdSense slot={process.env.NEXT_PUBLIC_ADSENSE_IN_FEED_SLOT} className="mb-4" />
+        <div className="rounded-[36px] bg-gradient-to-b from-[#f4f4f5]/60 to-white dark:from-[#18181b]/60 dark:to-[#121214] border border-dashed border-[#d4d4d8] dark:border-[#3f3f46] p-7 flex flex-col justify-between shadow-xs">
         <div className="space-y-3">
           <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[8px] bg-white dark:bg-[#27272a] text-[#71717a] dark:text-[#a1a1aa] text-[10px] font-bold uppercase tracking-wider shadow-2xs">
             <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]" />
@@ -37,6 +38,7 @@ export function InFeedAd({ ad, className = '' }: InFeedAdProps) {
             <span>Hubungi untuk Kemitraan</span>
             <ArrowUpRight className="w-3.5 h-3.5" />
           </Link>
+        </div>
         </div>
       </div>
     );

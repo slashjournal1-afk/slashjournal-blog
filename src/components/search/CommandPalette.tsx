@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, BookOpen, FileText, ArrowRight, X, Sparkles, Command, Loader2 } from 'lucide-react';
+import { pushDataLayer } from '@/lib/data-layer';
 
 export function CommandPalette() {
   const [isOpen, setIsOpen] = useState(false);
@@ -63,6 +64,9 @@ export function CommandPalette() {
           articles: data.articles || [],
           glossaryTerms: data.glossaryTerms || [],
         });
+        const resultCount = (data.articles || []).length + (data.glossaryTerms || []).length;
+        pushDataLayer('site_search', { search_term: query.trim(), search_result_count: resultCount });
+        if (resultCount === 0) pushDataLayer('zero_result_search', { search_term: query.trim(), search_result_count: 0 });
         setSelectedIndex(0);
       } catch (err) {
         if (!(err instanceof DOMException && err.name === 'AbortError')) console.error('Search error:', err);

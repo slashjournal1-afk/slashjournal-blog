@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { Mail, KeyRound, Eye, EyeOff, Loader2, AlertCircle, CheckCircle2, Shield, Sparkles } from 'lucide-react';
+import { pushDataLayer } from '@/lib/data-layer';
 
 function LoginForm() {
   const router = useRouter();
@@ -54,6 +55,7 @@ function LoginForm() {
       if (!res.ok) throw new Error(data.error || 'Autentikasi gagal');
 
       setSuccessMsg('Login berhasil! Mengalihkan ke ruang kerja...');
+      pushDataLayer('login', { method: 'password' });
       if (redirectUrl) {
         router.replace(redirectUrl);
       } else if (data.user?.role === 'ADMIN') {
