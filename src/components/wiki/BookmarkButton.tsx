@@ -3,13 +3,17 @@
 import React, { useState, useEffect } from 'react';
 import { Bookmark } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { pushDataLayer } from '@/lib/data-layer';
 
 interface BookmarkButtonProps {
   articleId?: string;
   docId?: string;
+  articleSlug?: string;
+  articleTitle?: string;
+  articleCategory?: string;
 }
 
-export function BookmarkButton({ articleId, docId }: BookmarkButtonProps) {
+export function BookmarkButton({ articleId, docId, articleSlug, articleTitle, articleCategory }: BookmarkButtonProps) {
   const targetId = articleId || docId;
   const { user, openAuthModal } = useAuth();
   const [isBookmarked, setIsBookmarked] = useState(false);
@@ -44,6 +48,7 @@ export function BookmarkButton({ articleId, docId }: BookmarkButtonProps) {
       const data = await res.json();
       if (res.ok) {
         setIsBookmarked(data.bookmarked);
+        if (data.bookmarked) pushDataLayer('bookmark_add', { article_id: targetId, article_slug: articleSlug, article_title: articleTitle, article_category: articleCategory });
       }
     } catch (err) {
       console.error(err);

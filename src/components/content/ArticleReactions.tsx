@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Sparkles } from 'lucide-react';
+import { pushDataLayer } from '@/lib/data-layer';
 
 interface ArticleReactionsProps {
   articleId: string;
@@ -39,7 +40,7 @@ export function ArticleReactions({ articleId }: ArticleReactionsProps) {
 
     // Send to API
     try {
-      await fetch('/api/feedback', {
+      const response = await fetch('/api/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -48,6 +49,7 @@ export function ArticleReactions({ articleId }: ArticleReactionsProps) {
           reaction: emoji,
         }),
       });
+      if (response.ok) pushDataLayer('article_feedback', { article_id: articleId, reaction: emoji });
     } catch {}
   };
 

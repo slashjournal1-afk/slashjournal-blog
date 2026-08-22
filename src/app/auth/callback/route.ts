@@ -62,9 +62,17 @@ export async function GET(request: Request) {
     });
 
     await setSessionCookie(dbUser.id, dbUser.role as UserRole);
-    return NextResponse.redirect(new URL(next, requestUrl.origin));
+    const redirectUrl = new URL(next, requestUrl.origin);
+    redirectUrl.searchParams.set('auth', 'oauth-success');
+    redirectUrl.searchParams.set('method', providerFromUser(authUser));
+    return NextResponse.redirect(redirectUrl);
   } catch (error) {
     console.error('Error exchanging OAuth code for session:', error);
     return NextResponse.redirect(new URL('/?auth=oauth-error', requestUrl.origin));
   }
+}
+
+function providerFromUser(user: { app_metadata?: { provider?: unknown } }): string {
+  const provider = typeof user.app_metadata?.provider === 'string' ? user.app_metadata.provider.toLowerCase() : 'oauth';
+  return provider === 'twitter' ? 'twitter' : provider === 'google' || provider === 'github' ? provider : 'oauth';
 }

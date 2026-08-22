@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { ThumbsUp, ThumbsDown, Sparkles } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { pushDataLayer } from '@/lib/data-layer';
 
 interface DocFeedbackProps {
   articleId?: string;
@@ -36,13 +37,15 @@ export function DocFeedback({
     setSubmitting(true);
 
     try {
-      await fetch('/api/feedback', {
+      const response = await fetch('/api/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ articleId: targetId, isHelpful }),
       });
 
+      if (!response.ok) throw new Error('Feedback gagal dikirim');
       setVoted(isHelpful ? 'yes' : 'no');
+      pushDataLayer('article_feedback', { article_id: targetId, reaction: isHelpful ? 'helpful' : 'unhelpful' });
       if (isHelpful) setHelpfulCount((c) => c + 1);
       else setUnhelpfulCount((c) => c + 1);
     } catch (err) {
@@ -57,11 +60,13 @@ export function DocFeedback({
     setSelectedReaction(reaction);
 
     try {
-      await fetch('/api/feedback', {
+      const response = await fetch('/api/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ articleId: targetId, reaction, isHelpful: true }),
       });
+      if (!response.ok) throw new Error('Reaksi gagal dikirim');
+      pushDataLayer('article_feedback', { article_id: targetId, reaction });
     } catch (err) {
       console.error(err);
     }

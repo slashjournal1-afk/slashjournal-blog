@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { formatDateTime } from '@/lib/utils';
 import { MessageSquare, Send, Trash2, LogIn, AlertCircle } from 'lucide-react';
+import { pushDataLayer } from '@/lib/data-layer';
 
 interface CommentData {
   id: string;
@@ -65,6 +66,7 @@ export function CommentSection({ articleId, docId, initialComments }: CommentSec
       if (data.comment) {
         setComments([data.comment, ...comments]);
         setContent('');
+        pushDataLayer('comment_submit', { article_id: targetId });
       }
     } catch (err: any) {
       setErrorMsg(err.message || 'Terjadi kesalahan');

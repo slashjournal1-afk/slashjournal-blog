@@ -174,7 +174,13 @@ export default async function ArticleDetailPage({ params }: PageProps) {
       {/* Schema.org Structured Data */}
       <JsonLd data={jsonLd} />
       <JsonLd data={breadcrumbJsonLd} />
-      <ArticleViewTracker articleId={article.id} />
+      <ArticleViewTracker
+        articleId={article.id}
+        articleSlug={article.slug}
+        articleTitle={article.title}
+        articleCategory={article.category.name}
+        articleSeries={article.series?.title}
+      />
 
       {/* Floating Sticky Reading Header on Scroll */}
       <StickyReadingHeader
@@ -214,7 +220,7 @@ export default async function ArticleDetailPage({ params }: PageProps) {
             <span aria-current="page" className="min-w-0 truncate text-[var(--text-secondary)]">{article.title}</span>
           </nav>
 
-          <BookmarkButton articleId={article.id} />
+          <BookmarkButton articleId={article.id} articleSlug={article.slug} articleTitle={article.title} articleCategory={article.category.name} />
         </div>
       </div>
 

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Mail, CheckCircle2, Loader2 } from 'lucide-react';
+import { pushDataLayer } from '@/lib/data-layer';
 
 interface NewsletterBoxProps {
   className?: string;
@@ -34,6 +35,7 @@ export function NewsletterBox({ className = '', defaultTopic = 'all' }: Newslett
 
       setSuccess(true);
       setEmail('');
+      pushDataLayer('newsletter_subscribe', { subscription_topic: topic });
     } catch (err: any) {
       setError(err.message || 'Terjadi kesalahan saat mendaftar');
     } finally {
