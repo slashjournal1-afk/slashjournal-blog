@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 import { AdSlot } from '@/lib/types';
+import { GoogleAdSense } from './GoogleAdSense';
 
 interface SidebarStickyAdProps {
   ad?: AdSlot | null;
@@ -14,9 +15,9 @@ interface SidebarStickyAdProps {
 export function SidebarStickyAd({ ad, className = '' }: SidebarStickyAdProps) {
   if (!ad || !ad.isActive) {
     return (
-      <div
-        className={`rounded-[28px] bg-white dark:bg-[#18181b] border border-[#ececee] dark:border-[#27272a] p-5 text-left space-y-3 shadow-xs ${className}`}
-      >
+      <div className={className}>
+        <GoogleAdSense slot={process.env.NEXT_PUBLIC_ADSENSE_SIDEBAR_STICKY_SLOT} className="mb-4" />
+        <div className="rounded-[28px] bg-white dark:bg-[#18181b] border border-[#ececee] dark:border-[#27272a] p-5 text-left space-y-3 shadow-xs">
         <div className="flex items-center justify-between">
           <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[8px] bg-[#f4f4f5] dark:bg-[#27272a] text-[#71717a] dark:text-[#a1a1aa] text-[10px] font-bold uppercase tracking-wider">
             <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]" />
@@ -40,6 +41,7 @@ export function SidebarStickyAd({ ad, className = '' }: SidebarStickyAdProps) {
             <span>Kemitraan &amp; Pasang Iklan</span>
             <ArrowUpRight className="w-3.5 h-3.5" />
           </Link>
+        </div>
         </div>
       </div>
     );

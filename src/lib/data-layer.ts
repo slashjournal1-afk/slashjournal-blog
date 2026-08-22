@@ -8,7 +8,8 @@ export type AnalyticsEvent =
   | 'comment_submit'
   | 'newsletter_subscribe'
   | 'login'
-  | 'sign_up';
+  | 'sign_up'
+  | 'ad_impression';
 
 export function pushDataLayer(event: AnalyticsEvent, parameters: Record<string, string | number | undefined> = {}) {
   if (typeof window === 'undefined') return;

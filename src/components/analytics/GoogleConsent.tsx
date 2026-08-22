@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
 type ConsentChoice = 'granted' | 'denied';
+type ConsentState = { analytics: ConsentChoice; advertising: ConsentChoice };
 
 const STORAGE_KEY = 'slashjournal-consent-v2';
 
@@ -14,24 +15,29 @@ declare global {
   }
 }
 
-function updateConsent(choice: ConsentChoice) {
+export function updateConsent(state: ConsentState) {
   window.dataLayer = window.dataLayer || [];
   window.gtag?.('consent', 'update', {
-    analytics_storage: choice,
-    ad_storage: 'denied',
-    ad_user_data: 'denied',
-    ad_personalization: 'denied',
+    analytics_storage: state.analytics,
+    ad_storage: state.advertising,
+    ad_user_data: state.advertising,
+    ad_personalization: state.advertising,
   });
-  window.dataLayer.push({ event: 'consent_update', analytics_storage: choice });
-  localStorage.setItem(STORAGE_KEY, choice);
-  if (choice === 'granted') window.dispatchEvent(new CustomEvent('slashjournal:analytics-consent'));
+  window.dataLayer.push({ event: 'consent_update', analytics_storage: state.analytics, ad_storage: state.advertising });
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  window.dispatchEvent(new CustomEvent('slashjournal:consent-update', { detail: state }));
 }
 
 export function GoogleConsent() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY) as ConsentChoice | null;
+    const storedValue = localStorage.getItem(STORAGE_KEY);
+    let stored: ConsentState | null = null;
+    try {
+      const parsed = storedValue ? JSON.parse(storedValue) : null;
+      if (parsed?.analytics && parsed?.advertising) stored = parsed;
+    } catch {}
     if (stored) updateConsent(stored);
     // localStorage is an external store; this update intentionally happens after hydration.
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -56,14 +62,14 @@ export function GoogleConsent() {
       <div className="mt-4 flex flex-wrap gap-2">
         <button
           type="button"
-          onClick={() => { updateConsent('granted'); setVisible(false); }}
+           onClick={() => { updateConsent({ analytics: 'granted', advertising: 'granted' }); setVisible(false); }}
           className="min-h-10 bg-[var(--color-ink)] px-4 text-xs font-semibold text-white"
         >
-          Terima analitik
+           Terima semua
         </button>
         <button
           type="button"
-          onClick={() => { updateConsent('denied'); setVisible(false); }}
+           onClick={() => { updateConsent({ analytics: 'denied', advertising: 'denied' }); setVisible(false); }}
           className="min-h-10 border border-[var(--border-color)] px-4 text-xs font-semibold text-[var(--text-primary)]"
         >
           Tolak
