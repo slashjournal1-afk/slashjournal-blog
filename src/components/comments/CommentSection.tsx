@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { formatDateTime } from '@/lib/utils';
-import { MessageSquare, Send, Trash2, ShieldCheck, AlertCircle } from 'lucide-react';
+import { MessageSquare, Send, Trash2, LogIn, AlertCircle } from 'lucide-react';
 
 interface CommentData {
   id: string;
@@ -96,8 +96,8 @@ export function CommentSection({ articleId, docId, initialComments }: CommentSec
           <span>Diskusi &amp; Catatan Teknis ({comments.length})</span>
         </h3>
         <span className="text-xs text-[#71717a] dark:text-[#a1a1aa] flex items-center gap-1">
-          <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-          Auto-Approve Terverifikasi
+          <LogIn className="w-3.5 h-3.5 text-emerald-500" />
+          Login diperlukan
         </span>
       </div>
 

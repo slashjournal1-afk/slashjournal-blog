@@ -2,13 +2,17 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getCurrentUser, hasPermission } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
+import { jsonError } from '@/lib/api-errors';
+import { publicArticleWhere } from '@/lib/visibility';
+import { commentSchema } from '@/lib/validation';
+import { rateLimit, requestKey } from '@/lib/rate-limit';
 
 export async function GET(req: Request) {
   const articleId = new URL(req.url).searchParams.get('articleId');
   if (!articleId) return NextResponse.json({ comments: [] }, { status: 400 });
 
   const comments = await prisma.comment.findMany({
-    where: { articleId },
+    where: { article: { ...publicArticleWhere }, articleId },
     orderBy: { createdAt: 'desc' },
     take: 20,
     include: {
@@ -20,17 +24,17 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  if (!rateLimit(requestKey(req, 'comments'), 5, 60_000)) return NextResponse.json({ error: 'Terlalu banyak komentar' }, { status: 429 });
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: 'Silakan login terlebih dahulu' }, { status: 401 });
 
   try {
-    const body = await req.json();
-    const articleId = body.articleId || body.docId;
-    const content = body.content;
+    const parsed = commentSchema.safeParse(await req.json());
+    if (!parsed.success) return jsonError(parsed.error.issues[0]?.message || 'Komentar tidak valid', 400);
+    const { articleId, content } = parsed.data;
 
-    if (!articleId || !content || !content.trim()) {
-      return NextResponse.json({ error: 'Komentar tidak boleh kosong' }, { status: 400 });
-    }
+    const article = await prisma.article.findFirst({ where: { id: articleId, ...publicArticleWhere }, select: { slug: true } });
+    if (!article) return NextResponse.json({ error: 'Artikel tidak ditemukan' }, { status: 404 });
 
     const comment = await prisma.comment.create({
       data: {
@@ -50,8 +54,8 @@ export async function POST(req: Request) {
 
     const { article: _article, ...publicComment } = comment;
     return NextResponse.json({ success: true, comment: publicComment });
-  } catch (err: any) {
-    return NextResponse.json({ error: 'Gagal mengirim komentar' }, { status: 500 });
+  } catch (err: unknown) {
+    return jsonError('Gagal mengirim komentar', 500, err);
   }
 }
 

@@ -46,6 +46,10 @@ export function AuthModal() {
     }
   };
 
+  const handleOAuth = (provider: 'google' | 'github' | 'twitter') => {
+    window.location.assign(`/api/auth/oauth?provider=${provider}&next=${encodeURIComponent(window.location.pathname)}`);
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-150">
       <div
@@ -154,6 +158,18 @@ export function AuthModal() {
               <span>{mode === 'login' ? 'Masuk ke Akun' : 'Daftar Akun Baru'}</span>
             </button>
           </form>
+
+          <div className="grid grid-cols-2 gap-3">
+            <button type="button" onClick={() => handleOAuth('google')} className="rounded-[16px] border border-[#ececee] dark:border-[#3f3f46] py-3 text-xs font-bold hover:border-[var(--accent)] transition-colors">
+              Google
+            </button>
+            <button type="button" onClick={() => handleOAuth('github')} className="rounded-[16px] border border-[#ececee] dark:border-[#3f3f46] py-3 text-xs font-bold hover:border-[var(--accent)] transition-colors">
+              GitHub
+            </button>
+            <button type="button" onClick={() => handleOAuth('twitter')} className="col-span-2 rounded-[16px] border border-[#ececee] dark:border-[#3f3f46] py-3 text-xs font-bold hover:border-[var(--accent)] transition-colors">
+              X
+            </button>
+          </div>
 
           {/* Mode Switcher */}
           <div className="text-center text-xs text-[#71717a] pt-3 border-t border-[#ececee] dark:border-[#27272a]">

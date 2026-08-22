@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { verifyPassword, generateToken } from '@/lib/auth';
+import { jsonError } from '@/lib/api-errors';
 
 export async function POST(req: Request) {
   try {
@@ -48,8 +49,8 @@ export async function POST(req: Request) {
     });
 
     return response;
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error(err);
-    return NextResponse.json({ error: 'Gagal memproses login' }, { status: 500 });
+    return jsonError('Gagal memproses login', 500, err);
   }
 }

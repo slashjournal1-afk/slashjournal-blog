@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth';
+import { jsonError } from '@/lib/api-errors';
 
 export async function POST() {
   try {
@@ -41,8 +42,8 @@ export async function POST() {
     });
 
     return response;
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Delete account error:', err);
-    return NextResponse.json({ error: 'Gagal memproses penghapusan akun' }, { status: 500 });
+    return jsonError('Gagal memproses penghapusan akun', 500, err);
   }
 }

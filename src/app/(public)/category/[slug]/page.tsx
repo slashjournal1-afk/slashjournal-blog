@@ -12,6 +12,7 @@ import type { Metadata } from 'next';
 import { absoluteUrl } from '@/lib/site';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { breadcrumbSchema } from '@/lib/structured-data';
+import { publicArticleWhere } from '@/lib/visibility';
 
 export const revalidate = 300;
 const PAGE_SIZE = 12;
@@ -46,7 +47,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
     where: { slug },
     include: {
       articles: {
-        where: { status: 'PUBLISHED' },
+        where: { ...publicArticleWhere },
         include: {
           author: true,
           tags: { include: { tag: true } },
@@ -59,6 +60,10 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
   });
 
   if (!category) {
+    notFound();
+  }
+
+  if (!category.isIndexable) {
     notFound();
   }
 

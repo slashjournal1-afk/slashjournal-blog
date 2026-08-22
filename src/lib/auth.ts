@@ -7,21 +7,47 @@ import { cache } from 'react';
 
 export const AUTH_COOKIE_NAME = 'slash_kb_token';
 
-// Simple robust token payload codec (base64url + timestamp)
+const SESSION_SECRET = process.env.AUTH_SECRET || process.env.JWT_SECRET;
+
+function getSessionSecret(): string {
+  if (SESSION_SECRET) return SESSION_SECRET;
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('AUTH_SECRET or JWT_SECRET is required in production');
+  }
+  return 'development-only-session-secret';
+}
+
+function signSessionPayload(payload: string): string {
+  return crypto.createHmac('sha256', getSessionSecret()).update(payload).digest('base64url');
+}
+
 export function generateToken(payload: { userId: string; role: UserRole }): string {
-  const data = JSON.stringify({
+  const encodedPayload = Buffer.from(JSON.stringify({
     ...payload,
     exp: Date.now() + 30 * 24 * 60 * 60 * 1000, // 30 days
-  });
-  return Buffer.from(data).toString('base64url');
+  })).toString('base64url');
+  return `${encodedPayload}.${signSessionPayload(encodedPayload)}`;
 }
 
 export function parseToken(token: string): { userId: string; role: UserRole; exp: number } | null {
   try {
-    const raw = Buffer.from(token, 'base64url').toString('utf-8');
-    const data = JSON.parse(raw);
+    const [encodedPayload, signature] = token.split('.');
+    if (!encodedPayload || !signature) return null;
+    const expectedSignature = signSessionPayload(encodedPayload);
+    const expectedBuffer = Buffer.from(expectedSignature);
+    const actualBuffer = Buffer.from(signature);
+    if (expectedBuffer.length !== actualBuffer.length || !crypto.timingSafeEqual(expectedBuffer, actualBuffer)) {
+      return null;
+    }
+    const data = JSON.parse(Buffer.from(encodedPayload, 'base64url').toString('utf-8')) as {
+      userId?: unknown;
+      role?: unknown;
+      exp?: unknown;
+    };
+    if (typeof data.userId !== 'string' || typeof data.role !== 'string' || typeof data.exp !== 'number') return null;
     if (data.exp && data.exp < Date.now()) return null;
-    return data;
+    if (!['ADMIN', 'EDITOR', 'AUTHOR', 'READER'].includes(data.role)) return null;
+    return data as { userId: string; role: UserRole; exp: number };
   } catch {
     return null;
   }
@@ -86,12 +112,20 @@ export function hasPermission(currentRole: UserRole, allowedRoles: UserRole[]): 
 }
 
 // Stateless secure HMAC-based password reset token
-const RESET_SECRET = process.env.AUTH_SECRET || 'slashjournal-password-reset-salt-key-84920';
+const RESET_SECRET = process.env.AUTH_SECRET || process.env.JWT_SECRET;
+
+function getResetSecret(): string {
+  if (RESET_SECRET) return RESET_SECRET;
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('AUTH_SECRET or JWT_SECRET is required in production');
+  }
+  return 'development-only-password-reset-secret';
+}
 
 export function generateResetToken(email: string): string {
   const exp = Date.now() + 60 * 60 * 1000; // 1 hour expiration
   const payload = `${email.toLowerCase().trim()}:${exp}`;
-  const signature = crypto.createHmac('sha256', RESET_SECRET).update(payload).digest('hex');
+  const signature = crypto.createHmac('sha256', getResetSecret()).update(payload).digest('hex');
   return Buffer.from(`${payload}:${signature}`).toString('base64url');
 }
 
@@ -109,8 +143,8 @@ export function verifyResetToken(token: string): { email: string; valid: boolean
       return { email, valid: false, error: 'Token pemulihan telah kedaluwarsa (berlaku 1 jam)' };
     }
 
-    const expectedSig = crypto.createHmac('sha256', RESET_SECRET).update(`${email}:${exp}`).digest('hex');
-    if (signature !== expectedSig) {
+    const expectedSig = crypto.createHmac('sha256', getResetSecret()).update(`${email}:${exp}`).digest('hex');
+    if (signature.length !== expectedSig.length || !crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSig))) {
       return { email: '', valid: false, error: 'Tanda tangan token tidak valid atau telah dimanipulasi' };
     }
 

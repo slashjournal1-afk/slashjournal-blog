@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth';
+import { publicArticleWhere } from '@/lib/visibility';
 
 export async function GET(req: Request) {
   const user = await getCurrentUser();
@@ -17,12 +18,8 @@ export async function GET(req: Request) {
   }
 
   const bookmarks = await prisma.bookmark.findMany({
-    where: { userId: user.id },
-    include: {
-      article: {
-        include: { category: true },
-      },
-    },
+    where: { userId: user.id, article: publicArticleWhere },
+    include: { article: { include: { category: true } } },
     orderBy: { createdAt: 'desc' },
   });
 
@@ -52,7 +49,7 @@ export async function POST(req: Request) {
       });
       return NextResponse.json({ bookmarked: true });
     }
-  } catch (err: any) {
+  } catch (err: unknown) {
     return NextResponse.json({ error: 'Gagal mengubah status bookmark' }, { status: 500 });
   }
 }

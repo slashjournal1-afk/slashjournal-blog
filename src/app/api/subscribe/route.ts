@@ -1,23 +1,27 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { jsonError } from '@/lib/api-errors';
+import { subscriptionSchema } from '@/lib/validation';
+import { rateLimit, requestKey } from '@/lib/rate-limit';
 
 export async function POST(req: Request) {
+  if (!rateLimit(requestKey(req, 'subscribe'), 5, 3600_000)) return NextResponse.json({ error: 'Terlalu banyak permintaan' }, { status: 429 });
   try {
-    const { email, topic } = await req.json();
+    const parsed = subscriptionSchema.safeParse(await req.json());
+    if (!parsed.success) return jsonError('Alamat email atau topik tidak valid', 400);
+    const { email, topic } = parsed.data;
 
-    if (!email || !email.includes('@')) {
-      return NextResponse.json({ error: 'Alamat email tidak valid' }, { status: 400 });
-    }
-
-    await prisma.subscription.create({
-      data: {
-        email: email.toLowerCase().trim(),
-        topic: topic || 'all',
+    await prisma.subscription.upsert({
+      where: { email_topic: { email, topic } },
+      update: {},
+      create: {
+        email,
+        topic,
       },
     });
 
     return NextResponse.json({ success: true, message: 'Berhasil berlangganan pembaruan!' });
-  } catch (err: any) {
-    return NextResponse.json({ error: 'Gagal memproses langganan' }, { status: 500 });
+  } catch (err: unknown) {
+    return jsonError('Gagal memproses langganan', 500, err);
   }
 }

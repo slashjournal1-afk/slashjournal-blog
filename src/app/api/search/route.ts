@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { rateLimit, requestKey } from '@/lib/rate-limit';
 
 export async function GET(req: NextRequest) {
+  if (!rateLimit(requestKey(req, 'search'), 30, 60_000)) return NextResponse.json({ error: 'Terlalu banyak permintaan' }, { status: 429 });
   const { searchParams } = new URL(req.url);
   const q = searchParams.get('q')?.trim() || '';
 

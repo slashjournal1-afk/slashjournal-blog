@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { hashPassword, generateToken } from '@/lib/auth';
+import { jsonError } from '@/lib/api-errors';
 
 export async function POST(req: Request) {
   try {
@@ -51,8 +52,8 @@ export async function POST(req: Request) {
     });
 
     return response;
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error(err);
-    return NextResponse.json({ error: 'Gagal mendaftarkan akun' }, { status: 500 });
+    return jsonError('Gagal mendaftarkan akun', 500, err);
   }
 }

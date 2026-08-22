@@ -2,12 +2,7 @@ import { cache } from 'react';
 import { unstable_cache } from 'next/cache';
 import { prisma } from '@/lib/db';
 import { prepareArticleDiscovery, type ArticleDiscoveryContext, type DiscoveryArticle } from '@/lib/article-discovery';
-
-const publicArticleWhere = {
-  status: 'PUBLISHED',
-  isIndexable: true,
-  category: { isIndexable: true },
-} as const;
+import { publicArticleWhere } from '@/lib/visibility';
 
 const discoveryArticleSelect = {
   id: true,
@@ -24,8 +19,8 @@ const discoveryArticleSelect = {
 } as const;
 
 const getCachedPublishedArticle = unstable_cache(async (slug: string) => {
-  return prisma.article.findUnique({
-    where: { slug },
+  return prisma.article.findFirst({
+    where: { slug, ...publicArticleWhere },
     include: {
       category: true,
       series: {
