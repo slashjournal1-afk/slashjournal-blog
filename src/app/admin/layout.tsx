@@ -52,9 +52,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <BrandLogo size={36} className="rounded-[12px]" />
             <div>
               <span className="text-[17px] font-extrabold text-[var(--text-primary)] tracking-tight block leading-none">
-                SLASH<span className="text-[#ff5a00]">JOURNAL</span>
+                SLASH<span className="text-[var(--accent)]">JOURNAL</span>
               </span>
-              <span className="text-[9.5px] font-mono text-[var(--text-muted)] group-hover:text-[#ff5a00] block mt-1 uppercase font-bold tracking-wider transition-colors">
+              <span className="text-[9.5px] font-mono text-[var(--text-muted)] group-hover:text-[var(--accent)] block mt-1 uppercase font-bold tracking-wider transition-colors">
                 ← Beranda Utama
               </span>
             </div>
@@ -73,7 +73,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                   href={item.href}
                   className="flex items-center gap-3 px-3.5 py-2.5 rounded-btn text-[13px] font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-card-muted)] transition-colors active:scale-98"
                 >
-                  <Icon className="w-4 h-4 text-[#ff5a00] shrink-0" />
+                  <Icon className="w-4 h-4 text-[var(--accent)] shrink-0" />
                   <span>{item.label}</span>
                 </Link>
               );
@@ -92,7 +92,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                 {user.email}
               </span>
             </div>
-            <span className="text-[9.5px] px-2 py-0.5 rounded-full bg-[#ff5a00]/15 text-[#ff5a00] font-mono font-bold shrink-0">
+            <span className="text-[9.5px] px-2 py-0.5 rounded-full bg-[var(--accent-soft)] text-[var(--accent)] font-mono font-bold shrink-0">
               {user.role}
             </span>
           </div>
@@ -100,9 +100,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <div className="grid grid-cols-2 gap-2 pt-1">
             <Link
               href="/"
-              className="flex items-center justify-center gap-1.5 py-2 rounded-btn bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-[#ff5a00] text-[11.5px] font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+              className="flex items-center justify-center gap-1.5 py-2 rounded-btn bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-[var(--accent)] text-[11.5px] font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
             >
-              <Home className="w-3.5 h-3.5 text-[#ff5a00]" />
+              <Home className="w-3.5 h-3.5 text-[var(--accent)]" />
               <span>Beranda</span>
             </Link>
             <form action="/api/auth/logout" method="POST">

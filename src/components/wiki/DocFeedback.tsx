@@ -92,7 +92,7 @@ export function DocFeedback({
             disabled={submitting || voted !== null}
             className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-[12px] text-xs font-semibold border transition-all ${
               voted === 'yes'
-                ? 'bg-emerald-500/10 border-emerald-500 text-emerald-600 font-bold'
+                 ? 'bg-[var(--success-soft)] border-[var(--success)] text-[var(--success)] font-bold'
                 : 'border-[#ececee] dark:border-[#27272a] text-[#52525b] dark:text-[#a1a1aa] hover:border-emerald-500 hover:text-emerald-600 bg-[#f4f4f5] dark:bg-[#27272a]'
             }`}
           >
@@ -105,7 +105,7 @@ export function DocFeedback({
             disabled={submitting || voted !== null}
             className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-[12px] text-xs font-semibold border transition-all ${
               voted === 'no'
-                ? 'bg-red-500/10 border-red-500 text-red-600 font-bold'
+                 ? 'bg-[var(--danger-soft)] border-[var(--danger)] text-[var(--danger)] font-bold'
                 : 'border-[#ececee] dark:border-[#27272a] text-[#52525b] dark:text-[#a1a1aa] hover:border-red-500 hover:text-red-600 bg-[#f4f4f5] dark:bg-[#27272a]'
             }`}
           >

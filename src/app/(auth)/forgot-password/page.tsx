@@ -121,7 +121,7 @@ export default function ForgotPasswordPage() {
               </p>
               <Link
                 href={resetUrl}
-                className="w-full py-3 px-4 rounded-[14px] bg-[var(--accent)] hover:bg-[#e04f00] text-white text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-xs"
+                className="w-full py-3 px-4 rounded-[14px] bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--accent-foreground)] text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-xs"
               >
                 <span>Buka Formulir Reset Sandi</span>
                 <ExternalLink className="w-3.5 h-3.5" />

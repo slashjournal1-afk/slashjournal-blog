@@ -884,7 +884,7 @@ export function SlashEditor({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#ececee] dark:border-[#27272a] pb-5">
         <div>
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#ff5a00] animate-pulse" />
+            <span className="w-2.5 h-2.5 rounded-full bg-[var(--accent)] animate-pulse" />
             <h1 className="text-2xl font-extrabold text-[#09090b] dark:text-white tracking-tight">
               {initialArticle?.id ? 'Edit Naskah Arsitektur' : 'Studio Penulisan Dokumen & Diagram'}
             </h1>
@@ -892,7 +892,7 @@ export function SlashEditor({
           <div className="flex flex-wrap items-center gap-3 text-xs text-[#71717a] dark:text-[#a1a1aa] mt-1">
             <span>Editor Notion-Style dengan Live Mermaid Diagram &amp; Multi-Tab Code</span>
             <span>•</span>
-            <span className="font-mono text-[#ff5a00] flex items-center gap-1">
+            <span className="font-mono text-[var(--accent)] flex items-center gap-1">
               <Clock className="w-3.5 h-3.5" />
               {readingStats.minutes} mnt baca ({readingStats.words} kata)
             </span>
@@ -915,7 +915,7 @@ export function SlashEditor({
             className="px-3.5 py-2 rounded-[12px] bg-[#f4f4f5] dark:bg-[#27272a] hover:bg-zinc-200 dark:hover:bg-zinc-700 text-xs font-bold text-[#09090b] dark:text-white transition-all flex items-center gap-1.5 active:scale-95"
             title="Pratinjau Simulator SEO & Social Card"
           >
-            <Share2 className="w-3.5 h-3.5 text-[#ff5a00]" />
+            <Share2 className="w-3.5 h-3.5 text-[var(--accent)]" />
             <span>SEO Preview</span>
           </button>
 
@@ -925,7 +925,7 @@ export function SlashEditor({
             disabled={saving}
             className="px-4 py-2 rounded-[12px] bg-white dark:bg-[#18181b] border border-[#ececee] dark:border-[#27272a] hover:bg-[#f4f4f5] dark:hover:bg-[#27272a] text-xs font-bold text-[#09090b] dark:text-white transition-all shadow-xs flex items-center gap-2 active:scale-95"
           >
-            <Save className="w-3.5 h-3.5 text-[#ff5a00]" />
+            <Save className="w-3.5 h-3.5 text-[var(--accent)]" />
             <span>Simpan Draf (Ctrl+S)</span>
           </button>
 
@@ -936,7 +936,7 @@ export function SlashEditor({
               disabled={saving}
               className="px-5 py-2 rounded-[12px] bg-[#09090b] dark:bg-white text-white dark:text-[#09090b] hover:bg-[#18181b] dark:hover:bg-zinc-200 text-xs font-bold shadow-awesomic-dark-btn transition-all flex items-center gap-2 active:scale-95"
             >
-              {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5 text-[#ff5a00]" />}
+              {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5 text-[var(--accent)]" />}
               <span>Terbitkan Publik</span>
             </button>
           ) : (
@@ -946,7 +946,7 @@ export function SlashEditor({
               disabled={saving}
               className="px-5 py-2 rounded-[12px] bg-[#09090b] dark:bg-white text-white dark:text-[#09090b] hover:bg-[#18181b] dark:hover:bg-zinc-200 text-xs font-bold shadow-awesomic-dark-btn transition-all flex items-center gap-2 active:scale-95"
             >
-              {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5 text-[#ff5a00]" />}
+              {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5 text-[var(--accent)]" />}
               <span>Kirim ke Review</span>
             </button>
           )}
@@ -985,7 +985,7 @@ export function SlashEditor({
       <div className="rounded-[32px] bg-white dark:bg-[#18181b] border border-[#ececee] dark:border-[#27272a] p-6 space-y-5 shadow-xs">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-[#ff5a00]" />
+            <Sparkles className="w-4 h-4 text-[var(--accent)]" />
             <h3 className="text-sm font-bold text-[#09090b] dark:text-white uppercase tracking-wider">
               Metadata, Kanal &amp; Atribusi
             </h3>
@@ -1013,7 +1013,7 @@ export function SlashEditor({
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Contoh: Merancang Sistem Idempotensi..."
-                  className="w-full px-4 py-3 rounded-[14px] bg-[#f4f4f5] dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-xs sm:text-sm font-medium text-[#09090b] dark:text-white focus:outline-none focus:border-[#ff5a00]"
+                  className="w-full px-4 py-3 rounded-[14px] bg-[#f4f4f5] dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-xs sm:text-sm font-medium text-[#09090b] dark:text-white focus:outline-none focus:border-[var(--accent)]"
                 />
               </div>
 
@@ -1034,7 +1034,7 @@ export function SlashEditor({
                     setSlug(e.target.value);
                   }}
                   placeholder="merancang-sistem-idempotensi"
-                  className="w-full px-4 py-3 rounded-[14px] bg-[#f4f4f5] dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-xs font-mono text-[#09090b] dark:text-white focus:outline-none focus:border-[#ff5a00]"
+                  className="w-full px-4 py-3 rounded-[14px] bg-[#f4f4f5] dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-xs font-mono text-[#09090b] dark:text-white focus:outline-none focus:border-[var(--accent)]"
                 />
               </div>
             </div>
@@ -1049,7 +1049,7 @@ export function SlashEditor({
                 value={excerpt}
                 onChange={(e) => setExcerpt(e.target.value)}
                 placeholder="Ringkasan padat arsitektur untuk pratinjau kartu, RSS feed, dan SEO metadata..."
-                className="w-full px-4 py-3 rounded-[14px] bg-[#f4f4f5] dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-xs sm:text-sm text-[#09090b] dark:text-white focus:outline-none focus:border-[#ff5a00] resize-none"
+                className="w-full px-4 py-3 rounded-[14px] bg-[#f4f4f5] dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-xs sm:text-sm text-[#09090b] dark:text-white focus:outline-none focus:border-[var(--accent)] resize-none"
               ></textarea>
             </div>
 
@@ -1063,7 +1063,7 @@ export function SlashEditor({
                   <button
                     type="button"
                     onClick={() => setIsCategoryModalOpen(true)}
-                    className="text-[11px] font-bold text-[#ff5a00] hover:underline flex items-center gap-0.5"
+                    className="text-[11px] font-bold text-[var(--accent)] hover:underline flex items-center gap-0.5"
                   >
                     <Plus className="w-3 h-3" />
                     <span>Kategori Baru</span>
@@ -1078,7 +1078,7 @@ export function SlashEditor({
                       setCategoryId(e.target.value);
                     }
                   }}
-                  className="w-full px-4 py-3 rounded-[14px] bg-[#f4f4f5] dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-xs font-semibold text-[#09090b] dark:text-white focus:outline-none focus:border-[#ff5a00]"
+                  className="w-full px-4 py-3 rounded-[14px] bg-[#f4f4f5] dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-xs font-semibold text-[#09090b] dark:text-white focus:outline-none focus:border-[var(--accent)]"
                 >
                   {categoriesList.map((c) => (
                     <option key={c.id} value={c.id}>
@@ -1097,7 +1097,7 @@ export function SlashEditor({
                   <button
                     type="button"
                     onClick={() => setIsSeriesModalOpen(true)}
-                    className="text-[11px] font-bold text-[#ff5a00] hover:underline flex items-center gap-0.5"
+                    className="text-[11px] font-bold text-[var(--accent)] hover:underline flex items-center gap-0.5"
                   >
                     <Plus className="w-3 h-3" />
                     <span>Seri Baru</span>
@@ -1112,7 +1112,7 @@ export function SlashEditor({
                       setSeriesId(e.target.value);
                     }
                   }}
-                  className="w-full px-4 py-3 rounded-[14px] bg-[#f4f4f5] dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-xs font-semibold text-[#09090b] dark:text-white focus:outline-none focus:border-[#ff5a00]"
+                  className="w-full px-4 py-3 rounded-[14px] bg-[#f4f4f5] dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-xs font-semibold text-[#09090b] dark:text-white focus:outline-none focus:border-[var(--accent)]"
                 >
                   <option value="">Bukan Bagian dari Seri</option>
                   {seriesListState.map((s) => (
@@ -1148,7 +1148,7 @@ export function SlashEditor({
             <div className="p-4 sm:p-5 rounded-[24px] bg-[#fafafa] dark:bg-[#151518] border border-[#ececee] dark:border-[#27272a] space-y-4 shadow-2xs">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#ececee] dark:border-[#27272a] pb-3">
                 <div className="flex items-center gap-2">
-                  <span className="p-1 rounded-[8px] bg-orange-500/10 text-[#ff5a00]">
+                  <span className="p-1 rounded-[8px] bg-[var(--accent-soft)] text-[var(--accent)]">
                     <ImageIcon className="w-4 h-4" />
                   </span>
                   <label className="text-xs font-bold text-[#09090b] dark:text-white uppercase tracking-wider">
@@ -1207,7 +1207,7 @@ export function SlashEditor({
                         {uploadingImage ? (
                           <Loader2 className="w-3.5 h-3.5 animate-spin" />
                         ) : (
-                          <Upload className="w-3.5 h-3.5 text-[#ff5a00]" />
+                          <Upload className="w-3.5 h-3.5 text-[var(--accent)]" />
                         )}
                         <span>Ganti Gambar</span>
                       </button>
@@ -1215,7 +1215,7 @@ export function SlashEditor({
                       <button
                         type="button"
                         onClick={handleCopyCoverUrl}
-                        className="px-3.5 py-2 rounded-[12px] bg-white dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-xs font-bold text-[#09090b] dark:text-white hover:border-[#ff5a00] transition-colors flex items-center gap-1.5 active:scale-95"
+                        className="px-3.5 py-2 rounded-[12px] bg-white dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-xs font-bold text-[#09090b] dark:text-white hover:border-[var(--accent)] transition-colors flex items-center gap-1.5 active:scale-95"
                         title="Salin tautan gambar sampul"
                       >
                         {isCopiedCoverUrl ? (
@@ -1235,7 +1235,7 @@ export function SlashEditor({
                         href={coverImageUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="px-3 py-2 rounded-[12px] bg-white dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-xs font-bold text-[#71717a] hover:text-[#09090b] dark:hover:text-white hover:border-[#ff5a00] transition-colors flex items-center gap-1"
+                        className="px-3 py-2 rounded-[12px] bg-white dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-xs font-bold text-[#71717a] hover:text-[#09090b] dark:hover:text-white hover:border-[var(--accent)] transition-colors flex items-center gap-1"
                         title="Buka gambar di tab baru"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
@@ -1266,7 +1266,7 @@ export function SlashEditor({
                             setIsCoverError(false);
                           }}
                           placeholder="https://... atau /uploads/..."
-                          className="w-full px-3.5 py-2.5 rounded-[12px] bg-white dark:bg-[#18181b] border border-[#ececee] dark:border-[#3f3f46] text-xs font-mono text-[#09090b] dark:text-white focus:outline-none focus:border-[#ff5a00]"
+                          className="w-full px-3.5 py-2.5 rounded-[12px] bg-white dark:bg-[#18181b] border border-[#ececee] dark:border-[#3f3f46] text-xs font-mono text-[#09090b] dark:text-white focus:outline-none focus:border-[var(--accent)]"
                         />
                       </div>
 
@@ -1291,9 +1291,9 @@ export function SlashEditor({
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
                   <div
                     onClick={() => coverFileInputRef.current?.click()}
-                    className="md:col-span-7 border-2 border-dashed border-[#ececee] dark:border-[#3f3f46] hover:border-[#ff5a00] rounded-[20px] p-5 text-center cursor-pointer transition-colors bg-white dark:bg-[#18181b] space-y-2 group"
+                    className="md:col-span-7 border-2 border-dashed border-[#ececee] dark:border-[#3f3f46] hover:border-[var(--accent)] rounded-[20px] p-5 text-center cursor-pointer transition-colors bg-white dark:bg-[#18181b] space-y-2 group"
                   >
-                    <div className="w-10 h-10 rounded-full bg-orange-50 dark:bg-orange-950/40 text-[#ff5a00] flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
+                    <div className="w-10 h-10 rounded-full bg-[var(--accent-soft)] text-[var(--accent)] flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
                       {uploadingImage ? (
                         <Loader2 className="w-5 h-5 animate-spin" />
                       ) : (
@@ -1323,7 +1323,7 @@ export function SlashEditor({
                           setIsCoverError(false);
                         }}
                         placeholder="https://images.unsplash.com/photo-..."
-                        className="w-full px-3.5 py-2.5 rounded-[12px] bg-white dark:bg-[#18181b] border border-[#ececee] dark:border-[#3f3f46] text-xs text-[#09090b] dark:text-white focus:outline-none focus:border-[#ff5a00]"
+                        className="w-full px-3.5 py-2.5 rounded-[12px] bg-white dark:bg-[#18181b] border border-[#ececee] dark:border-[#3f3f46] text-xs text-[#09090b] dark:text-white focus:outline-none focus:border-[var(--accent)]"
                       />
                     </div>
 
@@ -1361,7 +1361,7 @@ export function SlashEditor({
                   type="checkbox"
                   checked={isSponsored}
                   onChange={(e) => setIsSponsored(e.target.checked)}
-                  className="w-5 h-5 accent-[#ff5a00] rounded cursor-pointer"
+                  className="w-5 h-5 accent-[var(--accent)] rounded cursor-pointer"
                 />
               </div>
 
@@ -1483,7 +1483,7 @@ export function SlashEditor({
                   '```mermaid\nsequenceDiagram\n    autonumber\n    Client->>Server: Request\n    Server-->>Client: Response\n```\n'
                 )
               }
-              className="px-2.5 py-1.5 rounded-[10px] bg-orange-50 dark:bg-orange-950/30 text-[#ff5a00] hover:bg-orange-100 dark:hover:bg-orange-900/40 text-xs font-bold flex items-center gap-1.5"
+              className="px-2.5 py-1.5 rounded-[10px] bg-[var(--accent-soft)] text-[var(--accent)] hover:brightness-95 text-xs font-bold flex items-center gap-1.5"
               title="Sisipkan Sequence Diagram Mermaid"
             >
               <Workflow className="w-3.5 h-3.5" />
@@ -1571,10 +1571,10 @@ export function SlashEditor({
             <button
               type="button"
               onClick={() => setIsImageModalOpen(true)}
-              className="px-3 py-1.5 rounded-[10px] bg-[#f4f4f5] dark:bg-[#27272a] text-xs font-bold text-[#09090b] dark:text-white hover:text-[#ff5a00] transition-colors flex items-center gap-1.5 active:scale-95"
+              className="px-3 py-1.5 rounded-[10px] bg-[#f4f4f5] dark:bg-[#27272a] text-xs font-bold text-[#09090b] dark:text-white hover:text-[var(--accent)] transition-colors flex items-center gap-1.5 active:scale-95"
               title="Sisipkan berkas gambar (auto WebP) atau tautan URL langsung"
             >
-              <FileImage className="w-3.5 h-3.5 text-[#ff5a00]" />
+              <FileImage className="w-3.5 h-3.5 text-[var(--accent)]" />
               <span>Sisipkan Media Konten</span>
             </button>
 
@@ -1628,7 +1628,7 @@ export function SlashEditor({
                 onChange={handleTextChange}
                 onKeyDown={handleKeyDown}
                 onScroll={handleEditorScroll}
-                className="flex-1 w-full font-mono text-xs sm:text-sm p-6 rounded-[28px] bg-white dark:bg-[#18181b] border border-[#ececee] dark:border-[#27272a] focus:outline-none focus:border-[#ff5a00] leading-relaxed text-[#09090b] dark:text-white resize-none shadow-xs overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-300 dark:scrollbar-thumb-zinc-700"
+                className="flex-1 w-full font-mono text-xs sm:text-sm p-6 rounded-[28px] bg-white dark:bg-[#18181b] border border-[#ececee] dark:border-[#27272a] focus:outline-none focus:border-[var(--accent)] leading-relaxed text-[#09090b] dark:text-white resize-none shadow-xs overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-300 dark:scrollbar-thumb-zinc-700"
                 placeholder="Mulai menulis arsitektur sistem di sini... Ketik '/' untuk membuka blok Notion-style. Pintasan: Ctrl+Z (Undo), Ctrl+Y (Redo), Ctrl+B (Tebal), Ctrl+I (Miring), Ctrl+K (WikiLink), Tab (Indentasi)."
               ></textarea>
 
@@ -1688,7 +1688,7 @@ export function SlashEditor({
             >
               <div className="text-[10.5px] font-bold uppercase tracking-wider text-[#71717a] pb-3 border-b border-[#ececee] dark:border-[#27272a] mb-6 flex items-center justify-between">
                 <span className="flex items-center gap-1.5">
-                  <Eye className="w-3.5 h-3.5 text-[#ff5a00]" />
+                  <Eye className="w-3.5 h-3.5 text-[var(--accent)]" />
                   Pratinjau Arsitektur &amp; Diagram Interaktif
                 </span>
                 <div className="flex items-center gap-2">

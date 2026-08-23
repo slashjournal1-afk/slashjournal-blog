@@ -97,10 +97,10 @@ export default async function TelemetryPage() {
         </div>
 
         <div className="p-5 rounded-[24px] border border-[var(--border-color)] bg-[var(--bg-card)] space-y-1 shadow-xs">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-[#ff5a00]">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--accent)]">
             Total Subscriber Newsletter
           </span>
-          <p className="text-[30px] font-extrabold text-[#ff5a00]">{totalSubscribers}</p>
+          <p className="text-[30px] font-extrabold text-[var(--accent)]">{totalSubscribers}</p>
         </div>
 
         <div className="p-5 rounded-[24px] border border-[var(--border-color)] bg-[var(--bg-card)] space-y-1 shadow-xs">
@@ -121,7 +121,7 @@ export default async function TelemetryPage() {
         <div className="lg:col-span-7 rounded-[28px] border border-[var(--border-color)] bg-[var(--bg-card)] p-6 space-y-4 shadow-xs">
           <div className="flex items-center justify-between pb-3 border-b border-[var(--border-color)]">
             <h3 className="text-[15px] font-bold text-[var(--text-primary)] flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-[#ff5a00]" />
+              <TrendingUp className="w-4 h-4 text-[var(--accent)]" />
               <span>Naskah Paling Banyak Dibaca</span>
             </h3>
             <span className="text-xs font-mono text-[var(--text-muted)]">Top 5</span>
@@ -159,7 +159,7 @@ export default async function TelemetryPage() {
         <div className="lg:col-span-5 rounded-[28px] border border-[var(--border-color)] bg-[var(--bg-card)] p-6 space-y-4 shadow-xs">
           <div className="flex items-center justify-between pb-3 border-b border-[var(--border-color)]">
             <h3 className="text-[15px] font-bold text-[var(--text-primary)] flex items-center gap-2">
-              <Mail className="w-4 h-4 text-[#ff5a00]" />
+              <Mail className="w-4 h-4 text-[var(--accent)]" />
               <span>Distribusi Minat Subscriber</span>
             </h3>
           </div>
@@ -175,7 +175,7 @@ export default async function TelemetryPage() {
                     ? 'Semua Kanal'
                     : item.topic.replace('-', ' ')}
                 </span>
-                <span className="font-mono text-xs font-bold text-[#ff5a00]">
+                <span className="font-mono text-xs font-bold text-[var(--accent)]">
                   {item._count.email} Pelanggan
                 </span>
               </div>

@@ -1,7 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, BookOpen, Layout, Server } from 'lucide-react';
 import { prisma } from '@/lib/db';
 import { formatDate } from '@/lib/utils';
 import { BannerAd } from '@/components/ads/BannerAd';
@@ -13,6 +12,8 @@ import type { Metadata } from 'next';
 import { absoluteUrl, siteConfig } from '@/lib/site';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { siteGraphSchema } from '@/lib/structured-data';
+import { publicArticleWhere } from '@/lib/visibility';
+import { selectHomeArticleSections } from '@/lib/home-article-sections';
 
 export const revalidate = 300;
 
@@ -21,8 +22,6 @@ export const metadata: Metadata = {
   description: siteConfig.description,
   alternates: { canonical: absoluteUrl() },
 };
-
-const channelIcons = { 'rekayasa-sistem': Server, 'desain-antarmuka': Layout, 'jurnal-personal': BookOpen };
 
 export default async function HomePage() {
   const articleSelect = {
@@ -41,23 +40,23 @@ export default async function HomePage() {
     author: { select: { displayName: true } },
   } as const;
 
-  const [recentArticles, popularArticles, categories, seriesList, glossaryTerms, leaderboardAd, inFeedAd] = await Promise.all([
+  const [recentArticles, popularArticles, seriesList, glossaryTerms, leaderboardAd, inFeedAd] = await Promise.all([
     prisma.article.findMany({
-      where: { status: 'PUBLISHED', isIndexable: true, category: { isIndexable: true } },
+      where: publicArticleWhere,
       select: articleSelect,
-      orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }],
-      take: 18,
+      orderBy: [{ publishedAt: { sort: 'desc', nulls: 'last' } }, { createdAt: 'desc' }, { id: 'asc' }],
+      take: 24,
     }),
     prisma.article.findMany({
-      where: { status: 'PUBLISHED', isIndexable: true, category: { isIndexable: true } },
+      where: publicArticleWhere,
       select: articleSelect,
-      orderBy: [{ viewCount: 'desc' }, { publishedAt: 'desc' }],
-      take: 12,
-    }),
-    prisma.category.findMany({
-      where: { isIndexable: true },
-      orderBy: { sortOrder: 'asc' },
-      include: { _count: { select: { articles: { where: { status: 'PUBLISHED' } } } } },
+      orderBy: [
+        { viewCount: 'desc' },
+        { publishedAt: { sort: 'desc', nulls: 'last' } },
+        { createdAt: 'desc' },
+        { id: 'asc' },
+      ],
+      take: 30,
     }),
     prisma.series.findMany({
       where: { isPublished: true },
@@ -69,14 +68,7 @@ export default async function HomePage() {
     prisma.adSlot.findUnique({ where: { slotName: 'in_feed' } }),
   ]);
 
-  const [featured, ...rest] = recentArticles;
-  const secondary = rest.slice(0, 3);
-  const usedIds = new Set([featured?.id, ...secondary.map((a) => a.id)].filter(Boolean));
-
-  const latest = recentArticles.filter((a) => !usedIds.has(a.id)).slice(0, 6);
-  latest.forEach((a) => usedIds.add(a.id));
-  const moreRecent = recentArticles.filter((a) => !usedIds.has(a.id)).slice(0, 5);
-  const popular = popularArticles.filter((a) => !usedIds.has(a.id)).slice(0, 5);
+  const { featured, secondary, latest, recent: moreRecent, popular } = selectHomeArticleSections(recentArticles, popularArticles);
 
   return (
     <div className="mx-auto min-h-screen max-w-editorial px-5 pb-24 sm:px-8">
@@ -128,7 +120,7 @@ export default async function HomePage() {
                   />
                 ) : (
                   <div className="flex h-full items-center justify-center font-display text-6xl text-[var(--color-silver)]" aria-hidden="true">
-                    //
+                    {'//'}
                   </div>
                 )}
               </Link>
@@ -157,7 +149,7 @@ export default async function HomePage() {
                     />
                   ) : (
                     <div className="flex h-full items-center justify-center font-display text-4xl text-[var(--color-silver)]" aria-hidden="true">
-                      //
+                      {'//'}
                     </div>
                   )}
                 </Link>
@@ -209,7 +201,7 @@ export default async function HomePage() {
               ))}
             </div>
           ) : (
-            <div className="border-b border-t border-[var(--border-color)] py-8 text-sm text-[var(--text-muted)]">
+            <div role="status" className="border-b border-t border-[var(--border-color)] py-8 text-sm text-[var(--text-muted)]">
               Belum ada naskah tambahan. Jelajahi{' '}
               <Link href="/series" className="font-semibold text-[var(--text-primary)] hover:text-[var(--accent)]">
                 seri panduan
@@ -295,7 +287,7 @@ export default async function HomePage() {
             />
             <button
               type="submit"
-              className="min-h-11 shrink-0 rounded-lg bg-[var(--color-ink)] px-5 text-sm font-medium text-white transition-colors hover:bg-[var(--color-charcoal)]"
+              className="min-h-11 shrink-0 rounded-lg bg-[var(--text-primary)] px-5 text-sm font-medium text-[var(--bg-primary)] transition-colors hover:bg-[var(--text-secondary)]"
             >
               Berlangganan
             </button>

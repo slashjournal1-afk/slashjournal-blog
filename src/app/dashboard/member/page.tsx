@@ -85,7 +85,7 @@ export default async function MemberDashboardPage() {
           href="/"
           className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-[14px] bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-primary)] text-xs font-bold hover:bg-[var(--bg-card-muted)] active:scale-95 transition-all shrink-0"
         >
-          <BookOpen className="w-4 h-4 text-[#ff5a00]" />
+          <BookOpen className="w-4 h-4 text-[var(--accent)]" />
           <span>Jelajahi Naskah Baru</span>
         </Link>
       </div>
@@ -95,10 +95,10 @@ export default async function MemberDashboardPage() {
         {/* Saved Bookmarks */}
         <div className="p-5 rounded-[24px] border border-[var(--border-color)] bg-[var(--bg-card)] space-y-2 shadow-xs">
           <div className="flex items-center justify-between text-[var(--text-muted)]">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-[#ff5a00]">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--accent)]">
               Pustaka Bookmark
             </span>
-            <Bookmark className="w-4 h-4 text-[#ff5a00]" />
+            <Bookmark className="w-4 h-4 text-[var(--accent)]" />
           </div>
           <p className="text-[30px] font-extrabold text-[var(--text-primary)] leading-none">
             {bookmarks.length}
@@ -151,7 +151,7 @@ export default async function MemberDashboardPage() {
           <div className="rounded-[28px] border border-[var(--border-color)] bg-[var(--bg-card)] p-6 sm:p-8 space-y-5 shadow-xs">
             <div className="flex items-center justify-between pb-3 border-b border-[var(--border-color)]">
               <h3 className="text-[15px] font-bold text-[var(--text-primary)] flex items-center gap-2">
-                <Bookmark className="w-4 h-4 text-[#ff5a00]" />
+                <Bookmark className="w-4 h-4 text-[var(--accent)]" />
                 <span>Naskah Tersimpan (Bookmark)</span>
               </h3>
               <span className="text-xs font-mono text-[var(--text-muted)] font-bold">
@@ -172,23 +172,23 @@ export default async function MemberDashboardPage() {
                   <Link
                     key={article.id}
                     href={`/${article.slug}`}
-                    className="flex items-center gap-3.5 p-3.5 rounded-[18px] bg-[var(--bg-card-muted)] border border-[var(--border-color)] hover:border-[#ff5a00]/40 transition-all group"
+                    className="flex items-center gap-3.5 p-3.5 rounded-[18px] bg-[var(--bg-card-muted)] border border-[var(--border-color)] hover:border-[var(--accent)]/40 transition-all group"
                   >
                     {article.coverImageUrl ? (
                       <div className="relative w-16 h-16 rounded-[12px] overflow-hidden bg-zinc-100 dark:bg-zinc-800 shrink-0 border border-[var(--border-color)]">
                         <Image src={article.coverImageUrl} alt="" fill sizes="64px" className="object-cover" />
                       </div>
                     ) : (
-                      <div className="w-16 h-16 rounded-[12px] bg-zinc-200 dark:bg-zinc-800 shrink-0 flex items-center justify-center font-mono font-bold text-[#ff5a00] text-sm">
+                      <div className="w-16 h-16 rounded-[12px] bg-zinc-200 dark:bg-zinc-800 shrink-0 flex items-center justify-center font-mono font-bold text-[var(--accent)] text-sm">
                         //
                       </div>
                     )}
 
                     <div className="min-w-0 flex-1 space-y-1">
-                      <span className="text-[10px] font-bold text-[#ff5a00]">
+                      <span className="text-[10px] font-bold text-[var(--accent)]">
                         {article.category.name}
                       </span>
-                      <h4 className="text-xs font-bold text-[var(--text-primary)] group-hover:text-[#ff5a00] transition-colors line-clamp-2 leading-snug">
+                      <h4 className="text-xs font-bold text-[var(--text-primary)] group-hover:text-[var(--accent)] transition-colors line-clamp-2 leading-snug">
                         {article.title}
                       </h4>
                       <p className="text-[10.5px] text-[var(--text-muted)] font-mono">
@@ -196,7 +196,7 @@ export default async function MemberDashboardPage() {
                       </p>
                     </div>
 
-                    <ArrowUpRight className="w-4 h-4 text-[var(--text-muted)] group-hover:text-[#ff5a00] shrink-0" />
+                    <ArrowUpRight className="w-4 h-4 text-[var(--text-muted)] group-hover:text-[var(--accent)] shrink-0" />
                   </Link>
                 ))}
               </div>

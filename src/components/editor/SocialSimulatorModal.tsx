@@ -41,7 +41,7 @@ export function SocialSimulatorModal({
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-[#ececee] dark:border-[#27272a]">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-[10px] bg-orange-50 dark:bg-orange-950/40 text-[#ff5a00]">
+            <div className="p-2 rounded-[10px] bg-[var(--accent-soft)] text-[var(--accent)]">
               <Share2 className="w-4 h-4" />
             </div>
             <div>
@@ -72,7 +72,7 @@ export function SocialSimulatorModal({
                 : 'text-[#71717a]'
             }`}
           >
-            <Search className="w-3.5 h-3.5 text-[#ff5a00]" />
+            <Search className="w-3.5 h-3.5 text-[var(--accent)]" />
             <span>Google Search</span>
           </button>
 

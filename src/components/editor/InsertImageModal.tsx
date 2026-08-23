@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from 'react';
 import Image from 'next/image';
 import {
   X,
@@ -8,11 +8,14 @@ import {
   Link2,
   FileImage,
   Loader2,
-  Sparkles,
-  CheckCircle2,
   AlertCircle,
-  Eye,
 } from 'lucide-react';
+import {
+  isRenderableArticleImageSource,
+  serializeInlineArticleImageBlock,
+  validateArticleImageSource,
+  validateExternalArticleImageUrl,
+} from '@/lib/article-image-block';
 
 interface InsertImageModalProps {
   isOpen: boolean;
@@ -34,6 +37,8 @@ export function InsertImageModal({
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [uploadAltText, setUploadAltText] = useState('');
   const [uploadCaption, setUploadCaption] = useState('');
+  const [uploadSourceName, setUploadSourceName] = useState('');
+  const [uploadSourceUrl, setUploadSourceUrl] = useState('');
   const [sourceType, setSourceType] = useState('SELF_SHOT');
   const [isUploading, setIsUploading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -42,9 +47,111 @@ export function InsertImageModal({
   const [imageUrl, setImageUrl] = useState('');
   const [urlAltText, setUrlAltText] = useState('');
   const [urlCaption, setUrlCaption] = useState('');
+  const [urlSourceName, setUrlSourceName] = useState('');
+  const [urlSourceUrl, setUrlSourceUrl] = useState('');
   const [isUrlValid, setIsUrlValid] = useState<boolean | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+  const uploadControllerRef = useRef<AbortController | null>(null);
+  const mountedRef = useRef(true);
+  const isUploadingRef = useRef(false);
+  const isOpenRef = useRef(isOpen);
+  const uploadStatusRef = useRef<HTMLDivElement>(null);
+
+  const resetAndClose = useCallback((force = false) => {
+    if (isUploadingRef.current && !force) return;
+    setActiveTab('upload');
+    setSelectedFile(null);
+    setFilePreview(null);
+    setUploadAltText('');
+    setUploadCaption('');
+    setUploadSourceName('');
+    setUploadSourceUrl('');
+    setSourceType('SELF_SHOT');
+    setImageUrl('');
+    setUrlAltText('');
+    setUrlCaption('');
+    setUrlSourceName('');
+    setUrlSourceUrl('');
+    setErrorMsg(null);
+    setIsUrlValid(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    onClose();
+  }, [onClose]);
+
+  const cancelUpload = () => {
+    uploadControllerRef.current?.abort();
+    uploadControllerRef.current = null;
+    isUploadingRef.current = false;
+    setIsUploading(false);
+    resetAndClose(true);
+  };
+
+  useEffect(() => {
+    isUploadingRef.current = isUploading;
+    if (isUploading) uploadStatusRef.current?.focus();
+  }, [isUploading]);
+
+  useEffect(() => {
+    isOpenRef.current = isOpen;
+  }, [isOpen]);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      uploadControllerRef.current?.abort();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    previousFocusRef.current = document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : null;
+    closeButtonRef.current?.focus();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        resetAndClose();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const focusable = panelRef.current?.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      );
+      if (!focusable?.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const activeElement = document.activeElement;
+      const activeIsFocusable = Array.from(focusable).includes(activeElement as HTMLElement);
+      if (!activeIsFocusable) {
+        event.preventDefault();
+        (event.shiftKey ? last : first).focus();
+      } else if (event.shiftKey && activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      previousFocusRef.current?.focus();
+    };
+  }, [isOpen, resetAndClose]);
+
+  useEffect(() => {
+    if (isOpen) return;
+    uploadControllerRef.current?.abort();
+    uploadControllerRef.current = null;
+    isUploadingRef.current = false;
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -73,9 +180,17 @@ export function InsertImageModal({
       setErrorMsg('Pilih berkas gambar terlebih dahulu');
       return;
     }
+    const sourceError = validateArticleImageSource(uploadSourceName, uploadSourceUrl, sourceType === 'FREE_STOCK');
+    if (sourceError) {
+      setErrorMsg(sourceError);
+      return;
+    }
 
+    isUploadingRef.current = true;
     setIsUploading(true);
     setErrorMsg(null);
+    const controller = new AbortController();
+    uploadControllerRef.current = controller;
 
     try {
       const formData = new FormData();
@@ -89,65 +204,96 @@ export function InsertImageModal({
         method: 'POST',
         credentials: 'include',
         body: formData,
+        signal: controller.signal,
       });
 
       const data = await res.json();
       if (!res.ok) {
         throw new Error(data.error || 'Gagal mengunggah gambar');
       }
-
-      const alt = uploadAltText.trim() || data.altText || data.originalName || 'Gambar';
-      let markdown = `\n\n![${alt}](${data.url})\n`;
-      if (uploadCaption.trim()) {
-        markdown += `*${uploadCaption.trim()}*\n\n`;
-      } else {
-        markdown += '\n';
+      if (typeof data.url !== 'string' || !isRenderableArticleImageSource(data.url)) {
+        throw new Error('URL hasil unggahan tidak valid');
       }
 
+      const alt = uploadAltText.trim() ? uploadAltText : data.altText || data.originalName || 'Gambar';
+      const markdown = `\n\n${serializeInlineArticleImageBlock({
+        src: data.url,
+        alt,
+        caption: uploadCaption.trim() ? uploadCaption : undefined,
+        source: uploadSourceName.trim() && uploadSourceUrl.trim()
+          ? { name: uploadSourceName, url: uploadSourceUrl }
+          : undefined,
+      })}\n`;
+
+      if (
+        controller.signal.aborted ||
+        uploadControllerRef.current !== controller ||
+        !mountedRef.current ||
+        !isOpenRef.current
+      ) return;
       onInsert(markdown);
-      handleClose();
-    } catch (err: any) {
-      setErrorMsg(err.message || 'Terjadi kesalahan saat mengunggah berkas');
+      resetAndClose(true);
+    } catch (err: unknown) {
+      if (
+        uploadControllerRef.current === controller &&
+        !controller.signal.aborted &&
+        mountedRef.current
+      ) {
+        setErrorMsg(err instanceof Error ? err.message : 'Terjadi kesalahan saat mengunggah berkas');
+      }
     } finally {
-      setIsUploading(false);
+      if (uploadControllerRef.current === controller) {
+        uploadControllerRef.current = null;
+        isUploadingRef.current = false;
+        if (mountedRef.current) setIsUploading(false);
+      }
     }
   };
 
   const handleUrlSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!imageUrl.trim()) {
-      setErrorMsg('Masukkan URL gambar yang valid');
+    const imageUrlError = validateExternalArticleImageUrl(imageUrl);
+    if (imageUrlError) {
+      setErrorMsg(imageUrlError);
+      return;
+    }
+    if (isUrlValid !== true) {
+      setErrorMsg('Tunggu hingga pratinjau gambar berhasil dimuat');
+      return;
+    }
+    const sourceError = validateArticleImageSource(urlSourceName, urlSourceUrl);
+    if (sourceError) {
+      setErrorMsg(sourceError);
       return;
     }
 
-    const alt = urlAltText.trim() || articleTitle || 'Gambar';
-    let markdown = `\n\n![${alt}](${imageUrl.trim()})\n`;
-    if (urlCaption.trim()) {
-      markdown += `*${urlCaption.trim()}*\n\n`;
-    } else {
-      markdown += '\n';
-    }
+    const alt = urlAltText.trim() ? urlAltText : articleTitle || 'Gambar';
+    const markdown = `\n\n${serializeInlineArticleImageBlock({
+      src: imageUrl.trim(),
+      alt,
+      caption: urlCaption.trim() ? urlCaption : undefined,
+      source: urlSourceName.trim() && urlSourceUrl.trim()
+        ? { name: urlSourceName, url: urlSourceUrl }
+        : undefined,
+    })}\n`;
 
     onInsert(markdown);
-    handleClose();
-  };
-
-  const handleClose = () => {
-    setSelectedFile(null);
-    setFilePreview(null);
-    setUploadAltText('');
-    setUploadCaption('');
-    setImageUrl('');
-    setUrlAltText('');
-    setUrlCaption('');
-    setErrorMsg(null);
-    setIsUrlValid(null);
-    onClose();
+    resetAndClose();
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150">
-      <div className="w-full max-w-xl rounded-[32px] bg-white dark:bg-[#18181b] border border-[#ececee] dark:border-[#27272a] shadow-2xl p-6 sm:p-8 space-y-6 animate-in zoom-in-95 duration-200">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150"
+      onClick={() => resetAndClose()}
+    >
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="insert-image-title"
+        onClick={(event) => event.stopPropagation()}
+        className="w-full max-w-xl rounded-[32px] bg-white dark:bg-[#18181b] border border-[#ececee] dark:border-[#27272a] shadow-2xl p-6 sm:p-8 space-y-6 animate-in zoom-in-95 duration-200"
+      >
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-[#ececee] dark:border-[#27272a]">
           <div className="flex items-center gap-2.5">
@@ -155,7 +301,7 @@ export function InsertImageModal({
               <FileImage className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base font-extrabold text-[#09090b] dark:text-white">
+              <h3 id="insert-image-title" className="text-base font-extrabold text-[#09090b] dark:text-white">
                 Sisipkan Gambar ke Konten
               </h3>
               <p className="text-xs text-[#71717a] dark:text-[#a1a1aa]">
@@ -164,8 +310,11 @@ export function InsertImageModal({
             </div>
           </div>
           <button
+            ref={closeButtonRef}
             type="button"
-            onClick={handleClose}
+            onClick={() => resetAndClose()}
+            disabled={isUploading}
+            aria-label="Tutup dialog sisipkan gambar"
             className="p-2 rounded-full hover:bg-[#f4f4f5] dark:hover:bg-[#27272a] text-[#71717a] transition-colors"
           >
             <X className="w-4 h-4" />
@@ -176,6 +325,7 @@ export function InsertImageModal({
         <div className="flex p-1 bg-[#f4f4f5] dark:bg-[#27272a] rounded-[16px]">
           <button
             type="button"
+            disabled={isUploading}
             onClick={() => {
               setActiveTab('upload');
               setErrorMsg(null);
@@ -192,6 +342,7 @@ export function InsertImageModal({
 
           <button
             type="button"
+            disabled={isUploading}
             onClick={() => {
               setActiveTab('url');
               setErrorMsg(null);
@@ -215,12 +366,32 @@ export function InsertImageModal({
           </div>
         )}
 
+        {isUploading && (
+          <div
+            ref={uploadStatusRef}
+            tabIndex={-1}
+            role="status"
+            aria-live="polite"
+            className="flex items-center justify-between gap-3 rounded-[12px] border border-[var(--border-color)] bg-[var(--bg-card-muted)] p-3 text-xs text-[var(--text-muted)]"
+          >
+            <span>Mengunggah gambar...</span>
+            <button
+              type="button"
+              onClick={cancelUpload}
+              className="shrink-0 rounded-[8px] border border-[var(--border-color)] bg-[var(--bg-card)] px-3 py-1.5 font-bold text-[var(--text-primary)]"
+            >
+              Batalkan unggahan
+            </button>
+          </div>
+        )}
+
         {/* TAB 1: UPLOAD FILE */}
         {activeTab === 'upload' && (
           <form onSubmit={handleUploadSubmit} className="space-y-4">
             {/* File Drop / Picker Zone */}
             <input
               ref={fileInputRef}
+              id="article-image-file"
               type="file"
               accept="image/*"
               className="hidden"
@@ -228,8 +399,15 @@ export function InsertImageModal({
             />
 
             {!filePreview ? (
-              <div
-                onClick={() => fileInputRef.current?.click()}
+              <label
+                htmlFor="article-image-file"
+                tabIndex={0}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    fileInputRef.current?.click();
+                  }
+                }}
                 className="border-2 border-dashed border-[#ececee] dark:border-[#3f3f46] hover:border-[#ff5a00] rounded-[20px] p-6 text-center cursor-pointer transition-colors bg-[#fafafa] dark:bg-[#141416]/50 space-y-2 group"
               >
                 <div className="w-10 h-10 rounded-full bg-orange-50 dark:bg-orange-950/40 text-[#ff5a00] flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
@@ -237,20 +415,23 @@ export function InsertImageModal({
                 </div>
                 <div>
                   <p className="text-xs font-bold text-[#09090b] dark:text-white">
-                    Klik untuk memilih gambar atau seret berkas ke sini
+                    Pilih gambar dari perangkat
                   </p>
                   <p className="text-[11px] text-[#71717a]">
                     JPG, PNG, GIF, WebP, SVG • Otomatis dikonversi ke WebP modern
                   </p>
                 </div>
-              </div>
+              </label>
             ) : (
               <div className="relative rounded-[20px] overflow-hidden border border-[#ececee] dark:border-[#27272a] bg-[#fafafa] dark:bg-[#141416] p-3 flex items-center gap-3">
                 <div className="relative w-16 h-16 rounded-[12px] overflow-hidden bg-black/5 shrink-0">
-                  <img
+                  <Image
                     src={filePreview}
                     alt="Pratinjau"
-                    className="w-full h-full object-cover"
+                    fill
+                    unoptimized
+                    sizes="64px"
+                    className="object-cover"
                   />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -277,11 +458,12 @@ export function InsertImageModal({
             {/* Inputs: Alt Text, Caption, Source Type */}
             <div className="space-y-3 pt-1">
               <div className="space-y-1">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-[#09090b] dark:text-white">
+                <label htmlFor="upload-alt" className="text-[11px] font-bold uppercase tracking-wider text-[#09090b] dark:text-white">
                   Deskripsi / Alt Text (Aksesibilitas &amp; SEO)
                 </label>
                 <input
                   type="text"
+                  id="upload-alt"
                   value={uploadAltText}
                   onChange={(e) => setUploadAltText(e.target.value)}
                   placeholder="Contoh: Diagram Alur Arsitektur Microservices"
@@ -290,11 +472,12 @@ export function InsertImageModal({
               </div>
 
               <div className="space-y-1">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-[#09090b] dark:text-white">
+                <label htmlFor="upload-caption" className="text-[11px] font-bold uppercase tracking-wider text-[#09090b] dark:text-white">
                   Keterangan Gambar / Caption (Opsional)
                 </label>
                 <input
                   type="text"
+                  id="upload-caption"
                   value={uploadCaption}
                   onChange={(e) => setUploadCaption(e.target.value)}
                   placeholder="Contoh: Gambar 1: Topologi cluster database dengan 3 read-replica"
@@ -303,10 +486,11 @@ export function InsertImageModal({
               </div>
 
               <div className="space-y-1">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-[#09090b] dark:text-white">
+                <label htmlFor="upload-source-type" className="text-[11px] font-bold uppercase tracking-wider text-[#09090b] dark:text-white">
                   Sumber Visual (Kepatuhan Editorial)
                 </label>
                 <select
+                  id="upload-source-type"
                   value={sourceType}
                   onChange={(e) => setSourceType(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-[12px] bg-[#f4f4f5] dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-xs font-semibold text-[#09090b] dark:text-white focus:outline-none"
@@ -316,13 +500,23 @@ export function InsertImageModal({
                   <option value="AI_GENERATED">Ilustrasi AI Berlabel</option>
                 </select>
               </div>
+
+              <SourceFields
+                idPrefix="upload"
+                name={uploadSourceName}
+                url={uploadSourceUrl}
+                required={sourceType === 'FREE_STOCK'}
+                onNameChange={setUploadSourceName}
+                onUrlChange={setUploadSourceUrl}
+              />
             </div>
 
             {/* Actions */}
             <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[#ececee] dark:border-[#27272a]">
               <button
                 type="button"
-                onClick={handleClose}
+                onClick={() => resetAndClose()}
+                disabled={isUploading}
                 className="px-4 py-2.5 rounded-[12px] bg-[#f4f4f5] dark:bg-[#27272a] text-xs font-bold text-[#71717a] hover:text-[#09090b] dark:hover:text-white transition-colors"
               >
                 Batal
@@ -352,12 +546,13 @@ export function InsertImageModal({
         {activeTab === 'url' && (
           <form onSubmit={handleUrlSubmit} className="space-y-4">
             <div className="space-y-1">
-              <label className="text-[11px] font-bold uppercase tracking-wider text-[#09090b] dark:text-white">
+              <label htmlFor="image-url" className="text-[11px] font-bold uppercase tracking-wider text-[#09090b] dark:text-white">
                 URL Gambar Langsung (Direct Image URL)
               </label>
               <div className="relative">
                 <input
                   type="url"
+                  id="image-url"
                   value={imageUrl}
                   onChange={(e) => {
                     setImageUrl(e.target.value);
@@ -370,14 +565,17 @@ export function InsertImageModal({
             </div>
 
             {/* Live URL Preview */}
-            {imageUrl && (
+            {validateExternalArticleImageUrl(imageUrl) === null && (
               <div className="relative aspect-[16/9] w-full rounded-[16px] overflow-hidden bg-[#fafafa] dark:bg-[#141416] border border-[#ececee] dark:border-[#27272a]">
-                <img
+                <Image
                   src={imageUrl}
                   alt="Pratinjau URL"
+                  fill
+                  unoptimized
+                  sizes="(min-width: 640px) 576px, 100vw"
                   onLoad={() => setIsUrlValid(true)}
                   onError={() => setIsUrlValid(false)}
-                  className="w-full h-full object-cover"
+                  className="object-cover"
                 />
                 {isUrlValid === false && (
                   <div className="absolute inset-0 bg-rose-950/80 text-rose-200 text-xs flex flex-col items-center justify-center p-4 text-center">
@@ -389,11 +587,12 @@ export function InsertImageModal({
             )}
 
             <div className="space-y-1">
-              <label className="text-[11px] font-bold uppercase tracking-wider text-[#09090b] dark:text-white">
+              <label htmlFor="url-alt" className="text-[11px] font-bold uppercase tracking-wider text-[#09090b] dark:text-white">
                 Deskripsi / Alt Text
               </label>
               <input
                 type="text"
+                id="url-alt"
                 value={urlAltText}
                 onChange={(e) => setUrlAltText(e.target.value)}
                 placeholder="Contoh: Tangkapan Layar Metrik Prometheus & Grafana"
@@ -402,11 +601,12 @@ export function InsertImageModal({
             </div>
 
             <div className="space-y-1">
-              <label className="text-[11px] font-bold uppercase tracking-wider text-[#09090b] dark:text-white">
+              <label htmlFor="url-caption" className="text-[11px] font-bold uppercase tracking-wider text-[#09090b] dark:text-white">
                 Keterangan Gambar / Caption (Opsional)
               </label>
               <input
                 type="text"
+                id="url-caption"
                 value={urlCaption}
                 onChange={(e) => setUrlCaption(e.target.value)}
                 placeholder="Contoh: Ilustrasi: Dashboard latensi sistem p99"
@@ -414,18 +614,26 @@ export function InsertImageModal({
               />
             </div>
 
+            <SourceFields
+              idPrefix="url"
+              name={urlSourceName}
+              url={urlSourceUrl}
+              onNameChange={setUrlSourceName}
+              onUrlChange={setUrlSourceUrl}
+            />
+
             {/* Actions */}
             <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[#ececee] dark:border-[#27272a]">
               <button
                 type="button"
-                onClick={handleClose}
+                onClick={() => resetAndClose()}
                 className="px-4 py-2.5 rounded-[12px] bg-[#f4f4f5] dark:bg-[#27272a] text-xs font-bold text-[#71717a] hover:text-[#09090b] dark:hover:text-white transition-colors"
               >
                 Batal
               </button>
               <button
                 type="submit"
-                disabled={!imageUrl.trim() || isUrlValid === false}
+                disabled={isUrlValid !== true}
                 className="px-5 py-2.5 rounded-[12px] bg-[#09090b] dark:bg-white text-white dark:text-[#09090b] text-xs font-extrabold hover:bg-[#18181b] dark:hover:bg-zinc-200 transition-all disabled:opacity-40 flex items-center gap-2 active:scale-95 shadow-xs"
               >
                 <Link2 className="w-3.5 h-3.5 text-blue-500" />
@@ -434,6 +642,55 @@ export function InsertImageModal({
             </div>
           </form>
         )}
+      </div>
+    </div>
+  );
+}
+
+interface SourceFieldsProps {
+  idPrefix: string;
+  name: string;
+  url: string;
+  required?: boolean;
+  onNameChange: (value: string) => void;
+  onUrlChange: (value: string) => void;
+}
+
+function SourceFields({
+  idPrefix,
+  name,
+  url,
+  required = false,
+  onNameChange,
+  onUrlChange,
+}: SourceFieldsProps) {
+  return (
+    <div className="grid gap-3 sm:grid-cols-2">
+      <div className="space-y-1">
+        <label htmlFor={`${idPrefix}-source-name`} className="text-[11px] font-bold uppercase tracking-wider text-[#09090b] dark:text-white">
+          Nama Sumber {required ? '(Wajib)' : '(Opsional)'}
+        </label>
+        <input
+          id={`${idPrefix}-source-name`}
+          type="text"
+          value={name}
+          onChange={(event) => onNameChange(event.target.value)}
+          placeholder="Contoh: Unsplash"
+          className="w-full px-3.5 py-2.5 rounded-[12px] bg-[#f4f4f5] dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-xs text-[#09090b] dark:text-white focus:outline-none focus:border-[#ff5a00]"
+        />
+      </div>
+      <div className="space-y-1">
+        <label htmlFor={`${idPrefix}-source-url`} className="text-[11px] font-bold uppercase tracking-wider text-[#09090b] dark:text-white">
+          URL Sumber {required ? '(Wajib)' : '(Opsional)'}
+        </label>
+        <input
+          id={`${idPrefix}-source-url`}
+          type="url"
+          value={url}
+          onChange={(event) => onUrlChange(event.target.value)}
+          placeholder="https://..."
+          className="w-full px-3.5 py-2.5 rounded-[12px] bg-[#f4f4f5] dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-xs text-[#09090b] dark:text-white focus:outline-none focus:border-[#ff5a00]"
+        />
       </div>
     </div>
   );

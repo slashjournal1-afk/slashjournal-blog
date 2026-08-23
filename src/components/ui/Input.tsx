@@ -13,13 +13,13 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           type={type}
           ref={ref}
           className={cn(
-            'w-full rounded-input border border-cloud bg-snow px-4 py-2.5 text-[14px] text-graphite placeholder:text-ash outline-none transition-all focus:border-obsidian focus:ring-1 focus:ring-obsidian disabled:bg-paper disabled:text-ash',
-            error && 'border-red-500 focus:border-red-500 focus:ring-red-500',
+            'w-full rounded-input border border-[var(--border-color)] bg-[var(--bg-card)] px-4 py-2.5 text-[14px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none transition-all focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] disabled:bg-[var(--bg-card-muted)] disabled:text-[var(--text-muted)]',
+            error && 'border-[var(--danger)] focus:border-[var(--danger)] focus:ring-[var(--danger)]',
             className
           )}
           {...props}
         />
-        {error && <p className="mt-1 text-[12px] text-red-600">{error}</p>}
+        {error && <p className="mt-1 text-[12px] text-[var(--danger)]">{error}</p>}
       </div>
     );
   }
@@ -39,13 +39,13 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           ref={ref}
           rows={rows}
           className={cn(
-            'w-full rounded-input border border-cloud bg-snow px-4 py-2.5 text-[14px] text-graphite placeholder:text-ash outline-none transition-all focus:border-obsidian focus:ring-1 focus:ring-obsidian disabled:bg-paper disabled:text-ash',
-            error && 'border-red-500 focus:border-red-500 focus:ring-red-500',
+            'w-full rounded-input border border-[var(--border-color)] bg-[var(--bg-card)] px-4 py-2.5 text-[14px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none transition-all focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] disabled:bg-[var(--bg-card-muted)] disabled:text-[var(--text-muted)]',
+            error && 'border-[var(--danger)] focus:border-[var(--danger)] focus:ring-[var(--danger)]',
             className
           )}
           {...props}
         />
-        {error && <p className="mt-1 text-[12px] text-red-600">{error}</p>}
+        {error && <p className="mt-1 text-[12px] text-[var(--danger)]">{error}</p>}
       </div>
     );
   }

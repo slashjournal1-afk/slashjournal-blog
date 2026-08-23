@@ -142,14 +142,14 @@ export function CommandPalette() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Cari konsep arsitektur, diagram, glosarium, atau artikel..."
-            className="flex-1 bg-transparent text-sm text-[#09090b] dark:text-white placeholder:text-[#a1a1aa] focus:outline-none"
+            className="flex-1 bg-transparent text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none"
           />
           {loading && <Loader2 className="w-4 h-4 text-[var(--accent)] animate-spin" />}
           {query && !loading && (
             <button
               type="button"
               onClick={() => setQuery('')}
-              className="p-1 text-[#71717a] hover:text-[#09090b] dark:hover:text-white"
+              className="p-1 text-[var(--text-muted)] hover:text-[var(--text-primary)]"
             >
               <X className="w-4 h-4" />
             </button>
@@ -166,7 +166,7 @@ export function CommandPalette() {
               <p className="text-sm font-bold text-[#09090b] dark:text-white">
                 Tidak ada hasil untuk &ldquo;{query}&rdquo;
               </p>
-              <p className="text-xs text-[#71717a] max-w-sm mx-auto">
+              <p className="text-xs text-[var(--text-muted)] max-w-sm mx-auto">
                 Kueri ini telah dicatat ke telemetri redaksi untuk pertimbangan pembuatan panduan arsitektur baru.
               </p>
               <button
@@ -184,7 +184,7 @@ export function CommandPalette() {
           )}
 
           {!loading && !query && (
-            <div className="p-4 text-center text-xs text-[#71717a] space-y-3">
+            <div className="p-4 text-center text-xs text-[var(--text-muted)] space-y-3">
               <p className="font-bold text-[#09090b] dark:text-white text-sm">
                 Pintasan Topik Populer
               </p>

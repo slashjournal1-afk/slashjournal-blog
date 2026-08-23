@@ -104,7 +104,7 @@ export function CommentSection({ articleId, docId, initialComments }: CommentSec
       </div>
 
       {errorMsg && (
-        <div className="p-3.5 rounded-[14px] bg-red-500/10 border border-red-500/30 text-red-500 text-xs flex items-center gap-2">
+        <div className="p-3.5 rounded-[14px] bg-[var(--danger-soft)] border border-[var(--danger)]/30 text-[var(--danger)] text-xs flex items-center gap-2">
           <AlertCircle className="w-4 h-4 shrink-0" />
           <span>{errorMsg}</span>
         </div>
@@ -144,17 +144,17 @@ export function CommentSection({ articleId, docId, initialComments }: CommentSec
                 ? 'Bagikan tanggapan teknis, pertanyaan implementasi, atau studi kasus...'
                 : 'Klik di sini dan masuk untuk berpartisipasi dalam diskusi...'
             }
-            className="w-full border-none bg-transparent p-0 focus:outline-none text-xs leading-relaxed resize-none text-[#09090b] dark:text-white"
+            className="w-full border-none bg-transparent p-0 focus:outline-none text-xs leading-relaxed resize-none text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
           />
 
           <div className="flex items-center justify-between pt-3 border-t border-[#ececee] dark:border-[#27272a] mt-2">
-            <span className="text-[11px] text-[#71717a]">
+            <span className="text-[11px] text-[var(--text-muted)]">
               Markdown format didukung
             </span>
             <button
               type="submit"
               disabled={submitting || !content.trim()}
-              className="px-4 py-2 rounded-[12px] bg-[#09090b] text-white hover:bg-[#18181b] text-xs font-bold shadow-awesomic-dark-btn transition-all flex items-center gap-1.5"
+              className="px-4 py-2 rounded-[12px] bg-[var(--text-primary)] text-[var(--bg-primary)] hover:bg-[var(--text-secondary)] text-xs font-bold transition-all flex items-center gap-1.5"
             >
               <Send className="w-3.5 h-3.5" />
               {submitting ? 'Mengirim...' : 'Kirim Catatan'}
@@ -176,7 +176,7 @@ export function CommentSection({ articleId, docId, initialComments }: CommentSec
             >
               <div className="flex items-center justify-between text-xs text-[#71717a]">
                 <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full bg-[var(--accent)] text-white flex items-center justify-center font-bold text-[10px]">
+                  <div className="w-6 h-6 rounded-full bg-[var(--accent)] text-[var(--accent-foreground)] flex items-center justify-center font-bold text-[10px]">
                     {c.user.displayName.charAt(0).toUpperCase()}
                   </div>
                   <span className="font-bold text-[#09090b] dark:text-white">

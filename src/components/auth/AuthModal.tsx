@@ -1,14 +1,19 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { RefObject, useEffect, useId, useRef, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { X, AlertCircle, CheckCircle2, Loader2, KeyRound, Mail, User } from 'lucide-react';
 import { pushDataLayer } from '@/lib/data-layer';
 import { OAuthButtons } from './OAuthButtons';
 import { BrandLogo } from '@/components/layout/BrandLogo';
 
-export function AuthModal() {
-  const { isAuthModalOpen, closeAuthModal, completeLogin } = useAuth();
+export function AuthModal({ restoreFocusRef }: { restoreFocusRef?: RefObject<HTMLElement | null> }) {
+  const { isAuthModalOpen } = useAuth();
+  return isAuthModalOpen ? <AuthModalContent restoreFocusRef={restoreFocusRef} /> : null;
+}
+
+function AuthModalContent({ restoreFocusRef }: { restoreFocusRef?: RefObject<HTMLElement | null> }) {
+  const { closeAuthModal, completeLogin } = useAuth();
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -16,50 +21,116 @@ export function AuthModal() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+  const closeAuthModalRef = useRef(closeAuthModal);
+  const requestControllerRef = useRef<AbortController | null>(null);
+  const requestIdRef = useRef(0);
+  const displayNameId = useId();
+  const emailId = useId();
+  const passwordId = useId();
 
-  if (!isAuthModalOpen) return null;
+  useEffect(() => {
+    closeAuthModalRef.current = closeAuthModal;
+  }, [closeAuthModal]);
+
+  useEffect(() => {
+    previousFocusRef.current = restoreFocusRef?.current ?? (document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : null);
+    if (restoreFocusRef) restoreFocusRef.current = null;
+    closeButtonRef.current?.focus();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        closeAuthModalRef.current();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+
+      const focusable = panelRef.current?.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]:not([tabindex="-1"])',
+      );
+      if (!focusable?.length) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      if (previousFocusRef.current?.isConnected) previousFocusRef.current.focus();
+    };
+  }, [restoreFocusRef]);
+
+  useEffect(() => () => {
+    requestControllerRef.current?.abort();
+    requestIdRef.current += 1;
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     setSuccessMsg(null);
+    requestControllerRef.current?.abort();
+    const controller = new AbortController();
+    requestControllerRef.current = controller;
+    const requestId = ++requestIdRef.current;
 
     try {
       const endpoint = mode === 'login' ? '/api/auth/login' : '/api/auth/register';
-      const body: any = { email, password };
+      const body: { email: string; password: string; displayName?: string } = { email, password };
       if (mode === 'register') body.displayName = displayName;
 
       const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
+        signal: controller.signal,
       });
 
-      const data = await res.json();
+      const data = await res.json() as { error?: string; user: Parameters<typeof completeLogin>[0] };
+      if (requestId !== requestIdRef.current) return;
       if (!res.ok) throw new Error(data.error || 'Autentikasi gagal');
 
       setSuccessMsg(mode === 'login' ? 'Login berhasil!' : 'Pendaftaran berhasil!');
       pushDataLayer(mode === 'login' ? 'login' : 'sign_up', { method: 'password' });
       completeLogin(data.user);
       closeAuthModal();
-    } catch (err: any) {
-      setError(err.message || 'Terjadi kesalahan sistem');
+    } catch (err: unknown) {
+      if (err instanceof DOMException && err.name === 'AbortError') return;
+      if (requestId !== requestIdRef.current) return;
+      setError(err instanceof Error ? err.message : 'Terjadi kesalahan sistem');
     } finally {
-      setLoading(false);
+      if (requestId === requestIdRef.current) setLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-150" onPointerDown={(event) => { if (event.target === event.currentTarget) closeAuthModal(); }}>
       <div
-        className="w-full max-w-md rounded-[36px] border border-[#ececee] dark:border-[#27272a] bg-white dark:bg-[#18181b] shadow-2xl p-6 sm:p-8 relative animate-in zoom-in-95 duration-150"
-        onClick={(e) => e.stopPropagation()}
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="auth-modal-title"
+        className="relative my-auto max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-[36px] border border-[#ececee] dark:border-[#27272a] bg-white p-6 shadow-2xl dark:bg-[#18181b] sm:p-8 animate-in zoom-in-95 duration-150"
       >
         {/* Close Button */}
         <button
+          ref={closeButtonRef}
+          type="button"
           onClick={closeAuthModal}
-          className="absolute top-6 right-6 p-2 rounded-full text-[#71717a] hover:text-[#09090b] dark:hover:text-white hover:bg-[#f4f4f5] dark:hover:bg-[#27272a] transition-all active:scale-90"
+           className="absolute top-6 right-6 p-2 rounded-full text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-card-muted)] transition-all active:scale-90"
           aria-label="Tutup modal"
         >
           <X className="w-5 h-5" />
@@ -75,24 +146,24 @@ export function AuthModal() {
               </span>
             </div>
 
-            <h3 className="text-2xl font-extrabold text-[#09090b] dark:text-white tracking-tight pt-1">
+             <h2 id="auth-modal-title" className="text-2xl font-extrabold text-[var(--text-primary)] tracking-tight pt-1">
               {mode === 'login' ? 'Masuk ke Akun' : 'Buat Akun Peneliti'}
-            </h3>
-            <p className="text-xs text-[#71717a] dark:text-[#a1a1aa] leading-relaxed">
+            </h2>
+             <p className="text-xs text-[var(--text-muted)] leading-relaxed">
               Akses pustaka bookmark, voting umpan balik, dan partisipasi diskusi rekayasa sistem.
             </p>
           </div>
 
           {/* Feedback messages */}
           {error && (
-            <div className="p-3.5 rounded-[16px] bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs font-semibold flex items-center gap-2">
+            <div role="alert" aria-live="assertive" className="p-3.5 rounded-[16px] bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs font-semibold flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{error}</span>
             </div>
           )}
 
           {successMsg && (
-            <div className="p-3.5 rounded-[16px] bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs font-semibold flex items-center gap-2">
+            <div role="status" aria-live="polite" className="p-3.5 rounded-[16px] bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs font-semibold flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 shrink-0" />
               <span>{successMsg}</span>
             </div>
@@ -102,55 +173,58 @@ export function AuthModal() {
           <form onSubmit={handleSubmit} className="space-y-4">
             {mode === 'register' && (
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-[#09090b] dark:text-white uppercase tracking-wider flex items-center gap-1.5">
+               <label htmlFor={displayNameId} className="text-[11px] font-bold text-[var(--text-primary)] uppercase tracking-wider flex items-center gap-1.5">
                   <User className="w-3.5 h-3.5 text-[var(--accent)]" />
                   Nama Tampilan
                 </label>
                 <input
+                  id={displayNameId}
                   type="text"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   placeholder="Contoh: Andi Pratama"
                   required
-                  className="w-full px-4 py-3 rounded-[16px] bg-[#f4f4f5] dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-xs text-[#09090b] dark:text-white focus:outline-none focus:border-[var(--accent)] transition-colors"
+                 className="w-full px-4 py-3 rounded-[16px] bg-[var(--bg-card-muted)] border border-[var(--border-color)] text-xs text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--accent)] transition-colors"
                 />
               </div>
             )}
 
             <div className="space-y-1.5">
-              <label className="text-[11px] font-bold text-[#09090b] dark:text-white uppercase tracking-wider flex items-center gap-1.5">
+               <label htmlFor={emailId} className="text-[11px] font-bold text-[var(--text-primary)] uppercase tracking-wider flex items-center gap-1.5">
                 <Mail className="w-3.5 h-3.5 text-[var(--accent)]" />
                 Alamat Email
               </label>
               <input
+                id={emailId}
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="nama@domain.com"
                 required
-                className="w-full px-4 py-3 rounded-[16px] bg-[#f4f4f5] dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-xs text-[#09090b] dark:text-white focus:outline-none focus:border-[var(--accent)] transition-colors"
+                 className="w-full px-4 py-3 rounded-[16px] bg-[var(--bg-card-muted)] border border-[var(--border-color)] text-xs text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--accent)] transition-colors"
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-[11px] font-bold text-[#09090b] dark:text-white uppercase tracking-wider flex items-center gap-1.5">
+               <label htmlFor={passwordId} className="text-[11px] font-bold text-[var(--text-primary)] uppercase tracking-wider flex items-center gap-1.5">
                 <KeyRound className="w-3.5 h-3.5 text-[var(--accent)]" />
                 Kata Sandi
               </label>
               <input
+                id={passwordId}
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 required
-                className="w-full px-4 py-3 rounded-[16px] bg-[#f4f4f5] dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-xs text-[#09090b] dark:text-white focus:outline-none focus:border-[var(--accent)] transition-colors"
+                 className="w-full px-4 py-3 rounded-[16px] bg-[var(--bg-card-muted)] border border-[var(--border-color)] text-xs text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--accent)] transition-colors"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 px-4 rounded-[16px] bg-[#09090b] dark:bg-white text-white dark:text-[#09090b] hover:bg-[#18181b] dark:hover:bg-zinc-200 text-xs font-bold transition-all shadow-md active:scale-[0.98] flex items-center justify-center gap-2 pt-3"
+               className="w-full py-3.5 px-4 rounded-[16px] bg-[var(--text-primary)] text-[var(--bg-primary)] hover:bg-[var(--text-secondary)] text-xs font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2 pt-3"
             >
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
               <span>{mode === 'login' ? 'Masuk ke Akun' : 'Daftar Akun Baru'}</span>
@@ -160,7 +234,7 @@ export function AuthModal() {
           <OAuthButtons />
 
           {/* Mode Switcher */}
-          <div className="text-center text-xs text-[#71717a] pt-3 border-t border-[#ececee] dark:border-[#27272a]">
+           <div className="text-center text-xs text-[var(--text-muted)] pt-3 border-t border-[var(--border-color)]">
             {mode === 'login' ? (
               <p>
                 Belum memiliki akun?{' '}

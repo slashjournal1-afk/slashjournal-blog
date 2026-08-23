@@ -21,7 +21,7 @@ export function SponsoredBadge({ sponsorName, sponsorUrl, className = '' }: Spon
 
   return (
     <div
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[12px] bg-[var(--accent)] text-white text-[11px] font-bold tracking-wide shadow-xs ${className}`}
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[12px] bg-[var(--accent)] text-[var(--accent-foreground)] text-[11px] font-bold tracking-wide shadow-xs ${className}`}
     >
       <Sparkles className="w-3.5 h-3.5" />
       <span className="opacity-90">POS BERSPONSOR:</span>

@@ -48,7 +48,7 @@ export function DocSidebar({ modules }: DocSidebarProps) {
     <aside className="w-full lg:w-72 shrink-0 py-6 pr-4 lg:border-r border-[#ececee] dark:border-[#27272a] overflow-y-auto max-h-[calc(100vh-4rem)] sticky top-16">
       <div className="space-y-6">
         <div className="px-3">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-[#71717a]">
+           <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
             Pohon Dokumentasi Sistem
           </span>
         </div>
@@ -63,7 +63,7 @@ export function DocSidebar({ modules }: DocSidebarProps) {
                 {/* Module Header Toggle */}
                 <button
                   onClick={() => toggleModule(mod.id)}
-                  className="w-full flex items-center justify-between p-2.5 rounded-[12px] text-left text-xs font-bold text-[#09090b] dark:text-white hover:bg-white dark:hover:bg-[#18181b] transition-colors group"
+                   className="w-full flex items-center justify-between p-2.5 rounded-[12px] text-left text-xs font-bold text-[var(--text-primary)] hover:bg-[var(--bg-card)] transition-colors group"
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <div className="p-1.5 rounded-[8px] bg-[var(--accent-soft)] text-[var(--accent)] group-hover:scale-105 transition-transform">
@@ -72,9 +72,9 @@ export function DocSidebar({ modules }: DocSidebarProps) {
                     <span className="truncate">{mod.title}</span>
                   </div>
                   {isExp ? (
-                    <ChevronDown className="w-4 h-4 text-[#71717a]" />
+                     <ChevronDown className="w-4 h-4 text-[var(--text-muted)]" />
                   ) : (
-                    <ChevronRight className="w-4 h-4 text-[#71717a]" />
+                     <ChevronRight className="w-4 h-4 text-[var(--text-muted)]" />
                   )}
                 </button>
 
@@ -89,8 +89,8 @@ export function DocSidebar({ modules }: DocSidebarProps) {
                           href={`/${art.slug}`}
                           className={`flex items-center gap-2 px-3 py-1.5 rounded-[10px] text-xs transition-all ${
                             isActive
-                              ? 'bg-[#09090b] text-white font-bold'
-                              : 'text-[#52525b] dark:text-[#a1a1aa] hover:text-[#09090b] dark:hover:text-white hover:bg-white dark:hover:bg-[#18181b]'
+                               ? 'bg-[var(--text-primary)] text-[var(--bg-primary)] font-bold'
+                               : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-card)]'
                           }`}
                         >
                           <FileText className={`w-3.5 h-3.5 ${isActive ? 'text-[var(--accent)]' : 'text-[var(--accent)]/70'}`} />

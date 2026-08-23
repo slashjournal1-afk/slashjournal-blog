@@ -106,7 +106,7 @@ export function MultiTabCode({ tabs: propTabs, rawContent, rawCode, defaultLangu
               onClick={() => setActiveIdx(idx)}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[10px] text-xs font-mono font-medium transition-all ${
                 activeIdx === idx
-                  ? 'bg-[var(--accent)] text-white font-bold shadow-2xs'
+                  ? 'bg-[var(--accent)] text-[var(--accent-foreground)] font-bold shadow-2xs'
                   : 'text-[#a1a1aa] hover:text-white hover:bg-[#27272a]'
               }`}
             >

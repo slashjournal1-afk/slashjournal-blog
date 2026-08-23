@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -14,11 +14,13 @@ import {
   Search,
   Shield,
   X,
+  LogIn,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { ThemeToggle } from './ThemeToggle';
 import { AuthModal } from '../auth/AuthModal';
 import { BrandLogo } from './BrandLogo';
+import { useDismissiblePopover } from './useDismissiblePopover';
 
 type Category = {
   name: string;
@@ -42,8 +44,54 @@ export function Navbar({ categories }: { categories: Category[] }) {
   const pathname = usePathname();
   const { user, logout, openAuthModal } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
-  const [isAccountOpen, setIsAccountOpen] = useState(false);
+  const [openSurface, setOpenSurface] = useState<'category' | 'account' | null>(null);
+  const [isMobileCategoryOpen, setIsMobileCategoryOpen] = useState(false);
+  const categoryPanelId = useId();
+  const accountMenuId = useId();
+  const mobileNavigationId = useId();
+  const mobileCategoryPanelId = useId();
+  const mobileMenuButtonRef = useRef<HTMLButtonElement>(null);
+  const authRestoreFocusRef = useRef<HTMLElement | null>(null);
+
+  const closeMenus = () => {
+    setOpenSurface(null);
+    setIsMenuOpen(false);
+    setIsMobileCategoryOpen(false);
+  };
+  const openCategory = () => {
+    setOpenSurface((surface) => surface === 'category' ? null : 'category');
+    setIsMenuOpen(false);
+    setIsMobileCategoryOpen(false);
+  };
+  const openAccount = () => {
+    setOpenSurface((surface) => surface === 'account' ? null : 'account');
+    setIsMenuOpen(false);
+    setIsMobileCategoryOpen(false);
+  };
+  const openAuth = (restoreFocusTo: HTMLElement) => {
+    authRestoreFocusRef.current = restoreFocusTo;
+    closeMenus();
+    openAuthModal();
+  };
+
+  const categoryOpen = openSurface === 'category';
+  const accountOpen = openSurface === 'account';
+  const categoryPopoverRef = useDismissiblePopover<HTMLDivElement>({ open: categoryOpen, onClose: () => setOpenSurface(null) });
+  const accountPopoverRef = useDismissiblePopover<HTMLDivElement>({ open: accountOpen, onClose: () => setOpenSurface(null) });
+  const mobileNavigationRef = useDismissiblePopover<HTMLDivElement>({
+    open: isMenuOpen,
+    onClose: closeMenus,
+    closeOnPointerLeave: false,
+    additionalRef: mobileMenuButtonRef,
+  });
+
+  useEffect(() => {
+    // Navigation invalidates every menu surface, including nested mobile state.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setOpenSurface(null);
+    setIsMenuOpen(false);
+    setIsMobileCategoryOpen(false);
+  }, [pathname]);
 
   const openSearch = () => window.dispatchEvent(new CustomEvent('open-command-palette'));
   const categoryActive = pathname.startsWith('/category');
@@ -65,7 +113,7 @@ export function Navbar({ categories }: { categories: Category[] }) {
               <Link
                 key={link.href}
                 href={link.href}
-                onClick={() => setIsCategoryOpen(false)}
+                onClick={closeMenus}
                 className={`rounded-btn px-3 py-2 text-[13px] transition-colors ${
                   isActivePath(pathname, link.href)
                     ? 'font-semibold text-[var(--text-primary)] bg-[var(--bg-card-muted)]'
@@ -76,24 +124,25 @@ export function Navbar({ categories }: { categories: Category[] }) {
               </Link>
             ))}
 
-            <div className="relative">
+            <div className="relative" ref={categoryPopoverRef}>
               <button
                 type="button"
-                onClick={() => setIsCategoryOpen((open) => !open)}
+                onClick={openCategory}
                 className={`flex items-center gap-1 rounded-btn px-3 py-2 text-[13px] transition-colors ${
-                  categoryActive || isCategoryOpen
+                  categoryActive || categoryOpen
                     ? 'font-semibold text-[var(--text-primary)] bg-[var(--bg-card-muted)]'
                     : 'text-[var(--text-muted)] hover:bg-[var(--bg-card-muted)] hover:text-[var(--text-primary)]'
                 }`}
-                aria-expanded={isCategoryOpen}
+                aria-expanded={categoryOpen}
+                aria-controls={categoryPanelId}
                 aria-haspopup="true"
               >
                 Kategori
-                <ChevronDown className={`h-3.5 w-3.5 transition-transform ${isCategoryOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`h-3.5 w-3.5 transition-transform ${categoryOpen ? 'rotate-180' : ''}`} />
               </button>
 
-              {isCategoryOpen && (
-                <div className="absolute left-0 top-11 z-50 w-[340px] border border-[var(--border-color)] bg-[var(--bg-card)] p-2 shadow-floating animate-in fade-in slide-in-from-top-1 duration-100">
+              {categoryOpen && (
+                <div id={categoryPanelId} className="absolute left-0 top-11 z-10 w-[min(340px,calc(100vw-2rem))] border border-[var(--border-color)] bg-[var(--bg-card)] p-2 shadow-floating animate-in fade-in slide-in-from-top-1 duration-100">
                   <div className="border-b border-[var(--border-color)] px-3 pb-2 pt-1">
                     <p className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--accent)]">Index topik</p>
                     <p className="mt-1 text-xs text-[var(--text-muted)]">Pilih jalur baca berdasarkan bidang rekayasa.</p>
@@ -103,7 +152,7 @@ export function Navbar({ categories }: { categories: Category[] }) {
                       <Link
                         key={category.slug}
                         href={`/category/${category.slug}`}
-                        onClick={() => setIsCategoryOpen(false)}
+                        onClick={closeMenus}
                         className="group flex items-start justify-between gap-3 px-3 py-2.5 transition-colors hover:bg-[var(--bg-card-muted)]"
                       >
                         <span className="min-w-0">
@@ -116,7 +165,7 @@ export function Navbar({ categories }: { categories: Category[] }) {
                       </Link>
                     ))}
                   </div>
-                  <Link href="/category" onClick={() => setIsCategoryOpen(false)} className="flex items-center gap-2 border-t border-[var(--border-color)] px-3 py-2.5 text-xs font-bold text-[var(--accent)] hover:bg-[var(--bg-card-muted)]">
+                  <Link href="/category" onClick={closeMenus} className="flex items-center gap-2 border-t border-[var(--border-color)] px-3 py-2.5 text-xs font-bold text-[var(--accent)] hover:bg-[var(--bg-card-muted)]">
                     <BookOpen className="h-3.5 w-3.5" />
                     Lihat semua kategori
                   </Link>
@@ -128,7 +177,7 @@ export function Navbar({ categories }: { categories: Category[] }) {
               <Link
                 key={link.href}
                 href={link.href}
-                onClick={() => setIsCategoryOpen(false)}
+                onClick={closeMenus}
                 className={`rounded-btn px-3 py-2 text-[13px] transition-colors ${
                   isActivePath(pathname, link.href)
                     ? 'font-semibold text-[var(--text-primary)] bg-[var(--bg-card-muted)]'
@@ -155,30 +204,31 @@ export function Navbar({ categories }: { categories: Category[] }) {
             <ThemeToggle />
 
             {user ? (
-              <div className="relative hidden sm:block">
+              <div className="relative hidden sm:block" ref={accountPopoverRef}>
                 <button
                   type="button"
-                  onClick={() => setIsAccountOpen((open) => !open)}
+                  onClick={openAccount}
                   className="flex min-h-11 items-center gap-2 rounded-btn px-2 text-[13px] font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--bg-card-muted)]"
-                  aria-expanded={isAccountOpen}
+                  aria-expanded={accountOpen}
+                  aria-controls={accountMenuId}
                   aria-haspopup="menu"
                 >
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--accent)] text-xs font-semibold text-white">{user.displayName.charAt(0).toUpperCase()}</span>
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--accent)] text-xs font-semibold text-[var(--accent-foreground)]">{user.displayName.charAt(0).toUpperCase()}</span>
                   <span className="hidden max-w-[92px] truncate md:inline">{user.displayName.split(' ')[0]}</span>
                   <ChevronDown className="h-3 w-3 text-[var(--text-muted)]" />
                 </button>
-                {isAccountOpen && (
-                  <div className="absolute right-0 top-12 z-50 w-56 border border-[var(--border-color)] bg-[var(--bg-card)] p-1.5 shadow-floating animate-in fade-in zoom-in-95 duration-100" role="menu">
+                {accountOpen && (
+                  <div id={accountMenuId} className="absolute right-0 top-12 z-10 w-56 border border-[var(--border-color)] bg-[var(--bg-card)] p-1.5 shadow-floating animate-in fade-in zoom-in-95 duration-100" role="menu">
                     <div className="border-b border-[var(--border-color)] px-3 py-2">
                       <p className="truncate text-xs font-semibold text-[var(--text-primary)]">{user.displayName}</p>
                       <p className="truncate text-[11px] text-[var(--text-muted)]">{user.email}</p>
                     </div>
                     <div className="pt-1.5">
-                      {user.role === 'ADMIN' && <AccountLink href="/dashboard/superadmin" icon={<Shield className="h-3.5 w-3.5" />} label="Superadmin Control" tone="danger" onClick={() => setIsAccountOpen(false)} />}
-                      {['ADMIN', 'EDITOR', 'AUTHOR'].includes(user.role) && <AccountLink href="/dashboard/creator" icon={<FileText className="h-3.5 w-3.5 text-[var(--accent)]" />} label="Studio Penulis" onClick={() => setIsAccountOpen(false)} />}
-                      {user.role === 'READER' && <AccountLink href="/dashboard/member" icon={<Bookmark className="h-3.5 w-3.5 text-[var(--accent)]" />} label="Dasbor Anggota" onClick={() => setIsAccountOpen(false)} />}
-                      <AccountLink href="/bookmarks" icon={<Bookmark className="h-3.5 w-3.5 text-[var(--accent)]" />} label="Pustaka Bookmark" onClick={() => setIsAccountOpen(false)} />
-                      <button type="button" role="menuitem" onClick={() => { logout(); setIsAccountOpen(false); }} className="mt-1 flex min-h-10 w-full items-center gap-2 border-t border-[var(--border-color)] px-3 text-left text-xs font-medium text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20">
+                      {user.role === 'ADMIN' && <AccountLink href="/dashboard/superadmin" icon={<Shield className="h-3.5 w-3.5" />} label="Superadmin Control" tone="danger" onClick={closeMenus} />}
+                      {['ADMIN', 'EDITOR', 'AUTHOR'].includes(user.role) && <AccountLink href="/dashboard/creator" icon={<FileText className="h-3.5 w-3.5 text-[var(--accent)]" />} label="Studio Penulis" onClick={closeMenus} />}
+                      {user.role === 'READER' && <AccountLink href="/dashboard/member" icon={<Bookmark className="h-3.5 w-3.5 text-[var(--accent)]" />} label="Dasbor Anggota" onClick={closeMenus} />}
+                      <AccountLink href="/bookmarks" icon={<Bookmark className="h-3.5 w-3.5 text-[var(--accent)]" />} label="Pustaka Bookmark" onClick={closeMenus} />
+                      <button type="button" role="menuitem" onClick={() => { closeMenus(); logout(); }} className="mt-1 flex min-h-10 w-full items-center gap-2 border-t border-[var(--border-color)] px-3 text-left text-xs font-medium text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20">
                         <LogOut className="h-3.5 w-3.5" /> Keluar Akun
                       </button>
                     </div>
@@ -186,41 +236,41 @@ export function Navbar({ categories }: { categories: Category[] }) {
                 )}
               </div>
             ) : (
-              <button type="button" onClick={openAuthModal} className="hidden min-h-11 rounded-btn px-3.5 text-[13px] font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--bg-card-muted)] sm:inline-flex">Masuk</button>
+              <button type="button" onClick={(event) => openAuth(event.currentTarget)} className="hidden min-h-11 items-center gap-2 rounded-btn bg-[var(--color-ink)] px-3.5 text-[13px] font-semibold text-white transition-colors hover:bg-[var(--color-charcoal)] sm:inline-flex"><LogIn className="h-4 w-4" />Masuk</button>
             )}
 
-            <button type="button" onClick={() => setIsMenuOpen((open) => !open)} className="flex h-11 w-11 items-center justify-center rounded-btn text-[var(--text-primary)] transition-colors hover:bg-[var(--bg-card-muted)] lg:hidden" aria-label={isMenuOpen ? 'Tutup menu' : 'Buka menu'} aria-expanded={isMenuOpen}>
+            <button ref={mobileMenuButtonRef} type="button" onClick={() => { setIsMenuOpen((open) => !open); setOpenSurface(null); setIsMobileCategoryOpen(false); }} className="flex h-11 w-11 items-center justify-center rounded-btn text-[var(--text-primary)] transition-colors hover:bg-[var(--bg-card-muted)] lg:hidden" aria-label={isMenuOpen ? 'Tutup menu' : 'Buka menu'} aria-expanded={isMenuOpen} aria-controls={mobileNavigationId}>
               {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
           </div>
         </div>
 
         {isMenuOpen && (
-          <div className="border-t border-[var(--border-color)] bg-[var(--bg-card)] lg:hidden">
+          <div ref={mobileNavigationRef} id={mobileNavigationId} className="border-t border-[var(--border-color)] bg-[var(--bg-card)] lg:hidden">
             <nav aria-label="Navigasi mobile" className="mx-auto max-h-[calc(100vh-69px)] max-w-editorial overflow-y-auto px-4 py-4 sm:px-8">
               <div className="mb-3 flex items-center justify-between px-1">
                 <span className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--accent)]">Navigasi SlashJournal</span>
                 <span className="text-[10px] text-[var(--text-muted)]">{categories.length} topik aktif</span>
               </div>
               <div className="grid gap-1">
-                {primaryLinks.slice(0, 1).map((link) => <MobileLink key={link.href} href={link.href} label={link.label} active={isActivePath(pathname, link.href)} onClick={() => setIsMenuOpen(false)} />)}
-                <button type="button" onClick={() => setIsCategoryOpen((open) => !open)} className={`flex min-h-12 w-full items-center justify-between px-3 text-left text-[15px] font-semibold ${categoryActive ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`} aria-expanded={isCategoryOpen}>
+                {primaryLinks.slice(0, 1).map((link) => <MobileLink key={link.href} href={link.href} label={link.label} active={isActivePath(pathname, link.href)} onClick={closeMenus} />)}
+                <button type="button" onClick={() => setIsMobileCategoryOpen((open) => !open)} className={`flex min-h-12 w-full items-center justify-between px-3 text-left text-[15px] font-semibold ${categoryActive ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`} aria-expanded={isMobileCategoryOpen} aria-controls={mobileCategoryPanelId}>
                   <span className="flex items-center gap-3"><BookOpen className="h-4 w-4 text-[var(--accent)]" /> Kategori</span>
-                  <ChevronDown className={`h-4 w-4 transition-transform ${isCategoryOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`h-4 w-4 transition-transform ${isMobileCategoryOpen ? 'rotate-180' : ''}`} />
                 </button>
-                {isCategoryOpen && <div className="ml-7 border-l border-[var(--border-color)] pl-3">{categories.map((category) => <MobileLink key={category.slug} href={`/category/${category.slug}`} label={category.name} active={pathname.startsWith(`/category/${category.slug}`)} onClick={() => setIsMenuOpen(false)} />)}<MobileLink href="/category" label="Semua kategori" active={pathname === '/category'} onClick={() => setIsMenuOpen(false)} /></div>}
-                {primaryLinks.slice(1).map((link) => <MobileLink key={link.href} href={link.href} label={link.label} active={isActivePath(pathname, link.href)} onClick={() => setIsMenuOpen(false)} />)}
+                {isMobileCategoryOpen && <div id={mobileCategoryPanelId} className="ml-7 border-l border-[var(--border-color)] pl-3">{categories.map((category) => <MobileLink key={category.slug} href={`/category/${category.slug}`} label={category.name} active={pathname.startsWith(`/category/${category.slug}`)} onClick={closeMenus} />)}<MobileLink href="/category" label="Semua kategori" active={pathname === '/category'} onClick={closeMenus} /></div>}
+                {primaryLinks.slice(1).map((link) => <MobileLink key={link.href} href={link.href} label={link.label} active={isActivePath(pathname, link.href)} onClick={closeMenus} />)}
               </div>
               <div className="mt-4 grid gap-2 border-t border-[var(--border-color)] pt-4 sm:grid-cols-2">
-                <button type="button" onClick={() => { setIsMenuOpen(false); openSearch(); }} className="flex min-h-12 items-center gap-3 border border-[var(--border-color)] px-3 text-sm font-semibold text-[var(--text-primary)] hover:bg-[var(--bg-card-muted)]"><Search className="h-4 w-4 text-[var(--accent)]" /> Cari tulisan</button>
-                {!user && <button type="button" onClick={() => { setIsMenuOpen(false); openAuthModal(); }} className="flex min-h-12 items-center justify-center gap-2 bg-[var(--color-ink)] px-3 text-sm font-semibold text-white hover:bg-[var(--color-charcoal)]">Masuk / Buat akun</button>}
-                {user && <button type="button" onClick={() => { setIsMenuOpen(false); logout(); }} className="flex min-h-12 items-center gap-3 border border-rose-200 px-3 text-sm font-semibold text-rose-600 hover:bg-rose-50 dark:border-rose-900 dark:hover:bg-rose-950/20"><LogOut className="h-4 w-4" /> Keluar akun</button>}
+                <button type="button" onClick={() => { closeMenus(); openSearch(); }} className="flex min-h-12 items-center gap-3 border border-[var(--border-color)] px-3 text-sm font-semibold text-[var(--text-primary)] hover:bg-[var(--bg-card-muted)]"><Search className="h-4 w-4 text-[var(--accent)]" /> Cari tulisan</button>
+                {!user && <button type="button" onClick={() => { if (mobileMenuButtonRef.current) openAuth(mobileMenuButtonRef.current); }} className="flex min-h-12 items-center justify-center gap-2 bg-[var(--color-ink)] px-3 text-sm font-semibold text-white hover:bg-[var(--color-charcoal)]"><LogIn className="h-4 w-4" />Masuk / Buat akun</button>}
+                {user && <button type="button" onClick={() => { closeMenus(); logout(); }} className="flex min-h-12 items-center gap-3 border border-rose-200 px-3 text-sm font-semibold text-rose-600 hover:bg-rose-50 dark:border-rose-900 dark:hover:bg-rose-950/20"><LogOut className="h-4 w-4" /> Keluar akun</button>}
               </div>
             </nav>
           </div>
         )}
       </header>
-      <AuthModal />
+      <AuthModal restoreFocusRef={authRestoreFocusRef} />
     </>
   );
 }

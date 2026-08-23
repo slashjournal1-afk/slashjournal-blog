@@ -92,7 +92,7 @@ export default async function SuperAdminDashboardPage() {
         <div className="flex items-center gap-2.5 shrink-0">
           <Link
             href="/admin/review-queue"
-            className="flex items-center gap-2 px-4 py-2.5 rounded-[14px] bg-[#ff5a00] text-white text-xs font-bold shadow-xs hover:bg-[#e04f00] active:scale-95 transition-all"
+             className="flex items-center gap-2 px-4 py-2.5 rounded-[14px] bg-[var(--accent)] text-[var(--accent-foreground)] text-xs font-bold shadow-xs hover:bg-[var(--accent-hover)] active:scale-95 transition-all"
           >
             <Inbox className="w-4 h-4" />
             <span>Antrean Review ({inReviewCount})</span>
@@ -101,7 +101,7 @@ export default async function SuperAdminDashboardPage() {
             href="/admin/docs/new"
             className="flex items-center gap-2 px-4 py-2.5 rounded-[14px] bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-primary)] text-xs font-bold hover:bg-[var(--bg-card-muted)] active:scale-95 transition-all"
           >
-            <Plus className="w-4 h-4 text-[#ff5a00]" />
+             <Plus className="w-4 h-4 text-[var(--accent)]" />
             <span>Naskah Baru</span>
           </Link>
         </div>
@@ -145,9 +145,9 @@ export default async function SuperAdminDashboardPage() {
         <div className="p-5 rounded-[24px] border border-[var(--border-color)] bg-[var(--bg-card)] space-y-2 shadow-xs">
           <div className="flex items-center justify-between text-[var(--text-muted)]">
             <span className="text-[11px] font-bold uppercase tracking-wider">Total Pembaca</span>
-            <Eye className="w-4 h-4 text-[#ff5a00]" />
+             <Eye className="w-4 h-4 text-[var(--accent)]" />
           </div>
-          <p className="text-[30px] font-extrabold text-[#ff5a00] leading-none">
+           <p className="text-[30px] font-extrabold text-[var(--accent)] leading-none">
             {(totalViewsResult._sum.viewCount || 0).toLocaleString('id-ID')}
           </p>
           <p className="text-[10.5px] text-[var(--text-muted)]">
@@ -179,7 +179,7 @@ export default async function SuperAdminDashboardPage() {
           <div className="rounded-[28px] border border-[var(--border-color)] bg-[var(--bg-card)] p-6 space-y-4 shadow-xs">
             <div className="flex items-center justify-between pb-3 border-b border-[var(--border-color)]">
               <h3 className="text-[15px] font-bold text-[var(--text-primary)] flex items-center gap-2">
-                <FileText className="w-4 h-4 text-[#ff5a00]" />
+                 <FileText className="w-4 h-4 text-[var(--accent)]" />
                 <span>Naskah &amp; Bab Dokumen Terkini</span>
               </h3>
               <span className="text-xs font-mono text-[var(--text-muted)]">Semua Penulis</span>
@@ -204,7 +204,7 @@ export default async function SuperAdminDashboardPage() {
                       >
                         {art.status}
                       </span>
-                      <span className="text-[10.5px] font-bold text-[#ff5a00]">
+                      <span className="text-[10.5px] font-bold text-[var(--accent)]">
                         {art.category.name}
                       </span>
                     </div>
@@ -219,7 +219,7 @@ export default async function SuperAdminDashboardPage() {
                   <div className="flex items-center gap-2 shrink-0">
                     <Link
                       href={`/admin/docs/${art.id}`}
-                      className="px-3 py-1.5 rounded-[10px] bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-[#ff5a00] text-xs font-bold text-[var(--text-primary)] transition-colors"
+                       className="px-3 py-1.5 rounded-[10px] bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-[var(--accent)] text-xs font-bold text-[var(--text-primary)] transition-colors"
                     >
                       Edit
                     </Link>
@@ -227,7 +227,7 @@ export default async function SuperAdminDashboardPage() {
                       <Link
                         href={`/${art.slug}`}
                         target="_blank"
-                        className="p-1.5 rounded-[10px] bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-muted)] hover:text-[#ff5a00] transition-colors"
+                         className="p-1.5 rounded-[10px] bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--accent)] transition-colors"
                         title="Lihat Publikasi"
                       >
                         <ArrowUpRight className="w-3.5 h-3.5" />
@@ -245,14 +245,14 @@ export default async function SuperAdminDashboardPage() {
           {/* Quick System Navigation */}
           <div className="rounded-[28px] border border-[var(--border-color)] bg-[var(--bg-card)] p-6 space-y-3 shadow-xs">
             <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--text-primary)] flex items-center gap-2">
-              <Settings className="w-3.5 h-3.5 text-[#ff5a00]" />
+               <Settings className="w-3.5 h-3.5 text-[var(--accent)]" />
               <span>Pusat Navigasi Sistem</span>
             </h3>
 
             <div className="space-y-2 pt-1">
               <Link
                 href="/admin/review-queue"
-                className="flex items-center justify-between p-3 rounded-[14px] bg-[var(--bg-card-muted)] border border-[var(--border-color)] hover:border-[#ff5a00] transition-colors text-xs font-bold text-[var(--text-primary)]"
+                 className="flex items-center justify-between p-3 rounded-[14px] bg-[var(--bg-card-muted)] border border-[var(--border-color)] hover:border-[var(--accent)] transition-colors text-xs font-bold text-[var(--text-primary)]"
               >
                 <div className="flex items-center gap-2.5">
                   <Inbox className="w-4 h-4 text-amber-500" />
@@ -263,7 +263,7 @@ export default async function SuperAdminDashboardPage() {
 
               <Link
                 href="/admin/telemetry"
-                className="flex items-center justify-between p-3 rounded-[14px] bg-[var(--bg-card-muted)] border border-[var(--border-color)] hover:border-[#ff5a00] transition-colors text-xs font-bold text-[var(--text-primary)]"
+                 className="flex items-center justify-between p-3 rounded-[14px] bg-[var(--bg-card-muted)] border border-[var(--border-color)] hover:border-[var(--accent)] transition-colors text-xs font-bold text-[var(--text-primary)]"
               >
                 <div className="flex items-center gap-2.5">
                   <Activity className="w-4 h-4 text-blue-500" />
@@ -274,7 +274,7 @@ export default async function SuperAdminDashboardPage() {
 
               <Link
                 href="/admin/audit-logs"
-                className="flex items-center justify-between p-3 rounded-[14px] bg-[var(--bg-card-muted)] border border-[var(--border-color)] hover:border-[#ff5a00] transition-colors text-xs font-bold text-[var(--text-primary)]"
+                 className="flex items-center justify-between p-3 rounded-[14px] bg-[var(--bg-card-muted)] border border-[var(--border-color)] hover:border-[var(--accent)] transition-colors text-xs font-bold text-[var(--text-primary)]"
               >
                 <div className="flex items-center gap-2.5">
                   <Shield className="w-4 h-4 text-rose-500" />

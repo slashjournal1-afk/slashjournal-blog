@@ -10,27 +10,27 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'primary', size = 'md', children, ...props }, ref) => {
     const baseStyles =
-      'inline-flex items-center justify-center font-medium transition-all duration-150 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none cursor-pointer select-none';
+      'inline-flex items-center justify-center font-medium transition-all duration-150 active:scale-[0.98] disabled:opacity-60 disabled:pointer-events-none cursor-pointer select-none';
 
     const variants = {
       // Primary Action: #09090b filled, white text, 14px radius, subtle hairline & inset highlight
       primary:
-        'bg-obsidian text-white border border-[#2c2e34] shadow-subtle hover:bg-[#18181b] rounded-btn',
+        'bg-[var(--text-primary)] text-[var(--bg-primary)] border border-[var(--text-primary)] hover:bg-[var(--text-secondary)] rounded-btn',
       // Secondary: light canvas button with 1px border
       secondary:
-        'bg-snow text-graphite border border-cloud hover:bg-paper rounded-btn',
+        'bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--border-color)] hover:bg-[var(--bg-card-muted)] rounded-btn',
       // Ghost: transparent button
       ghost:
-        'text-iron hover:text-obsidian hover:bg-mist/30 rounded-btn',
+        'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-card-muted)] rounded-btn',
       // Pill: 10000px radius for nav & prominent links
       pill:
-        'bg-obsidian text-snow rounded-pill hover:bg-slate px-5 py-2 border border-cloud/20',
+        'bg-[var(--text-primary)] text-[var(--bg-primary)] rounded-pill hover:bg-[var(--text-secondary)] px-5 py-2 border border-[var(--border-color)]',
       // Ember Accent: Confetti-orange
       ember:
-        'bg-ember text-snow rounded-btn hover:bg-[#e04f00]',
+        'bg-[var(--accent)] text-[var(--accent-foreground)] rounded-btn hover:bg-[var(--accent-hover)]',
       // Danger:
       danger:
-        'bg-red-600 text-white hover:bg-red-700 rounded-btn',
+        'bg-[var(--danger)] text-[var(--bg-primary)] hover:brightness-110 rounded-btn',
     };
 
     const sizes = {

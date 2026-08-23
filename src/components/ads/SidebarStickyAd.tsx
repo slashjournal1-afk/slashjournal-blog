@@ -81,11 +81,11 @@ export function SidebarStickyAd({ ad, adsenseSlot, className = '' }: SidebarStic
         )}
 
         <div className="pt-2">
-          <a
+            <a
             href={ad.targetUrl}
             target="_blank"
             rel="noopener noreferrer nofollow"
-            className="w-full py-2 px-3 rounded-[10px] bg-[#f4f4f5] dark:bg-[#27272a] hover:bg-[#09090b] hover:text-white dark:hover:bg-white dark:hover:text-[#09090b] text-[11px] font-bold text-[#09090b] dark:text-white transition-all flex items-center justify-center gap-1.5 active:scale-95 shadow-2xs"
+             className="w-full py-2 px-3 rounded-[10px] bg-[var(--bg-card-muted)] hover:bg-[var(--text-primary)] hover:text-[var(--bg-primary)] text-[11px] font-bold text-[var(--text-primary)] transition-all flex items-center justify-center gap-1.5 active:scale-95 shadow-2xs"
           >
             <span>Pelajari Lebih Lanjut</span>
             <ArrowUpRight className="w-3.5 h-3.5 text-[var(--accent)]" />

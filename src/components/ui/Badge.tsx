@@ -11,15 +11,15 @@ export function Badge({ className, variant = 'outlined', size = 'md', children, 
 
   const variants = {
     // 12px radius, 1px hairline border
-    outlined: 'bg-transparent border border-cloud text-graphite hover:border-mist',
-    filled: 'bg-iron text-[#fafafa]',
-    ember: 'bg-ember text-white font-semibold',
+    outlined: 'bg-transparent border border-[var(--border-color)] text-[var(--text-secondary)] hover:border-[var(--text-muted)]',
+    filled: 'bg-[var(--text-secondary)] text-[var(--bg-primary)]',
+    ember: 'bg-[var(--accent)] text-[var(--accent-foreground)] font-semibold',
     ai: 'bg-[var(--accent-soft)] border border-[var(--accent-line)] text-[var(--accent)] font-semibold',
-    source: 'bg-paper border border-cloud text-steel text-[11px]',
-    'status-published': 'bg-emerald-500/10 text-emerald-700 border border-emerald-500/20',
-    'status-draft': 'bg-amber-500/10 text-amber-700 border border-amber-500/20',
-    'status-retracted': 'bg-rose-500/10 text-rose-700 border border-rose-500/20',
-    'status-scheduled': 'bg-blue-500/10 text-blue-700 border border-blue-500/20',
+    source: 'bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-secondary)] text-[11px]',
+    'status-published': 'bg-[var(--success-soft)] text-[var(--success)] border border-[var(--success)]/30',
+    'status-draft': 'bg-[var(--warning-soft)] text-[var(--warning)] border border-[var(--warning)]/30',
+    'status-retracted': 'bg-[var(--danger-soft)] text-[var(--danger)] border border-[var(--danger)]/30',
+    'status-scheduled': 'bg-[var(--accent-soft)] text-[var(--accent)] border border-[var(--accent)]/30',
   };
 
   const sizes = {
