@@ -142,7 +142,7 @@ export function CommandPalette() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Cari konsep arsitektur, diagram, glosarium, atau artikel..."
-            className="flex-1 bg-transparent text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none"
+            className="flex-1 bg-transparent text-sm text-white dark:text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none"
           />
           {loading && <Loader2 className="w-4 h-4 text-[var(--accent)] animate-spin" />}
           {query && !loading && (

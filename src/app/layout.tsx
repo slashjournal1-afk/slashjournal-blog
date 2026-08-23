@@ -45,7 +45,7 @@ export const metadata: Metadata = {
     'Microservices',
     'Distributed Systems',
   ],
-  authors: [{ name: 'Choirul Arsitek', url: siteConfig.url }],
+  authors: [{ name: 'Choirul Humam', url: siteConfig.url }],
   metadataBase: new URL(siteConfig.url),
   icons: {
     icon: [
