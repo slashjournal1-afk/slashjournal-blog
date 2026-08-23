@@ -421,7 +421,7 @@ export default async function ArticleDetailPage({ params }: PageProps) {
                 </Link>
               </div>
 
-              <SidebarStickyAd ad={sidebarAd} adsenseSlot={process.env.ADSENSE_SIDEBAR_STICKY_SLOT} />
+              <SidebarStickyAd ad={sidebarAd} adsenseSlot={process.env.NEXT_PUBLIC_ADSENSE_SIDEBAR_STICKY_SLOT || process.env.ADSENSE_SIDEBAR_STICKY_SLOT} />
             </div>
           </aside>
         </div>

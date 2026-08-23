@@ -105,7 +105,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
           <React.Fragment key={art.id}>
             <ArticleRow href={`/${art.slug}`} title={art.title} excerpt={art.excerpt} date={formatDate(art.publishedAt || art.createdAt)} readingTime={art.readingTime} imageUrl={art.coverImageUrl} sponsored={art.isSponsored} sponsorName={art.sponsorName} />
 
-            {idx === 1 && <InFeedAd ad={inFeedAd} adsenseSlot={process.env.ADSENSE_IN_FEED_SLOT} />}
+            {idx === 1 && <InFeedAd ad={inFeedAd} adsenseSlot={process.env.NEXT_PUBLIC_ADSENSE_IN_FEED_SLOT || process.env.ADSENSE_IN_FEED_SLOT} />}
           </React.Fragment>
         ))}
       </div>
@@ -117,7 +117,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
         </nav>
       )}
 
-      <BannerAd ad={leaderboardAd} adsenseSlot={process.env.ADSENSE_LEADERBOARD_SLOT} />
+      <BannerAd ad={leaderboardAd} adsenseSlot={process.env.NEXT_PUBLIC_ADSENSE_LEADERBOARD_SLOT || process.env.ADSENSE_LEADERBOARD_SLOT} />
     </div>
   );
 }
