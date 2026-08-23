@@ -17,7 +17,12 @@ export function InFeedAd({ ad, adsenseSlot, className = '' }: InFeedAdProps) {
   if (!ad || !ad.isActive) {
     return (
       <div className={className}>
-        <GoogleAdSense slot={adsenseSlot || process.env.NEXT_PUBLIC_ADSENSE_IN_FEED_SLOT} className="mb-4" />
+        <GoogleAdSense
+          slot={adsenseSlot || process.env.NEXT_PUBLIC_ADSENSE_IN_FEED_SLOT}
+          format="fluid"
+          layoutKey={process.env.NEXT_PUBLIC_ADSENSE_IN_FEED_LAYOUT_KEY || '-6t+ed+2i-1n-4w'}
+          className="mb-4"
+        />
         <div className="rounded-[36px] bg-gradient-to-b from-[#f4f4f5]/60 to-white dark:from-[#18181b]/60 dark:to-[#121214] border border-dashed border-[#d4d4d8] dark:border-[#3f3f46] p-7 flex flex-col justify-between shadow-xs">
         <div className="space-y-3">
           <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[8px] bg-white dark:bg-[#27272a] text-[#71717a] dark:text-[#a1a1aa] text-[10px] font-bold uppercase tracking-wider shadow-2xs">
