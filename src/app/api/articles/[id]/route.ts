@@ -6,6 +6,7 @@ import { recordAuditLog } from '@/lib/audit';
 import { revalidatePath } from 'next/cache';
 import { jsonError } from '@/lib/api-errors';
 import { publicArticleWhere } from '@/lib/visibility';
+import { registerArticleRevenueIdentity } from '@/lib/revenue';
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -117,6 +118,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         publishedAt: status === 'PUBLISHED' && !existing.publishedAt ? new Date() : existing.publishedAt,
       },
     });
+    await registerArticleRevenueIdentity(updated.id, updated.authorId, updated.slug, updated.title);
 
     // Handle tags update if provided
     if (Array.isArray(tags)) {

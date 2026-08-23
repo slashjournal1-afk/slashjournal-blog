@@ -6,6 +6,7 @@ import { recordAuditLog } from '@/lib/audit';
 import { revalidatePath } from 'next/cache';
 import { jsonError } from '@/lib/api-errors';
 import { publicArticleWhere } from '@/lib/visibility';
+import { registerArticleRevenueIdentity } from '@/lib/revenue';
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -102,6 +103,7 @@ export async function POST(req: NextRequest) {
         publishedAt: status === 'PUBLISHED' ? new Date() : null,
       },
     });
+    await registerArticleRevenueIdentity(article.id, user.id, article.slug, article.title);
 
     // Handle tags
     if (tags && tags.length > 0) {

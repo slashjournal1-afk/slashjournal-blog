@@ -16,6 +16,8 @@
     "prisma:deploy": "prisma migrate deploy",
     "prisma:seed": "tsx prisma/seed.ts",
     "db:migrate-data": "tsx scripts/migrate-db.ts"
+    ,"revenue:backfill": "tsx scripts/backfill-revenue-identities.ts",
+    "revenue:migrate": "prisma migrate dev --name revenue-ledger"
   },
   "dependencies": {
     "@prisma/client": "^6.4.1",

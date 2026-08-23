@@ -15,6 +15,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [accountType, setAccountType] = useState<'reader' | 'author'>('reader');
   const [showPassword, setShowPassword] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(true);
 
@@ -59,18 +60,19 @@ export default function RegisterPage() {
           displayName,
           email,
           password,
+          accountType,
         }),
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Pendaftaran akun gagal');
 
-      setSuccessMsg('Pendaftaran berhasil! Menyiapkan ruang kerja Anda...');
+      setSuccessMsg('Akun berhasil dibuat. Menyiapkan dashboard Anda...');
       pushDataLayer('sign_up', { method: 'password' });
       await refreshUser();
 
       setTimeout(() => {
-        router.push('/dashboard/member');
+        router.push(data.user?.role === 'AUTHOR' ? '/dashboard/creator' : '/dashboard/member');
       }, 700);
     } catch (err: any) {
       setError(err.message || 'Terjadi kesalahan sistem');
@@ -91,7 +93,7 @@ export default function RegisterPage() {
           Daftar Akun Baru
         </h1>
         <p className="text-xs text-[#71717a] dark:text-[#a1a1aa] leading-relaxed">
-          Simpan artikel ke bookmark pribadi, berikan umpan balik, dan berdiskusi.
+          Pilih akun pembaca untuk berinteraksi atau akun penulis untuk mulai membuat dokumen.
         </p>
       </div>
 
@@ -112,6 +114,33 @@ export default function RegisterPage() {
 
       {/* Register Form */}
       <form onSubmit={handleSubmit} className="space-y-4">
+        <fieldset className="space-y-2">
+          <legend className="text-[11px] font-bold uppercase tracking-wider text-[#09090b] dark:text-white">
+            Jenis Akun
+          </legend>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {[
+              { value: 'reader', label: 'Pembaca', description: 'Bookmark, komentar, dan diskusi.' },
+              { value: 'author', label: 'Penulis', description: 'Akses langsung ke Studio Penulis.' },
+            ].map((option) => (
+              <label key={option.value} className="flex cursor-pointer gap-2 rounded-[14px] border border-[#ececee] dark:border-[#3f3f46] p-3">
+                <input
+                  type="radio"
+                  name="accountType"
+                  value={option.value}
+                  checked={accountType === option.value}
+                  onChange={() => setAccountType(option.value as 'reader' | 'author')}
+                  className="mt-0.5 text-[var(--accent)] focus:ring-[var(--accent)]"
+                />
+                <span>
+                  <span className="block text-xs font-bold text-[#09090b] dark:text-white">{option.label}</span>
+                  <span className="block text-[11px] text-[#71717a] dark:text-[#a1a1aa]">{option.description}</span>
+                </span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
         {/* Name Field */}
         <div className="space-y-1.5">
           <label className="text-[11px] font-bold uppercase tracking-wider text-[#09090b] dark:text-white flex items-center gap-1.5">
