@@ -14,13 +14,16 @@ interface InFeedAdProps {
 }
 
 export function InFeedAd({ ad, adsenseSlot, className = '' }: InFeedAdProps) {
+  const inFeedSlot = adsenseSlot || process.env.NEXT_PUBLIC_ADSENSE_IN_FEED_SLOT;
+  const inFeedLayoutKey = process.env.NEXT_PUBLIC_ADSENSE_IN_FEED_LAYOUT_KEY || '-6t+ed+2i-1n-4w';
+
   if (!ad || !ad.isActive) {
     return (
       <div className={className}>
         <GoogleAdSense
-          slot={adsenseSlot || process.env.NEXT_PUBLIC_ADSENSE_IN_FEED_SLOT}
+          slot={inFeedSlot}
           format="fluid"
-          layoutKey={process.env.NEXT_PUBLIC_ADSENSE_IN_FEED_LAYOUT_KEY || '-6t+ed+2i-1n-4w'}
+          layoutKey={inFeedLayoutKey}
           className="mb-4"
         />
         <div className="rounded-[36px] bg-gradient-to-b from-[#f4f4f5]/60 to-white dark:from-[#18181b]/60 dark:to-[#121214] border border-dashed border-[#d4d4d8] dark:border-[#3f3f46] p-7 flex flex-col justify-between shadow-xs">
