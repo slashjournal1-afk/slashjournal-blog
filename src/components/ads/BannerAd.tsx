@@ -9,14 +9,15 @@ import { GoogleAdSense } from './GoogleAdSense';
 
 interface BannerAdProps {
   ad?: AdSlot | null;
+  adsenseSlot?: string;
   className?: string;
 }
 
-export function BannerAd({ ad, className = '' }: BannerAdProps) {
+export function BannerAd({ ad, adsenseSlot, className = '' }: BannerAdProps) {
   if (!ad || !ad.isActive) {
     return (
       <div className={`w-full my-10 ${className}`}>
-        <GoogleAdSense slot={process.env.NEXT_PUBLIC_ADSENSE_LEADERBOARD_SLOT} className="mb-4" />
+        <GoogleAdSense slot={adsenseSlot || process.env.NEXT_PUBLIC_ADSENSE_LEADERBOARD_SLOT} className="mb-4" />
         <div className="rounded-[32px] bg-gradient-to-r from-[#f4f4f5]/80 via-white to-[#f4f4f5]/80 dark:from-[#18181b]/80 dark:via-[#121214] dark:to-[#18181b]/80 border border-[#ececee] dark:border-[#27272a] p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xs relative overflow-hidden">
         {/* Subtle background decoration */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-[var(--accent-soft)] rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />

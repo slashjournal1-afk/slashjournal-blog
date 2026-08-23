@@ -10,10 +10,17 @@ export function GoogleTagManager() {
   const [enabled, setEnabled] = useState(false);
 
   useEffect(() => {
-    setEnabled(localStorage.getItem(CONSENT_KEY) === 'granted');
-    const handleConsent = () => setEnabled(true);
-    window.addEventListener('slashjournal:analytics-consent', handleConsent);
-    return () => window.removeEventListener('slashjournal:analytics-consent', handleConsent);
+    const readConsent = () => {
+      try {
+        const value = JSON.parse(localStorage.getItem(CONSENT_KEY) || 'null');
+        setEnabled(value?.analytics === 'granted');
+      } catch {
+        setEnabled(false);
+      }
+    };
+    readConsent();
+    window.addEventListener('slashjournal:consent-update', readConsent);
+    return () => window.removeEventListener('slashjournal:consent-update', readConsent);
   }, []);
 
   return (

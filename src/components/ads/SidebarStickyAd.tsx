@@ -9,14 +9,15 @@ import { GoogleAdSense } from './GoogleAdSense';
 
 interface SidebarStickyAdProps {
   ad?: AdSlot | null;
+  adsenseSlot?: string;
   className?: string;
 }
 
-export function SidebarStickyAd({ ad, className = '' }: SidebarStickyAdProps) {
+export function SidebarStickyAd({ ad, adsenseSlot, className = '' }: SidebarStickyAdProps) {
   if (!ad || !ad.isActive) {
     return (
       <div className={className}>
-        <GoogleAdSense slot={process.env.NEXT_PUBLIC_ADSENSE_SIDEBAR_STICKY_SLOT} className="mb-4" />
+        <GoogleAdSense slot={adsenseSlot || process.env.NEXT_PUBLIC_ADSENSE_SIDEBAR_STICKY_SLOT} className="mb-4" />
         <div className="rounded-[28px] bg-white dark:bg-[#18181b] border border-[#ececee] dark:border-[#27272a] p-5 text-left space-y-3 shadow-xs">
         <div className="flex items-center justify-between">
           <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[8px] bg-[#f4f4f5] dark:bg-[#27272a] text-[#71717a] dark:text-[#a1a1aa] text-[10px] font-bold uppercase tracking-wider">
