@@ -28,3 +28,63 @@ export async function runAdSenseReport(range: 'today' | '7d' | '28d' | '90d') {
     return normalizeAdSenseReport(response.data);
   });
 }
+
+export type AdSenseRevenueRow = {
+  date: string;
+  pageUrl: string | null;
+  estimatedEarnings: string;
+  impressions: number;
+  clicks: number;
+  pageViews: number;
+  rpm: number;
+  ctr: number;
+};
+
+function reportAccount() {
+  const account = accountId();
+  if (!account) throw new Error('GOOGLE_ADSENSE_ACCOUNT_ID is not configured');
+  return account.startsWith('accounts/') ? account : `accounts/${account}`;
+}
+
+function reportDate(value: Date) {
+  return { year: value.getUTCFullYear(), month: value.getUTCMonth() + 1, day: value.getUTCDate() };
+}
+
+function parseRows(data: { headers?: Array<{ name?: string | null }>; rows?: Array<{ cells?: Array<{ value?: string | null }> }> }): AdSenseRevenueRow[] {
+  const headers = (data.headers || []).map((header) => header.name || '');
+  return (data.rows || []).map((row) => {
+    const values = row.cells?.map((cell) => cell.value || '') || [];
+    const get = (name: string) => values[headers.indexOf(name)] || '';
+    return {
+      date: get('DATE'),
+      pageUrl: get('PAGE_URL') || null,
+      estimatedEarnings: get('ESTIMATED_EARNINGS'),
+      impressions: Number(get('IMPRESSIONS') || 0),
+      clicks: Number(get('CLICKS') || 0),
+      pageViews: Number(get('PAGE_VIEWS') || 0),
+      rpm: Number(get('PAGE_VIEWS_RPM') || 0),
+      ctr: Number(get('PAGE_VIEWS_CTR') || 0),
+    };
+  });
+}
+
+export async function runAdSenseRevenueReport(start: Date, end: Date) {
+  return cachedReport(`adsense:revenue:${reportAccount()}:${start.toISOString()}:${end.toISOString()}`, 15 * 60_000, async () => {
+    const client = google.adsense({ version: 'v2', auth: createAdSenseAuth() });
+    const base = {
+      account: reportAccount(),
+      'startDate.year': reportDate(start).year,
+      'startDate.month': reportDate(start).month,
+      'startDate.day': reportDate(start).day,
+      'endDate.year': reportDate(end).year,
+      'endDate.month': reportDate(end).month,
+      'endDate.day': reportDate(end).day,
+      metrics: ['ESTIMATED_EARNINGS', 'IMPRESSIONS', 'CLICKS', 'PAGE_VIEWS', 'PAGE_VIEWS_RPM', 'PAGE_VIEWS_CTR'],
+    };
+    const [accountReport, pageReport] = await Promise.all([
+      client.accounts.reports.generate(base),
+      client.accounts.reports.generate({ ...base, dimensions: ['DATE', 'PAGE_URL'], limit: 100000 }),
+    ]);
+    return { account: normalizeAdSenseReport(accountReport.data), rows: parseRows(pageReport.data) };
+  });
+}

@@ -3,9 +3,14 @@ import { prisma } from '@/lib/db';
 import { hashPassword, generateToken } from '@/lib/auth';
 import { jsonError } from '@/lib/api-errors';
 
+export function getRegistrationRole(accountType?: unknown): 'READER' | 'AUTHOR' {
+  return accountType === 'author' ? 'AUTHOR' : 'READER';
+}
+
 export async function POST(req: Request) {
   try {
-    const { email, password, displayName } = await req.json();
+    const { email, password, displayName, accountType } = await req.json();
+    const role = getRegistrationRole(accountType);
 
     if (!email || !password || !displayName) {
       return NextResponse.json({ error: 'Semua kolom wajib diisi' }, { status: 400 });
@@ -26,12 +31,12 @@ export async function POST(req: Request) {
         email: email.toLowerCase().trim(),
         displayName: displayName.trim(),
         passwordHash,
-        role: 'READER',
+        role,
         provider: 'LOCAL',
       },
     });
 
-    const token = generateToken({ userId: user.id, role: 'READER' });
+    const token = generateToken({ userId: user.id, role });
 
     const response = NextResponse.json({
       success: true,

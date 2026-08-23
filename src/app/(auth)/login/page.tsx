@@ -4,7 +4,7 @@ import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { Mail, KeyRound, Eye, EyeOff, Loader2, AlertCircle, CheckCircle2, Shield, Sparkles } from 'lucide-react';
+import { Mail, KeyRound, Eye, EyeOff, Loader2, AlertCircle, CheckCircle2, Shield } from 'lucide-react';
 import { pushDataLayer } from '@/lib/data-layer';
 import { OAuthButtons } from '@/components/auth/OAuthButtons';
 
@@ -71,12 +71,6 @@ function LoginForm() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const autofillDemo = (demoEmail: string, demoPass: string) => {
-    setEmail(demoEmail);
-    setPassword(demoPass);
-    setError(null);
   };
 
   return (
@@ -176,37 +170,6 @@ function LoginForm() {
       </form>
 
       <OAuthButtons />
-
-      {/* Quick Demo Autofill helper */}
-      <div className="pt-4 border-t border-[#ececee] dark:border-[#27272a] space-y-2.5">
-        <div className="text-[10.5px] font-bold uppercase tracking-wider text-[#71717a] flex items-center gap-1.5">
-          <Sparkles className="w-3.5 h-3.5 text-[var(--accent)]" />
-          <span>Isi Cepat Akun Demo:</span>
-        </div>
-        <div className="grid grid-cols-3 gap-1.5">
-          <button
-            type="button"
-            onClick={() => autofillDemo('admin@slashjournal.dev', 'AdminPassword123!')}
-            className="px-2 py-1.5 rounded-[10px] bg-[#f4f4f5] dark:bg-[#27272a] hover:bg-orange-100 dark:hover:bg-orange-950/40 text-[10.5px] font-bold text-[#52525b] dark:text-[#d4d4d8] transition-colors border border-transparent hover:border-[var(--accent)]/30"
-          >
-            Admin
-          </button>
-          <button
-            type="button"
-            onClick={() => autofillDemo('editor@slashjournal.dev', 'Password123!')}
-            className="px-2 py-1.5 rounded-[10px] bg-[#f4f4f5] dark:bg-[#27272a] hover:bg-orange-100 dark:hover:bg-orange-950/40 text-[10.5px] font-bold text-[#52525b] dark:text-[#d4d4d8] transition-colors border border-transparent hover:border-[var(--accent)]/30"
-          >
-            Penulis
-          </button>
-          <button
-            type="button"
-            onClick={() => autofillDemo('budi@example.com', 'Password123!')}
-            className="px-2 py-1.5 rounded-[10px] bg-[#f4f4f5] dark:bg-[#27272a] hover:bg-orange-100 dark:hover:bg-orange-950/40 text-[10.5px] font-bold text-[#52525b] dark:text-[#d4d4d8] transition-colors border border-transparent hover:border-[var(--accent)]/30"
-          >
-            Anggota
-          </button>
-        </div>
-      </div>
 
       {/* Switch to Register */}
       <div className="text-center text-xs text-[#71717a] pt-2">

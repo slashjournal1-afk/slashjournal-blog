@@ -1,35 +1,37 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
-}
-
 model User {
-  id            String          @id @default(cuid())
-  email         String          @unique
-  name          String?
-  displayName   String
-  avatarUrl     String?
-  passwordHash  String?
-  provider      String          @default("LOCAL") // LOCAL, GOOGLE, GITHUB
-  providerId    String?
-  role          String          @default("READER") // ADMIN, EDITOR, AUTHOR, READER
-  isBlocked     Boolean         @default(false)
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-
-  articles      Article[]       @relation("AuthorArticles")
-  reviewedArticles Article[]    @relation("ReviewedArticles")
-  glossaryTerms GlossaryTerm[]
-  comments      Comment[]
-  bookmarks     Bookmark[]
-  feedbacks     ArticleFeedback[]
-  subscriptions Subscription[]
-  auditLogs     AuditLog[]
+  id                 String              @id @default(cuid())
+  email              String              @unique
+  name               String?
+  displayName        String
+  avatarUrl          String?
+  passwordHash       String?
+  provider           String              @default("LOCAL")
+  providerId         String?
+  role               String              @default("READER")
+  isBlocked          Boolean             @default(false)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  articles           Article[]           @relation("AuthorArticles")
+  reviewedArticles   Article[]           @relation("ReviewedArticles")
+  feedbacks          ArticleFeedback[]
+  articleOwnerships  ArticleOwnership[]
+  auditLogs          AuditLog[]
+  authorRevenues     AuthorRevenue[]
+  bookmarks          Bookmark[]
+  comments           Comment[]
+  glossaryTerms      GlossaryTerm[]
+  revenueAdjustments RevenueAdjustment[]
+  subscriptions      Subscription[]
 }
 
 model Category {
@@ -38,11 +40,10 @@ model Category {
   slug        String    @unique
   description String?
   icon        String?
-  isIndexable Boolean   @default(true) // false for personal journal privacy (KB2)
+  isIndexable Boolean   @default(true)
   sortOrder   Int       @default(0)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-
   articles    Article[]
 }
 
@@ -56,7 +57,6 @@ model Series {
   sortOrder     Int       @default(0)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-
   articles      Article[]
 }
 
@@ -65,58 +65,57 @@ model Tag {
   name      String       @unique
   slug      String       @unique
   createdAt DateTime     @default(now())
-
   articles  ArticleTag[]
 }
 
 model ArticleTag {
   articleId String
-  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
   tagId     String
-  tag       Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@id([articleId, tagId])
   @@index([tagId])
 }
 
 model Article {
-  id                   String            @id @default(cuid())
+  id                   String             @id @default(cuid())
   title                String
-  slug                 String            @unique
+  slug                 String             @unique
   excerpt              String
   contentMarkdown      String
-  status               String            @default("DRAFT") // DRAFT, IN_REVIEW, PUBLISHED, ARCHIVED
-  isSponsored          Boolean           @default(false)
+  status               String             @default("DRAFT")
+  isSponsored          Boolean            @default(false)
   sponsorName          String?
   sponsorUrl           String?
   coverImageUrl        String?
-  coverImageSourceType String?           // 'SELF_SHOT', 'FREE_STOCK', 'AI_GENERATED' (C4 & CM7)
-  readingTime          Int               @default(3)
-  viewCount            Int               @default(0)
-  helpfulVotes         Int               @default(0)
-  unhelpfulVotes       Int               @default(0)
-  isIndexable          Boolean           @default(true)
-  createdAt            DateTime          @default(now())
-  updatedAt            DateTime          @updatedAt
+  coverImageSourceType String?
+  readingTime          Int                @default(3)
+  viewCount            Int                @default(0)
+  helpfulVotes         Int                @default(0)
+  unhelpfulVotes       Int                @default(0)
+  isIndexable          Boolean            @default(true)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
   publishedAt          DateTime?
-
   categoryId           String
-  category             Category          @relation(fields: [categoryId], references: [id])
   seriesId             String?
-  series               Series?           @relation(fields: [seriesId], references: [id], onDelete: SetNull)
-  seriesOrder          Int?              @default(0)
-
+  seriesOrder          Int?               @default(0)
   authorId             String
-  author               User              @relation("AuthorArticles", fields: [authorId], references: [id])
   reviewerId           String?
-  reviewer             User?             @relation("ReviewedArticles", fields: [reviewerId], references: [id])
   reviewNote           String?
-
-  tags                 ArticleTag[]
-  comments             Comment[]
-  bookmarks            Bookmark[]
+  author               User               @relation("AuthorArticles", fields: [authorId], references: [id])
+  category             Category           @relation(fields: [categoryId], references: [id])
+  reviewer             User?              @relation("ReviewedArticles", fields: [reviewerId], references: [id])
+  series               Series?            @relation(fields: [seriesId], references: [id])
   feedbacks            ArticleFeedback[]
+  ownershipHistory     ArticleOwnership[]
+  revenues             ArticleRevenue[]
   revisions            ArticleRevision[]
+  tags                 ArticleTag[]
+  urlHistory           ArticleUrl[]
+  bookmarks            Bookmark[]
+  comments             Comment[]
 
   @@index([status, publishedAt])
   @@index([categoryId, status])
@@ -125,66 +124,62 @@ model Article {
 }
 
 model GlossaryTerm {
-  id          String   @id @default(cuid())
-  term        String   @unique
-  slug        String   @unique
-  category    String   // Arsitektur, Algoritma, Database, Frontend, dll.
-  shortDef    String   // Ringkasan untuk popover preview [[WikiLink]]
-  definition  String   // Definisi lengkap markdown
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  authorId    String
-  author      User     @relation(fields: [authorId], references: [id])
+  id         String   @id @default(cuid())
+  term       String   @unique
+  slug       String   @unique
+  category   String
+  shortDef   String
+  definition String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  authorId   String
+  author     User     @relation(fields: [authorId], references: [id])
 
   @@index([category])
 }
 
 model Comment {
-  id          String       @id @default(cuid())
-  content     String
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-
-  articleId   String
-  article     Article      @relation(fields: [articleId], references: [id], onDelete: Cascade)
-  userId      String
-  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  articleId String
+  userId    String
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([articleId, createdAt])
   @@index([userId])
 }
 
 model Bookmark {
-  id        String     @id @default(cuid())
-  createdAt DateTime   @default(now())
-
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
   userId    String
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   articleId String
-  article   Article    @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, articleId])
   @@index([userId])
 }
 
 model ArticleFeedback {
-  id        String     @id @default(cuid())
+  id        String   @id @default(cuid())
   isHelpful Boolean
-  reaction  String?    // '🚀', '💡', '❤️', '🔥', '👏'
-  createdAt DateTime   @default(now())
-
+  reaction  String?
+  createdAt DateTime @default(now())
   articleId String
-  article   Article    @relation(fields: [articleId], references: [id], onDelete: Cascade)
   userId    String?
-  user      User?      @relation(fields: [userId], references: [id])
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  user      User?    @relation(fields: [userId], references: [id])
 
   @@index([articleId])
 }
 
 model AdSlot {
   id          String   @id @default(cuid())
-  slotName    String   @unique // 'leaderboard', 'in_feed', 'sidebar_sticky'
+  slotName    String   @unique
   title       String
   description String?
   imageUrl    String?
@@ -200,7 +195,6 @@ model Subscription {
   email     String
   topic     String   @default("all")
   createdAt DateTime @default(now())
-
   userId    String?
   user      User?    @relation(fields: [userId], references: [id])
 
@@ -234,7 +228,6 @@ model AuditLog {
   details    String
   ipAddress  String?
   createdAt  DateTime @default(now())
-
   userId     String?
   user       User?    @relation(fields: [userId], references: [id])
 
@@ -247,9 +240,164 @@ model ArticleRevision {
   contentMarkdown String
   note            String?
   createdAt       DateTime @default(now())
-
   articleId       String
   article         Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
 
   @@index([articleId, createdAt])
+}
+
+model RevenuePeriod {
+  id                     String              @id @default(cuid())
+  periodStart            DateTime
+  periodEnd              DateTime
+  timezone               String              @default("Asia/Jakarta")
+  status                 String              @default("PROVISIONAL")
+  currencyCode           String              @default("IDR")
+  accountGrossRevenue    Decimal             @default(0) @db.Decimal(18, 6)
+  knownAttributedRevenue Decimal             @default(0) @db.Decimal(18, 6)
+  unattributedRevenue    Decimal             @default(0) @db.Decimal(18, 6)
+  authorShareTotal       Decimal             @default(0) @db.Decimal(18, 6)
+  platformShareTotal     Decimal             @default(0) @db.Decimal(18, 6)
+  source                 String              @default("ADSENSE")
+  retrievedAt            DateTime?
+  finalizedAt            DateTime?
+  createdAt              DateTime            @default(now())
+  updatedAt              DateTime            @updatedAt
+  articleRevenues        ArticleRevenue[]
+  authorRevenues         AuthorRevenue[]
+  adjustments            RevenueAdjustment[]
+  jobRuns                RevenueJobRun[]
+  sourceRows             RevenueSourceRow[]
+
+  @@unique([periodStart, periodEnd, source, currencyCode])
+  @@index([status, periodStart])
+}
+
+model ArticleUrl {
+  id            String    @id @default(cuid())
+  articleId     String
+  url           String
+  normalizedUrl String
+  validFrom     DateTime  @default(now())
+  validTo       DateTime?
+  isCanonical   Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  article       Article   @relation(fields: [articleId], references: [id])
+
+  @@index([normalizedUrl])
+  @@index([articleId, validFrom, validTo])
+}
+
+model ArticleOwnership {
+  id               String    @id @default(cuid())
+  articleId        String
+  authorId         String
+  ownershipPercent Decimal   @default(100) @db.Decimal(5, 2)
+  effectiveFrom    DateTime  @default(now())
+  effectiveTo      DateTime?
+  createdAt        DateTime  @default(now())
+  article          Article   @relation(fields: [articleId], references: [id])
+  author           User      @relation(fields: [authorId], references: [id])
+
+  @@index([articleId, effectiveFrom, effectiveTo])
+  @@index([authorId, effectiveFrom, effectiveTo])
+}
+
+model RevenueSourceRow {
+  id                String        @id @default(cuid())
+  revenuePeriodId   String
+  reportDate        DateTime
+  pageUrl           String?
+  normalizedUrl     String?
+  estimatedEarnings Decimal       @default(0) @db.Decimal(18, 6)
+  impressions       Int           @default(0)
+  clicks            Int           @default(0)
+  pageViews         Int           @default(0)
+  rpm               Decimal       @default(0) @db.Decimal(18, 6)
+  ctr               Decimal       @default(0) @db.Decimal(18, 6)
+  currencyCode      String
+  attributionStatus String        @default("UNMATCHED")
+  rawPayload        Json?
+  createdAt         DateTime      @default(now())
+  revenuePeriod     RevenuePeriod @relation(fields: [revenuePeriodId], references: [id], onDelete: Cascade)
+
+  @@unique([revenuePeriodId, reportDate, normalizedUrl, currencyCode])
+  @@index([normalizedUrl, reportDate])
+  @@index([revenuePeriodId, attributionStatus])
+}
+
+model ArticleRevenue {
+  id                String        @id @default(cuid())
+  revenuePeriodId   String
+  articleId         String
+  grossRevenue      Decimal       @default(0) @db.Decimal(18, 6)
+  authorShare       Decimal       @default(0) @db.Decimal(18, 6)
+  impressions       Int           @default(0)
+  clicks            Int           @default(0)
+  pageViews         Int           @default(0)
+  attributionMethod String        @default("PAGE_URL")
+  titleSnapshot     String
+  slugSnapshot      String
+  authorSnapshot    String
+  createdAt         DateTime      @default(now())
+  article           Article       @relation(fields: [articleId], references: [id])
+  revenuePeriod     RevenuePeriod @relation(fields: [revenuePeriodId], references: [id], onDelete: Cascade)
+
+  @@unique([revenuePeriodId, articleId, attributionMethod])
+  @@index([articleId, createdAt])
+}
+
+model AuthorRevenue {
+  id                     String        @id @default(cuid())
+  revenuePeriodId        String
+  authorId               String
+  grossAttributedRevenue Decimal       @default(0) @db.Decimal(18, 6)
+  authorPercent          Decimal       @default(80) @db.Decimal(5, 2)
+  authorShare            Decimal       @default(0) @db.Decimal(18, 6)
+  platformShare          Decimal       @default(0) @db.Decimal(18, 6)
+  adjustmentAmount       Decimal       @default(0) @db.Decimal(18, 6)
+  payableAmount          Decimal       @default(0) @db.Decimal(18, 6)
+  status                 String        @default("PROVISIONAL")
+  authorSnapshot         String
+  createdAt              DateTime      @default(now())
+  updatedAt              DateTime      @updatedAt
+  author                 User          @relation(fields: [authorId], references: [id])
+  revenuePeriod          RevenuePeriod @relation(fields: [revenuePeriodId], references: [id], onDelete: Cascade)
+
+  @@unique([revenuePeriodId, authorId])
+  @@index([authorId, status, createdAt])
+}
+
+model RevenueAdjustment {
+  id              String        @id @default(cuid())
+  revenuePeriodId String
+  authorId        String?
+  articleId       String?
+  amount          Decimal       @db.Decimal(18, 6)
+  reason          String
+  source          String        @default("ADMIN")
+  createdBy       String
+  createdAt       DateTime      @default(now())
+  author          User?         @relation(fields: [authorId], references: [id], onDelete: Restrict)
+  revenuePeriod   RevenuePeriod @relation(fields: [revenuePeriodId], references: [id], onDelete: Cascade)
+
+  @@index([revenuePeriodId, createdAt])
+  @@index([authorId, createdAt])
+}
+
+model RevenueJobRun {
+  id              String         @id @default(cuid())
+  revenuePeriodId String?
+  jobName         String
+  status          String
+  rowsFetched     Int            @default(0)
+  rowsMatched     Int            @default(0)
+  rowsUnmatched   Int            @default(0)
+  errorMessage    String?
+  startedAt       DateTime       @default(now())
+  completedAt     DateTime?
+  revenuePeriod   RevenuePeriod? @relation(fields: [revenuePeriodId], references: [id])
+
+  @@index([jobName, startedAt])
+  @@index([revenuePeriodId])
 }
