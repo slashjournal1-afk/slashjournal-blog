@@ -1,11 +1,11 @@
 'use client';
 
-type OAuthProvider = 'google' | 'github' | 'twitter';
+type OAuthProvider = 'google' | 'github' | 'x';
 
 const providers: Array<{ id: OAuthProvider; label: string }> = [
   { id: 'google', label: 'Google' },
   { id: 'github', label: 'GitHub' },
-  { id: 'twitter', label: 'X' },
+  { id: 'x', label: 'X' },
 ];
 
 function ProviderIcon({ provider }: { provider: OAuthProvider }) {
@@ -16,7 +16,7 @@ function ProviderIcon({ provider }: { provider: OAuthProvider }) {
       </svg>
     );
   }
-  if (provider === 'twitter') {
+  if (provider === 'x') {
     return <span className="font-sans text-base font-black leading-none" aria-hidden="true">X</span>;
   }
 

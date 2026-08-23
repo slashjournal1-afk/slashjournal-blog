@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { isValidInternalPath } from '@/lib/api-errors';
 
-const SUPPORTED_PROVIDERS = new Set(['google', 'github', 'twitter']);
+const SUPPORTED_PROVIDERS = new Set(['google', 'github', 'x']);
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
@@ -19,7 +19,7 @@ export async function GET(request: Request) {
   try {
     const supabase = await createClient();
     const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: provider as 'google' | 'github' | 'twitter',
+      provider: provider as 'google' | 'github' | 'x',
       options: { redirectTo: `${requestUrl.origin}/auth/callback?next=${encodeURIComponent(next)}` },
     });
 

@@ -3,17 +3,16 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { getCurrentUser } from '@/lib/auth';
 import {
-  LayoutDashboard,
   FileText,
   Plus,
   Inbox,
   Activity,
-  LogOut,
   Shield,
   Home,
   PenTool,
 } from 'lucide-react';
 import { BrandLogo } from '@/components/layout/BrandLogo';
+import { LogoutButton } from '@/components/auth/LogoutButton';
 
 export const metadata = {
   title: 'Editorial CMS Workspace — SlashJournal',
@@ -41,7 +40,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] flex flex-col md:flex-row">
       {/* Sidebar */}
-      <aside className="w-full md:w-64 bg-[var(--bg-card)] border-r border-[var(--border-color)] flex flex-col justify-between shrink-0">
+      <aside className="w-full md:w-64 md:sticky md:top-0 md:h-screen bg-[var(--bg-card)] border-r border-[var(--border-color)] flex flex-col justify-between shrink-0 overflow-y-auto scrollbar-none">
         <div className="p-6 space-y-6">
           {/* Logo SlashJournal Button -> Direct Link to Landing Page / */}
           <Link
@@ -105,15 +104,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               <Home className="w-3.5 h-3.5 text-[var(--accent)]" />
               <span>Beranda</span>
             </Link>
-            <form action="/api/auth/logout" method="POST">
-              <button
-                type="submit"
-                className="w-full flex items-center justify-center gap-1 py-2 rounded-btn bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 text-[11.5px] font-medium transition-colors"
-              >
-                <LogOut className="w-3.5 h-3.5" />
-                Keluar
-              </button>
-            </form>
+            <LogoutButton className="w-full flex items-center justify-center gap-1 py-2 rounded-btn bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 text-[11.5px] font-medium transition-colors disabled:opacity-60" />
           </div>
         </div>
       </aside>
