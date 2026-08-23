@@ -74,5 +74,5 @@ export async function GET(request: Request) {
 
 function providerFromUser(user: { app_metadata?: { provider?: unknown } }): string {
   const provider = typeof user.app_metadata?.provider === 'string' ? user.app_metadata.provider.toLowerCase() : 'oauth';
-  return provider === 'twitter' ? 'twitter' : provider === 'google' || provider === 'github' ? provider : 'oauth';
+  return provider === 'x' || provider === 'twitter' ? 'x' : provider === 'google' || provider === 'github' ? provider : 'oauth';
 }

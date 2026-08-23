@@ -1,4 +1,7 @@
 /** @type {import('next').NextConfig} */
+const siteUrl = new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://www.slashjournal.my.id');
+const apexHost = siteUrl.hostname.replace(/^www\./, '');
+
 const nextConfig = {
   images: {
     remotePatterns: [
@@ -7,6 +10,16 @@ const nextConfig = {
         hostname: '**',
       },
     ],
+  },
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: apexHost }],
+        destination: `${siteUrl.protocol}//${siteUrl.host}/:path*`,
+        permanent: true,
+      },
+    ];
   },
   async headers() {
     return [
