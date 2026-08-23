@@ -10,12 +10,8 @@ import {
   Activity,
   Shield,
   Bookmark,
-  MessageSquare,
-  Mail,
   User,
   LogOut,
-  ExternalLink,
-  Sparkles,
   PenTool,
   Home,
 } from 'lucide-react';
@@ -42,7 +38,6 @@ export default async function DashboardLayout({ children }: { children: React.Re
     { label: 'Telemetri & Kata Kunci', href: '/admin/telemetry', icon: Activity },
     { label: 'Google Analytics & AdSense', href: '/dashboard/superadmin/analytics', icon: Activity },
     { label: 'Log Audit & Keamanan', href: '/admin/audit-logs', icon: FileText },
-    { label: 'Studio Penulis (Creator)', href: '/dashboard/creator', icon: PenTool },
   ];
 
   const creatorNav = [
@@ -101,7 +96,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           <nav className="space-y-1">
             <div className="px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
               {role === 'ADMIN'
-                ? 'Superadmin Panel'
+                ? 'System Control'
                 : role === 'AUTHOR' || role === 'EDITOR'
                 ? 'Creator Studio'
                 : 'Workspace Anggota'}

@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { X, AlertCircle, CheckCircle2, Loader2, KeyRound, Mail, User } from 'lucide-react';
 import { pushDataLayer } from '@/lib/data-layer';
+import { OAuthButtons } from './OAuthButtons';
+import { BrandLogo } from '@/components/layout/BrandLogo';
 
 export function AuthModal() {
   const { isAuthModalOpen, closeAuthModal, completeLogin } = useAuth();
@@ -48,10 +50,6 @@ export function AuthModal() {
     }
   };
 
-  const handleOAuth = (provider: 'google' | 'github' | 'twitter') => {
-    window.location.assign(`/api/auth/oauth?provider=${provider}&next=${encodeURIComponent(window.location.pathname)}`);
-  };
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-150">
       <div
@@ -71,9 +69,7 @@ export function AuthModal() {
           {/* Header */}
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
-              <span className="w-8 h-8 rounded-[10px] bg-[var(--accent)] text-white flex items-center justify-center font-mono text-sm font-bold shadow-xs">
-                //
-              </span>
+              <BrandLogo size={32} className="rounded-icon" />
               <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--accent)]">
                 Akses Arsitek
               </span>
@@ -161,17 +157,7 @@ export function AuthModal() {
             </button>
           </form>
 
-          <div className="grid grid-cols-2 gap-3">
-            <button type="button" onClick={() => handleOAuth('google')} className="rounded-[16px] border border-[#ececee] dark:border-[#3f3f46] py-3 text-xs font-bold hover:border-[var(--accent)] transition-colors">
-              Google
-            </button>
-            <button type="button" onClick={() => handleOAuth('github')} className="rounded-[16px] border border-[#ececee] dark:border-[#3f3f46] py-3 text-xs font-bold hover:border-[var(--accent)] transition-colors">
-              GitHub
-            </button>
-            <button type="button" onClick={() => handleOAuth('twitter')} className="col-span-2 rounded-[16px] border border-[#ececee] dark:border-[#3f3f46] py-3 text-xs font-bold hover:border-[var(--accent)] transition-colors">
-              X
-            </button>
-          </div>
+          <OAuthButtons />
 
           {/* Mode Switcher */}
           <div className="text-center text-xs text-[#71717a] pt-3 border-t border-[#ececee] dark:border-[#27272a]">

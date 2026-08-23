@@ -34,7 +34,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       </header>
 
       {/* Main Authentication Canvas */}
-      <main className="z-10 flex flex-1 items-center justify-center p-4 sm:p-6">
+      <main className="auth-shell z-10 flex flex-1 items-center justify-center p-4 sm:p-6">
         <div className="w-full max-w-md">{children}</div>
       </main>
 

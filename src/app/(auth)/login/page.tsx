@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { Mail, KeyRound, Eye, EyeOff, Loader2, AlertCircle, CheckCircle2, Shield, Sparkles } from 'lucide-react';
 import { pushDataLayer } from '@/lib/data-layer';
+import { OAuthButtons } from '@/components/auth/OAuthButtons';
 
 function LoginForm() {
   const router = useRouter();
@@ -173,6 +174,8 @@ function LoginForm() {
           <span>{loading ? 'Memverifikasi...' : 'Masuk ke Akun'}</span>
         </button>
       </form>
+
+      <OAuthButtons />
 
       {/* Quick Demo Autofill helper */}
       <div className="pt-4 border-t border-[#ececee] dark:border-[#27272a] space-y-2.5">

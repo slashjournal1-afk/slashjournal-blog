@@ -34,6 +34,9 @@
   --accent-hover: var(--color-accent-ink);
   --accent-soft: rgba(0, 168, 107, 0.08);
   --accent-line: rgba(0, 168, 107, 0.35);
+  --auth-input: #ffffff;
+  --auth-input-text: #171717;
+  --auth-placeholder: #737373;
 }
 
 html.dark {
@@ -50,6 +53,9 @@ html.dark {
   --accent-hover: #2ecb8a;
   --accent-soft: rgba(22, 184, 119, 0.1);
   --accent-line: rgba(22, 184, 119, 0.35);
+  --auth-input: #22221f;
+  --auth-input-text: #f2f1ee;
+  --auth-placeholder: #a9a8a1;
 }
 
 body {
@@ -101,6 +107,19 @@ body {
 :where(a, button, input, textarea, select):focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
+}
+
+/* Shared auth controls keep hardcoded legacy page classes readable in both themes. */
+.auth-shell input,
+.auth-shell textarea,
+.auth-shell select {
+  background-color: var(--auth-input);
+  color: var(--auth-input-text);
+}
+
+.auth-shell input::placeholder,
+.auth-shell textarea::placeholder {
+  color: var(--auth-placeholder);
 }
 
 @media (prefers-reduced-motion: reduce) {

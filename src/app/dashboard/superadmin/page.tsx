@@ -10,13 +10,8 @@ import {
   FileText,
   Inbox,
   Activity,
-  CheckCircle2,
-  Clock,
   Eye,
-  AlertCircle,
-  TrendingUp,
   Plus,
-  Search,
   Settings,
   ArrowUpRight,
 } from 'lucide-react';
@@ -34,9 +29,7 @@ export default async function SuperAdminDashboardPage() {
     usersByRole,
     articlesByStatus,
     totalViewsResult,
-    recentUsers,
     recentArticles,
-    zeroResults,
   ] = await Promise.all([
     prisma.user.groupBy({
       by: ['role'],
@@ -47,11 +40,6 @@ export default async function SuperAdminDashboardPage() {
       _count: { id: true },
     }),
     prisma.article.aggregate({ _sum: { viewCount: true } }),
-    prisma.user.findMany({
-      orderBy: { createdAt: 'desc' },
-      take: 8,
-      select: { id: true, email: true, displayName: true, role: true, createdAt: true },
-    }),
     prisma.article.findMany({
       orderBy: { updatedAt: 'desc' },
       take: 8,
@@ -64,11 +52,6 @@ export default async function SuperAdminDashboardPage() {
         author: { select: { displayName: true } },
         category: { select: { name: true } },
       },
-    }),
-    prisma.searchQueryLog.findMany({
-      where: { resultsCount: 0 },
-      orderBy: { createdAt: 'desc' },
-      take: 5,
     }),
   ]);
 
@@ -136,10 +119,6 @@ export default async function SuperAdminDashboardPage() {
             {totalUsers}
           </p>
           <div className="text-[10.5px] text-[var(--text-muted)] font-mono flex items-center gap-2">
-            <span>{roleCountMap.READER || 0} Member</span>
-            <span>•</span>
-            <span>{(roleCountMap.AUTHOR || 0) + (roleCountMap.EDITOR || 0)} Creator</span>
-            <span>•</span>
             <span className="text-rose-500">{roleCountMap.ADMIN || 0} Admin</span>
           </div>
         </div>
@@ -261,7 +240,7 @@ export default async function SuperAdminDashboardPage() {
           </div>
         </div>
 
-        {/* Right: User Management Directory & Quick System Links */}
+        {/* Right: Quick System Links */}
         <div className="lg:col-span-4 space-y-6">
           {/* Quick System Navigation */}
           <div className="rounded-[28px] border border-[var(--border-color)] bg-[var(--bg-card)] p-6 space-y-3 shadow-xs">
@@ -306,41 +285,6 @@ export default async function SuperAdminDashboardPage() {
             </div>
           </div>
 
-          {/* User Directory Preview */}
-          <div className="rounded-[28px] border border-[var(--border-color)] bg-[var(--bg-card)] p-6 space-y-4 shadow-xs">
-            <div className="flex items-center justify-between pb-3 border-b border-[var(--border-color)]">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--text-primary)] flex items-center gap-2">
-                <Users className="w-3.5 h-3.5 text-[#ff5a00]" />
-                <span>Pengguna Terdaftar Baru</span>
-              </h3>
-              <span className="text-[10px] font-mono text-[var(--text-muted)] font-bold">{totalUsers} Total</span>
-            </div>
-
-            <div className="space-y-2.5">
-              {recentUsers.map((u) => (
-                <div
-                  key={u.id}
-                  className="p-3 rounded-[14px] bg-[var(--bg-card-muted)] border border-[var(--border-color)] flex items-center justify-between text-xs"
-                >
-                  <div className="min-w-0 pr-2">
-                    <p className="font-bold text-[var(--text-primary)] truncate">{u.displayName}</p>
-                    <p className="text-[10px] text-[var(--text-muted)] truncate">{u.email}</p>
-                  </div>
-                  <span
-                    className={`text-[9px] px-2 py-0.5 rounded-full font-mono font-bold shrink-0 ${
-                      u.role === 'ADMIN'
-                        ? 'bg-rose-500/10 text-rose-500'
-                        : u.role === 'AUTHOR' || u.role === 'EDITOR'
-                        ? 'bg-orange-500/10 text-[#ff5a00]'
-                        : 'bg-emerald-500/10 text-emerald-500'
-                    }`}
-                  >
-                    {u.role}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
       </div>
     </div>

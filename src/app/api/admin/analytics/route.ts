@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getCurrentUser } from '@/lib/auth';
-import { runGa4Pages, runGa4Report, type GoogleDateRange } from '@/lib/google/ga4';
+import { runGa4Events, runGa4Pages, runGa4Summary, type GoogleDateRange } from '@/lib/google/ga4';
+import { googleErrorMessage } from '@/lib/google/auth';
 
 const querySchema = z.object({ range: z.enum(['today', '7d', '28d', '90d']).default('28d') });
 
@@ -12,10 +13,18 @@ export async function GET(request: NextRequest) {
   if (!parsed.success) return NextResponse.json({ error: 'Rentang laporan tidak valid' }, { status: 400 });
 
   try {
-    const [overview, pages] = await Promise.all([runGa4Report(parsed.data.range as GoogleDateRange), runGa4Pages(parsed.data.range as GoogleDateRange)]);
-    return NextResponse.json({ overview: overview.value, pages: pages.value, cachedAt: overview.cachedAt, status: 'ok' });
+    const [summary, events, pages] = await Promise.all([runGa4Summary(parsed.data.range as GoogleDateRange), runGa4Events(parsed.data.range as GoogleDateRange), runGa4Pages(parsed.data.range as GoogleDateRange)]);
+    return NextResponse.json({ summary: summary.value, events: events.value, pages: pages.value, range: parsed.data.range, cachedAt: summary.cachedAt, status: 'ok' });
   } catch (error) {
     console.error('GA4 report failed:', error);
-    return NextResponse.json({ overview: [], pages: [], cachedAt: null, status: 'unavailable', error: process.env.NODE_ENV === 'production' ? undefined : String(error) });
+    return NextResponse.json({
+      summary: null,
+      events: [],
+      pages: [],
+      cachedAt: null,
+      status: 'unavailable',
+      errorCode: googleErrorMessage(error).includes('not configured') ? 'CONFIGURATION_MISSING' : 'GOOGLE_API_ERROR',
+      error: process.env.NODE_ENV === 'production' ? undefined : googleErrorMessage(error),
+    });
   }
 }
