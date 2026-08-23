@@ -10,10 +10,11 @@ declare global {
 interface GoogleAdSenseProps {
   slot: string | undefined;
   format?: string;
+  layoutKey?: string;
   className?: string;
 }
 
-export function GoogleAdSense({ slot, format = 'auto', className = '' }: GoogleAdSenseProps) {
+export function GoogleAdSense({ slot, format = 'auto', layoutKey, className = '' }: GoogleAdSenseProps) {
   const [enabled, setEnabled] = useState(false);
   const [scriptReady, setScriptReady] = useState(() => typeof window !== 'undefined' && Array.isArray(window.adsbygoogle));
   const pushedRef = useRef(false);
@@ -51,7 +52,15 @@ export function GoogleAdSense({ slot, format = 'auto', className = '' }: GoogleA
 
   return (
     <div className={`min-h-[100px] overflow-hidden ${className}`} aria-label="Iklan">
-      <ins className="adsbygoogle block" style={{ display: 'block' }} data-ad-client={publisherId} data-ad-slot={slot} data-ad-format={format} data-full-width-responsive="true" />
+      <ins
+        className="adsbygoogle block"
+        style={{ display: 'block' }}
+        data-ad-client={publisherId}
+        data-ad-slot={slot}
+        data-ad-format={format}
+        data-ad-layout-key={layoutKey}
+        data-full-width-responsive="true"
+      />
     </div>
   );
 }
