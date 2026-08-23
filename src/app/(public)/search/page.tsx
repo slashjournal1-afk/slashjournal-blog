@@ -110,11 +110,11 @@ export default async function SearchPage({
             name="q"
             defaultValue={query}
             placeholder="Ketik topik, pola arsitektur, atau istilah teknis..."
-            className="w-full pl-12 pr-28 py-3.5 rounded-[16px] bg-white dark:bg-[#18181b] border border-[#ececee] dark:border-[#27272a] text-sm text-[#09090b] dark:text-white focus:outline-none focus:border-[var(--accent)] shadow-xs"
+            className="w-full pl-12 pr-28 py-3.5 rounded-[16px] bg-[var(--bg-card)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--accent)] shadow-xs"
           />
           <button
             type="submit"
-            className="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-2 rounded-[12px] bg-[#09090b] text-white hover:bg-[#18181b] text-xs font-bold shadow-awesomic-dark-btn transition-all active:scale-95"
+            className="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-2 rounded-[12px] bg-[var(--text-primary)] text-[var(--bg-primary)] hover:bg-[var(--text-secondary)] text-xs font-bold transition-all active:scale-95"
           >
             Cari Naskah
           </button>

@@ -65,7 +65,7 @@ export function MobileTOC({ headings }: MobileTOCProps) {
           className="w-full flex items-center justify-between p-4 text-left font-bold text-xs sm:text-sm text-[var(--text-primary)] hover:bg-[var(--bg-card-muted)] transition-colors select-none"
         >
           <div className="flex items-center gap-2.5">
-            <div className="p-1.5 rounded-[8px] bg-orange-50 dark:bg-orange-950/40 text-[#ff5a00]">
+            <div className="p-1.5 rounded-[8px] bg-[var(--accent-soft)] text-[var(--accent)]">
               <List className="w-4 h-4" />
             </div>
             <div>
@@ -77,7 +77,7 @@ export function MobileTOC({ headings }: MobileTOCProps) {
           </div>
           <ChevronDown
             className={`w-4 h-4 text-[var(--text-muted)] transition-transform duration-200 ${
-              isOpen ? 'rotate-180 text-[#ff5a00]' : ''
+              isOpen ? 'rotate-180 text-[var(--accent)]' : ''
             }`}
           />
         </button>
@@ -99,11 +99,11 @@ export function MobileTOC({ headings }: MobileTOCProps) {
                     h.level === 3 ? 'pl-6 text-[11.5px]' : 'font-medium'
                   } ${
                     isActive
-                      ? 'bg-orange-50 dark:bg-orange-950/40 text-[#ff5a00] font-bold'
+                       ? 'bg-[var(--accent-soft)] text-[var(--accent)] font-bold'
                       : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-card-muted)]'
                   }`}
                 >
-                  <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isActive ? 'bg-[#ff5a00]' : 'bg-[var(--text-muted)]/40'}`} />
+                   <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isActive ? 'bg-[var(--accent)]' : 'bg-[var(--text-muted)]/40'}`} />
                   <span className="truncate">{h.text}</span>
                 </button>
               );

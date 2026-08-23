@@ -91,7 +91,7 @@ export default async function CreatorDashboardPage() {
       <div className="pb-6 border-b border-[var(--border-color)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-[8px] bg-orange-500/15 text-[#ff5a00] font-mono text-[10.5px] font-bold uppercase tracking-wider flex items-center gap-1.5">
+             <span className="px-2.5 py-0.5 rounded-[8px] bg-[var(--accent-soft)] text-[var(--accent)] font-mono text-[10.5px] font-bold uppercase tracking-wider flex items-center gap-1.5">
               <PenTool className="w-3 h-3" />
               Studio Kepenulisan &amp; Redaksi
             </span>
@@ -108,7 +108,7 @@ export default async function CreatorDashboardPage() {
           href="/admin/docs/new"
           className="flex items-center justify-center gap-2 px-5 py-3 rounded-[16px] bg-[#09090b] dark:bg-white text-white dark:text-[#09090b] text-xs font-bold shadow-awesomic-dark-btn hover:bg-[#18181b] dark:hover:bg-zinc-200 active:scale-95 transition-all shrink-0"
         >
-          <Plus className="w-4 h-4 text-[#ff5a00]" />
+           <Plus className="w-4 h-4 text-[var(--accent)]" />
           <span>Tulis Naskah Baru</span>
         </Link>
       </div>
@@ -166,12 +166,12 @@ export default async function CreatorDashboardPage() {
         {/* Total Views on My Articles */}
         <div className="p-5 rounded-[24px] border border-[var(--border-color)] bg-[var(--bg-card)] space-y-2 shadow-xs">
           <div className="flex items-center justify-between text-[var(--text-muted)]">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-[#ff5a00]">
+             <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--accent)]">
               Total Pembaca Saya
             </span>
-            <Eye className="w-4 h-4 text-[#ff5a00]" />
+             <Eye className="w-4 h-4 text-[var(--accent)]" />
           </div>
-          <p className="text-[30px] font-extrabold text-[#ff5a00] leading-none">
+           <p className="text-[30px] font-extrabold text-[var(--accent)] leading-none">
             {totalViews.toLocaleString('id-ID')}
           </p>
           <p className="text-[10.5px] text-[var(--text-muted)] font-mono">
@@ -209,7 +209,7 @@ export default async function CreatorDashboardPage() {
             </p>
             <Link
               href="/admin/docs/new"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-[12px] bg-[#ff5a00] text-white text-xs font-bold mt-2"
+             className="inline-flex items-center gap-2 px-4 py-2 rounded-[12px] bg-[var(--accent)] text-[var(--accent-foreground)] text-xs font-bold mt-2"
             >
               <Plus className="w-3.5 h-3.5" />
               Mulai Menulis
@@ -220,7 +220,7 @@ export default async function CreatorDashboardPage() {
             {myArticles.map((art) => (
               <div
                 key={art.id}
-                className="p-4 sm:p-5 rounded-[20px] bg-[var(--bg-card-muted)] border border-[var(--border-color)] flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:border-[#ff5a00]/40"
+                 className="p-4 sm:p-5 rounded-[20px] bg-[var(--bg-card-muted)] border border-[var(--border-color)] flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:border-[var(--accent)]/40"
               >
                 <div className="min-w-0 flex-1 space-y-1.5">
                   <div className="flex flex-wrap items-center gap-2">
@@ -239,7 +239,7 @@ export default async function CreatorDashboardPage() {
                         ? 'MENUNGGU REVIEW'
                         : 'DRAF'}
                     </span>
-                    <span className="text-[11px] font-bold text-[#ff5a00]">
+                     <span className="text-[11px] font-bold text-[var(--accent)]">
                       {art.category.name}
                     </span>
                     <span className="text-[10.5px] text-[var(--text-muted)] font-mono">
@@ -263,7 +263,7 @@ export default async function CreatorDashboardPage() {
                     {art.status === 'PUBLISHED' && (
                       <>
                         <span>•</span>
-                        <span className="flex items-center gap-1 text-[#ff5a00] font-bold">
+                         <span className="flex items-center gap-1 text-[var(--accent)] font-bold">
                           <Eye className="w-3 h-3" />
                           {art.viewCount} pembaca
                         </span>
@@ -280,9 +280,9 @@ export default async function CreatorDashboardPage() {
                 <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
                   <Link
                     href={`/admin/docs/${art.id}`}
-                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-[12px] bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-[#ff5a00] text-xs font-bold text-[var(--text-primary)] transition-colors"
+                     className="flex items-center gap-1.5 px-3.5 py-2 rounded-[12px] bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-[var(--accent)] text-xs font-bold text-[var(--text-primary)] transition-colors"
                   >
-                    <Edit3 className="w-3.5 h-3.5 text-[#ff5a00]" />
+                     <Edit3 className="w-3.5 h-3.5 text-[var(--accent)]" />
                     <span>Edit Naskah</span>
                   </Link>
 
@@ -290,7 +290,7 @@ export default async function CreatorDashboardPage() {
                     <Link
                       href={`/${art.slug}`}
                       target="_blank"
-                      className="p-2 rounded-[12px] bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-muted)] hover:text-[#ff5a00] transition-colors"
+                      className="p-2 rounded-[12px] bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--accent)] transition-colors"
                       title="Buka Halaman Artikel"
                     >
                       <ArrowUpRight className="w-4 h-4" />

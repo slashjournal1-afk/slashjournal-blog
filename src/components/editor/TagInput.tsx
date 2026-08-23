@@ -87,7 +87,7 @@ export function TagInput({
     <div ref={containerRef} className="space-y-2 relative">
       <div className="flex items-center justify-between">
         <label className="text-xs font-bold text-[#09090b] dark:text-white uppercase tracking-wider flex items-center gap-1.5">
-          <TagIcon className="w-3.5 h-3.5 text-[#ff5a00]" />
+          <TagIcon className="w-3.5 h-3.5 text-[var(--accent)]" />
           <span>Kata Kunci &amp; Topik Naskah (Tags)</span>
         </label>
         <span className="text-[10px] font-mono text-[#71717a]">
@@ -98,14 +98,14 @@ export function TagInput({
       {/* Chip Box & Input */}
       <div
         onClick={() => inputRef.current?.focus()}
-        className="min-h-[46px] p-2 rounded-[14px] bg-[#f4f4f5] dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] flex flex-wrap items-center gap-1.5 cursor-text focus-within:border-[#ff5a00] focus-within:ring-1 focus-within:ring-[#ff5a00]/30 transition-all"
+        className="min-h-[46px] p-2 rounded-[14px] bg-[var(--bg-card-muted)] border border-[var(--border-color)] flex flex-wrap items-center gap-1.5 cursor-text focus-within:border-[var(--accent)] focus-within:ring-1 focus-within:ring-[var(--accent)]/30 transition-all"
       >
         {tags.map((tag, idx) => (
           <span
             key={idx}
             className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[10px] bg-white dark:bg-[#18181b] border border-[#d4d4d8] dark:border-[#3f3f46] text-xs font-semibold text-[#09090b] dark:text-white shadow-2xs animate-in zoom-in-90 duration-150"
           >
-            <span className="text-[#ff5a00]">#</span>
+            <span className="text-[var(--accent)]">#</span>
             <span>{tag}</span>
             <button
               type="button"
@@ -141,7 +141,7 @@ export function TagInput({
       {showSuggestions && filteredSuggestions.length > 0 && (
         <div className="absolute z-20 left-0 right-0 top-full mt-1 p-2 rounded-[16px] bg-white dark:bg-[#18181b] border border-[#ececee] dark:border-[#27272a] shadow-xl space-y-1 animate-in fade-in zoom-in-95 duration-150 max-h-48 overflow-y-auto">
           <div className="text-[10.5px] font-bold text-[#71717a] px-2 py-1 flex items-center gap-1">
-            <Sparkles className="w-3 h-3 text-[#ff5a00]" />
+            <Sparkles className="w-3 h-3 text-[var(--accent)]" />
             <span>Rekomendasi Kata Kunci Populer:</span>
           </div>
           <div className="flex flex-wrap gap-1.5 p-1">
@@ -153,9 +153,9 @@ export function TagInput({
                   addTag(suggestion);
                   inputRef.current?.focus();
                 }}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[10px] bg-[#f4f4f5] dark:bg-[#27272a] hover:bg-orange-50 dark:hover:bg-orange-950/40 text-xs font-semibold text-[#09090b] dark:text-white hover:text-[#ff5a00] transition-colors"
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[10px] bg-[var(--bg-card-muted)] hover:bg-[var(--accent-soft)] text-xs font-semibold text-[var(--text-primary)] hover:text-[var(--accent)] transition-colors"
               >
-                <Plus className="w-3 h-3 text-[#ff5a00]" />
+                <Plus className="w-3 h-3 text-[var(--accent)]" />
                 <span>#{suggestion}</span>
               </button>
             ))}

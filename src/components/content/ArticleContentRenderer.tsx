@@ -6,6 +6,11 @@ import { MultiTabCode } from '@/components/wiki/MultiTabCode';
 import { WikiLinkPopover } from '@/components/wiki/WikiLinkPopover';
 import { Info, Sparkles, AlertTriangle, AlertCircle, ExternalLink, ChevronDown } from 'lucide-react';
 import { slugify } from '@/lib/utils';
+import {
+  parseInlineArticleImageBlock,
+  isRenderableArticleImageSource,
+  type ArticleImageSource,
+} from '@/lib/article-image-block';
 
 export interface GlossaryItem {
   term: string;
@@ -69,6 +74,7 @@ interface MarkdownToken {
   caption?: string;
   alt?: string;
   src?: string;
+  source?: ArticleImageSource;
 }
 
 function tokenizeMarkdownBlocks(rawText: string): MarkdownToken[] {
@@ -220,17 +226,19 @@ function tokenizeMarkdownBlocks(rawText: string): MarkdownToken[] {
       }
 
       // 8. Image Block (![alt](url) with optional caption on next line or <img ...>)
-      const imageBlockMatch = trimmed.match(/^!\[(.*?)\]\((.*?)(?:\s+"(.*?)")?\)(?:\s*\n+[\*\_]?(.*?)[\*\_]?)?$/s);
+      const parsedImageBlock = parseInlineArticleImageBlock(trimmed);
       const htmlImgMatch = trimmed.match(/^<img\s+[^>]*src=["']([^"']+)["'][^>]*alt=["']?([^"']*)["']?[^>]*\/?>/i);
 
-      if (imageBlockMatch) {
+      if (parsedImageBlock) {
         tokens.push({
           type: 'image',
-          alt: imageBlockMatch[1],
-          src: imageBlockMatch[2],
-          caption: imageBlockMatch[4] || imageBlockMatch[3] || undefined,
+          alt: parsedImageBlock.image.alt,
+          src: parsedImageBlock.image.src,
+          caption: parsedImageBlock.image.caption,
+          source: parsedImageBlock.image.source,
           content: trimmed,
         });
+        if (parsedImageBlock.remainder) tokens.push(...tokenizeMarkdownBlocks(parsedImageBlock.remainder));
         continue;
       } else if (htmlImgMatch) {
         tokens.push({
@@ -514,28 +522,44 @@ function renderToken(token: MarkdownToken, idx: number, glossary: GlossaryItem[]
       return <hr key={idx} className="my-10 border-0 h-px bg-[var(--border-color)]" />;
 
     case 'image': {
-      const captionText = token.caption || token.alt;
+      const imageSource = token.src || '';
+      const canRenderImage = isRenderableArticleImageSource(imageSource);
       return (
-        <figure key={idx} className="my-8 group">
-          <div className="relative aspect-[16/9] w-full overflow-hidden rounded-[24px] bg-[var(--bg-card-muted)] border border-[var(--border-color)] shadow-xs transition-all hover:shadow-md">
-            <Image
-              src={token.src || ''}
-              alt={token.alt || 'Gambar Konten'}
-              fill
-              unoptimized={Boolean(
-                token.src?.startsWith('/uploads') ||
-                token.src?.startsWith('data:') ||
-                token.src?.includes('unsplash.com') ||
-                token.src?.includes('supabase.co')
-              )}
-              sizes="(min-width: 1024px) 860px, 100vw"
-              className="object-cover transition-transform duration-300 group-hover:scale-[1.01]"
-            />
+        <figure key={idx} className="my-8">
+          <div className="flex min-h-24 w-full justify-center overflow-hidden rounded-[24px] border border-[var(--border-color)] bg-[var(--bg-card-muted)]">
+            {canRenderImage ? (
+              <Image
+                src={imageSource}
+                alt={token.alt || 'Gambar Konten'}
+                width={1600}
+                height={900}
+                unoptimized={imageSource.startsWith('/') || imageSource.startsWith('data:')}
+                sizes="(min-width: 1024px) 860px, 100vw"
+                className="h-auto max-h-[80vh] w-auto max-w-full object-contain"
+              />
+            ) : (
+              <p className="flex items-center px-4 text-center text-sm text-[var(--text-muted)]">
+                Gambar tidak dapat ditampilkan karena sumbernya tidak didukung.
+              </p>
+            )}
           </div>
-          {captionText && (
+          {token.caption && (
             <figcaption className="mt-3 text-center text-xs sm:text-[13px] font-medium text-[var(--text-muted)] italic leading-relaxed px-4">
-              {renderInlineFormattedText(captionText, glossary)}
+              {renderInlineFormattedText(token.caption, glossary)}
             </figcaption>
+          )}
+          {token.source && (
+            <p className="mt-1 text-center text-xs text-[var(--text-muted)]">
+              Sumber:{' '}
+              <a
+                href={token.source.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline decoration-[var(--border-color)] underline-offset-2 hover:text-[var(--text-primary)]"
+              >
+                {token.source.name}
+              </a>
+            </p>
           )}
         </figure>
       );

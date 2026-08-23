@@ -59,7 +59,7 @@ export function ReviewQueueClient({ initialArticles }: ReviewQueueClientProps) {
         >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#ececee] dark:border-[#27272a] pb-4">
             <div>
-              <span className="px-2.5 py-0.5 rounded-[10px] bg-[#ff5a00]/10 text-[#ff5a00] text-[10px] font-bold uppercase">
+              <span className="px-2.5 py-0.5 rounded-[10px] bg-[var(--accent-soft)] text-[var(--accent)] text-[10px] font-bold uppercase">
                 {art.category?.name}
               </span>
               <h2 className="text-xl font-bold text-[#09090b] dark:text-white tracking-tight mt-1">
@@ -94,7 +94,7 @@ export function ReviewQueueClient({ initialArticles }: ReviewQueueClientProps) {
               placeholder="Tambahkan catatan mengapa naskah disetujui atau bagian mana yang perlu diperbaiki..."
               value={reviewNote[art.id] || ''}
               onChange={(e) => setReviewNote({ ...reviewNote, [art.id]: e.target.value })}
-              className="w-full px-4 py-2.5 rounded-[12px] bg-[#f4f4f5] dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-xs focus:outline-none"
+              className="w-full px-4 py-2.5 rounded-[12px] bg-[var(--bg-card-muted)] border border-[var(--border-color)] text-xs text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none"
             />
           </div>
 
@@ -102,7 +102,7 @@ export function ReviewQueueClient({ initialArticles }: ReviewQueueClientProps) {
             <button
               onClick={() => handleAction(art.id, 'DRAFT')}
               disabled={actionLoading === art.id}
-              className="px-4 py-2 rounded-[14px] bg-red-50 hover:bg-red-100 dark:bg-red-950/30 text-red-600 text-xs font-bold transition-colors flex items-center gap-1.5"
+              className="px-4 py-2 rounded-[14px] bg-[var(--danger-soft)] hover:brightness-95 text-[var(--danger)] text-xs font-bold transition-colors flex items-center gap-1.5"
             >
               <XCircle className="w-4 h-4" />
               Kembalikan ke Draf (Minta Revisi)
@@ -111,7 +111,7 @@ export function ReviewQueueClient({ initialArticles }: ReviewQueueClientProps) {
             <button
               onClick={() => handleAction(art.id, 'PUBLISHED')}
               disabled={actionLoading === art.id}
-              className="px-5 py-2 rounded-[14px] bg-[#09090b] text-white hover:bg-[#18181b] text-xs font-bold shadow-awesomic-dark-btn transition-all flex items-center gap-1.5"
+              className="px-5 py-2 rounded-[14px] bg-[var(--text-primary)] text-[var(--bg-primary)] hover:bg-[var(--text-secondary)] text-xs font-bold transition-all flex items-center gap-1.5"
             >
               <CheckCircle2 className="w-4 h-4" />
               Setujui &amp; Terbitkan

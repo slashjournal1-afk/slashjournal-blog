@@ -70,7 +70,7 @@ export function GoogleConsent() {
         <button
           type="button"
            onClick={() => { updateConsent({ analytics: 'granted', advertising: 'granted' }); setVisible(false); }}
-          className="min-h-10 bg-[var(--color-ink)] px-4 text-xs font-semibold text-white"
+           className="min-h-10 bg-[var(--text-primary)] px-4 text-xs font-semibold text-[var(--bg-primary)]"
         >
            Terima semua
         </button>

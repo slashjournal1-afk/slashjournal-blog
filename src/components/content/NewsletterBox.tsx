@@ -86,7 +86,7 @@ export function NewsletterBox({ className = '', defaultTopic = 'all' }: Newslett
                   onClick={() => setTopic(t.id)}
                   className={`rounded-full px-3 py-1 text-xs transition-colors ${
                     topic === t.id
-                      ? 'bg-[var(--color-ink)] font-medium text-white'
+                       ? 'bg-[var(--text-primary)] font-medium text-[var(--bg-primary)]'
                       : 'text-[var(--text-muted)] ring-1 ring-inset ring-[var(--border-color)] hover:text-[var(--text-primary)]'
                   }`}
                 >
@@ -111,14 +111,14 @@ export function NewsletterBox({ className = '', defaultTopic = 'all' }: Newslett
               <button
                 type="submit"
                 disabled={loading}
-                className="flex shrink-0 items-center justify-center gap-2 rounded-lg bg-[var(--color-ink)] px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--color-charcoal)] disabled:opacity-60"
+                 className="flex shrink-0 items-center justify-center gap-2 rounded-lg bg-[var(--text-primary)] px-5 py-2.5 text-sm font-medium text-[var(--bg-primary)] transition-colors hover:bg-[var(--text-secondary)] disabled:opacity-60"
               >
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
                 Berlangganan
               </button>
             </div>
 
-            {error && <p className="text-xs text-rose-600">{error}</p>}
+            {error && <p className="text-xs text-[var(--danger)]">{error}</p>}
           </form>
         </div>
       )}

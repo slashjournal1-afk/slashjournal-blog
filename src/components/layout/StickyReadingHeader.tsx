@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { BookmarkButton } from '@/components/wiki/BookmarkButton';
 import { Share2, Check, ArrowLeft } from 'lucide-react';
@@ -16,13 +16,13 @@ interface StickyReadingHeaderProps {
 export function StickyReadingHeader({
   articleId,
   title,
-  slug,
   authorName,
   readingTime,
 }: StickyReadingHeaderProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [progress, setProgress] = useState(0);
   const [copied, setCopied] = useState(false);
+  const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -40,11 +40,18 @@ export function StickyReadingHeader({
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleCopyLink = () => {
-    if (typeof window !== 'undefined') {
-      navigator.clipboard.writeText(window.location.href);
+  useEffect(() => () => {
+    if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+  }, []);
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+      copyTimerRef.current = setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setCopied(false);
     }
   };
 
@@ -68,7 +75,7 @@ export function StickyReadingHeader({
   if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-x-0 top-0 z-40 border-b border-[var(--border-color)] bg-[var(--bg-primary)]/90 backdrop-blur-md transition-all duration-300 animate-in slide-in-from-top-4">
+    <div className="fixed inset-x-0 top-[68px] z-30 border-b border-[var(--border-color)] bg-[var(--bg-primary)]/90 backdrop-blur-md transition-all duration-300 animate-in slide-in-from-top-4">
       <div
         className="absolute left-0 top-0 h-[2px] bg-[var(--accent)] transition-all duration-150 ease-out"
         style={{ width: `${progress}%` }}
@@ -79,6 +86,7 @@ export function StickyReadingHeader({
           <Link
             href="/"
             className="shrink-0 rounded-lg p-1.5 text-[var(--text-muted)] transition-colors hover:bg-[var(--bg-card-muted)]"
+            aria-label="Kembali ke beranda"
             title="Kembali ke Beranda"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -96,21 +104,27 @@ export function StickyReadingHeader({
         <div className="flex shrink-0 items-center gap-1">
           <div className="hidden items-center gap-0.5 border-r border-[var(--border-color)] pr-2 sm:flex">
             <button
+              type="button"
               onClick={shareOnTwitter}
+              aria-label="Bagikan ke X (Twitter)"
               className="rounded-md px-2 py-1.5 text-xs font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)]"
               title="Bagikan ke 𝕏 (Twitter)"
             >
               𝕏
             </button>
             <button
+              type="button"
               onClick={shareOnLinkedIn}
+              aria-label="Bagikan ke LinkedIn"
               className="rounded-md px-2 py-1.5 text-xs font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)]"
               title="Bagikan ke LinkedIn"
             >
               in
             </button>
             <button
+              type="button"
               onClick={shareOnWhatsApp}
+              aria-label="Bagikan ke WhatsApp"
               className="rounded-md px-2 py-1.5 text-xs font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)]"
               title="Bagikan ke WhatsApp"
             >
@@ -119,7 +133,9 @@ export function StickyReadingHeader({
           </div>
 
           <button
+            type="button"
             onClick={handleCopyLink}
+            aria-label={copied ? 'Tautan tersalin' : 'Salin tautan naskah'}
             className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)]"
             title="Salin Tautan Naskah"
           >

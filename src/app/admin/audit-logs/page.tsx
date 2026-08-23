@@ -43,7 +43,7 @@ export default async function AuditLogsPage() {
         <div className="lg:col-span-7 rounded-[28px] border border-[var(--border-color)] bg-[var(--bg-card)] p-6 space-y-4 shadow-xs">
           <div className="flex items-center justify-between pb-3 border-b border-[var(--border-color)]">
             <h3 className="text-[15px] font-bold text-[var(--text-primary)] flex items-center gap-2">
-              <Shield className="w-4 h-4 text-[#ff5a00]" />
+              <Shield className="w-4 h-4 text-[var(--accent)]" />
               <span>Aktivitas Keamanan &amp; Mutasi Sistem</span>
             </h3>
             <span className="text-xs font-mono text-[var(--text-muted)]">{auditLogs.length} Entri</span>
@@ -61,7 +61,7 @@ export default async function AuditLogsPage() {
                   className="p-3.5 rounded-[16px] bg-[var(--bg-card-muted)] border border-[var(--border-color)] space-y-1 text-xs"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-[#ff5a00] uppercase text-[10.5px]">
+                    <span className="font-bold text-[var(--accent)] uppercase text-[10.5px]">
                       {log.action}
                     </span>
                     <span className="font-mono text-[10.5px] text-[var(--text-muted)]">
@@ -82,7 +82,7 @@ export default async function AuditLogsPage() {
         <div className="lg:col-span-5 rounded-[28px] border border-[var(--border-color)] bg-[var(--bg-card)] p-6 space-y-4 shadow-xs">
           <div className="flex items-center justify-between pb-3 border-b border-[var(--border-color)]">
             <h3 className="text-[15px] font-bold text-[var(--text-primary)] flex items-center gap-2">
-              <FileText className="w-4 h-4 text-[#ff5a00]" />
+                <FileText className="w-4 h-4 text-[var(--accent)]" />
               <span>Riwayat Revisi Naskah</span>
             </h3>
           </div>
@@ -106,7 +106,7 @@ export default async function AuditLogsPage() {
                       &ldquo;{rev.note}&rdquo;
                     </p>
                   )}
-                  <p className="font-mono text-[10px] text-[#ff5a00]">
+                  <p className="font-mono text-[10px] text-[var(--accent)]">
                     {formatDateTime(rev.createdAt)}
                   </p>
                 </div>

@@ -66,7 +66,7 @@ export function CreatorSeriesSection({ initialSeries }: CreatorSeriesSectionProp
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[var(--border-color)] pb-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="p-1 rounded-[8px] bg-orange-500/10 text-[#ff5a00]">
+            <span className="p-1 rounded-[8px] bg-[var(--accent-soft)] text-[var(--accent)]">
               <BookOpen className="w-4 h-4" />
             </span>
             <h3 className="text-[16px] font-bold text-[var(--text-primary)]">
@@ -82,10 +82,10 @@ export function CreatorSeriesSection({ initialSeries }: CreatorSeriesSectionProp
           <button
             type="button"
             onClick={() => setIsCategoryModalOpen(true)}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-[12px] bg-[var(--bg-card-muted)] border border-[var(--border-color)] hover:border-[#ff5a00] text-xs font-bold text-[var(--text-primary)] transition-all active:scale-95"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-[12px] bg-[var(--bg-card-muted)] border border-[var(--border-color)] hover:border-[var(--accent)] text-xs font-bold text-[var(--text-primary)] transition-all active:scale-95"
             title="Tambah Kategori / Kanal Baru"
           >
-            <Layers className="w-3.5 h-3.5 text-[#ff5a00]" />
+            <Layers className="w-3.5 h-3.5 text-[var(--accent)]" />
             <span>+ Kategori</span>
           </button>
 
@@ -94,7 +94,7 @@ export function CreatorSeriesSection({ initialSeries }: CreatorSeriesSectionProp
             onClick={() => setIsSeriesModalOpen(true)}
             className="flex items-center gap-1.5 px-4 py-2 rounded-[12px] bg-[#09090b] dark:bg-white text-white dark:text-[#09090b] hover:bg-[#18181b] dark:hover:bg-zinc-200 text-xs font-bold shadow-awesomic-dark-btn transition-all active:scale-95"
           >
-            <Plus className="w-3.5 h-3.5 text-[#ff5a00]" />
+            <Plus className="w-3.5 h-3.5 text-[var(--accent)]" />
             <span>Buat Seri Baru</span>
           </button>
         </div>
@@ -123,7 +123,7 @@ export function CreatorSeriesSection({ initialSeries }: CreatorSeriesSectionProp
           <button
             type="button"
             onClick={() => setIsSeriesModalOpen(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-[12px] bg-[#ff5a00] text-white text-xs font-bold mt-1 shadow-xs hover:bg-[#e04f00] active:scale-95 transition-all"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-[12px] bg-[var(--accent)] text-[var(--accent-foreground)] text-xs font-bold mt-1 shadow-xs hover:bg-[var(--accent-hover)] active:scale-95 transition-all"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Buat Seri Panduan Pertama</span>
@@ -136,11 +136,11 @@ export function CreatorSeriesSection({ initialSeries }: CreatorSeriesSectionProp
             return (
               <div
                 key={ser.id}
-                className="p-5 rounded-[22px] bg-[var(--bg-card-muted)] border border-[var(--border-color)] flex flex-col justify-between space-y-4 hover:border-[#ff5a00]/50 transition-all group"
+                className="p-5 rounded-[22px] bg-[var(--bg-card-muted)] border border-[var(--border-color)] flex flex-col justify-between space-y-4 hover:border-[var(--accent)]/50 transition-all group"
               >
                 <div className="space-y-2">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="px-2.5 py-0.5 rounded-[8px] bg-orange-500/10 text-[#ff5a00] font-mono text-[9.5px] font-bold uppercase tracking-wider">
+                    <span className="px-2.5 py-0.5 rounded-[8px] bg-[var(--accent-soft)] text-[var(--accent)] font-mono text-[9.5px] font-bold uppercase tracking-wider">
                       SERI PANDUAN
                     </span>
                     <span
@@ -154,7 +154,7 @@ export function CreatorSeriesSection({ initialSeries }: CreatorSeriesSectionProp
                     </span>
                   </div>
 
-                  <h4 className="text-sm font-bold text-[var(--text-primary)] leading-snug group-hover:text-[#ff5a00] transition-colors">
+                  <h4 className="text-sm font-bold text-[var(--text-primary)] leading-snug group-hover:text-[var(--accent)] transition-colors">
                     {ser.title}
                   </h4>
 
@@ -167,14 +167,14 @@ export function CreatorSeriesSection({ initialSeries }: CreatorSeriesSectionProp
 
                 <div className="pt-3 border-t border-[var(--border-color)] flex items-center justify-between text-xs text-[var(--text-muted)] font-mono">
                   <span className="flex items-center gap-1 font-bold text-[var(--text-primary)]">
-                    <FileText className="w-3.5 h-3.5 text-[#ff5a00]" />
+                    <FileText className="w-3.5 h-3.5 text-[var(--accent)]" />
                     {articleCount} Bab Naskah
                   </span>
 
                   <Link
                     href={`/series/${ser.slug}`}
                     target="_blank"
-                    className="flex items-center gap-1 text-[#ff5a00] hover:underline font-semibold font-sans text-xs"
+                    className="flex items-center gap-1 text-[var(--accent)] hover:underline font-semibold font-sans text-xs"
                   >
                     <span>Buka Seri</span>
                     <ArrowUpRight className="w-3.5 h-3.5" />

@@ -200,7 +200,7 @@ export function SlashMenu({ query, onSelect, onClose, position, isOpen = true }:
       } z-50 w-80 max-h-80 overflow-y-auto rounded-[24px] border border-[#ececee] dark:border-[#27272a] bg-white dark:bg-[#18181b] shadow-2xl p-2 animate-in fade-in zoom-in-95 duration-100`}
     >
       <div className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-[#71717a] flex items-center justify-between border-b border-[#ececee] dark:border-[#27272a] mb-1.5">
-        <span className="flex items-center gap-1.5 text-[#ff5a00]">
+        <span className="flex items-center gap-1.5 text-[var(--accent)]">
           <Sparkles className="w-3.5 h-3.5" />
           Blok Notasi Arsitektur
         </span>
@@ -227,7 +227,7 @@ export function SlashMenu({ query, onSelect, onClose, position, isOpen = true }:
                 className={`p-2 rounded-[10px] shrink-0 ${
                   isSelected
                     ? 'bg-white/20 dark:bg-black/10 text-white dark:text-[#09090b]'
-                    : 'bg-[#f4f4f5] dark:bg-[#27272a] text-[#ff5a00]'
+                    : 'bg-[var(--bg-card-muted)] text-[var(--accent)]'
                 }`}
               >
                 <Icon className="w-4 h-4" />

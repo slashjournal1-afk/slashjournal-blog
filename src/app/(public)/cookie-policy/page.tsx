@@ -12,7 +12,7 @@ export default function CookiePolicyPage() {
   return (
     <div className="min-h-screen max-w-[1200px] mx-auto px-4 sm:px-6 py-12">
       <div className="rounded-[36px] bg-white dark:bg-[#18181b] border border-[#ececee] dark:border-[#27272a] p-8 sm:p-14 mb-12 space-y-4">
-        <span className="px-3 py-1 rounded-[12px] bg-[var(--accent)] text-white text-xs font-semibold tracking-wider">
+        <span className="px-3 py-1 rounded-[12px] bg-[var(--accent)] text-[var(--accent-foreground)] text-xs font-semibold tracking-wider">
           TRANSPARANSI SESI
         </span>
         <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-[#09090b] dark:text-white leading-[1.15]">

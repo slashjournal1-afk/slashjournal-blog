@@ -73,8 +73,8 @@ export function CommentModerationList({ initialComments }: { initialComments: Co
             onClick={() => setFilter(tab)}
             className={`px-4 py-2 rounded-btn text-[13px] font-medium transition-colors cursor-pointer ${
               filter === tab
-                ? 'bg-ember text-white font-bold'
-                : 'bg-[#18181b] border border-[#27272a] text-ash hover:text-white'
+                ? 'bg-[var(--accent)] text-[var(--accent-foreground)] font-bold'
+                : 'bg-[var(--bg-card-muted)] border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
             }`}
           >
             {tab === 'PENDING' ? `Menunggu Moderasi (${comments.filter((c) => c.status === 'PENDING').length})` : tab}
@@ -87,14 +87,14 @@ export function CommentModerationList({ initialComments }: { initialComments: Co
           {filteredComments.map((c) => (
             <div
               key={c.id}
-              className="p-5 md:p-6 rounded-[24px] bg-[#18181b] border border-[#27272a] space-y-4 shadow-sm"
+              className="p-5 md:p-6 rounded-[24px] bg-[var(--bg-card)] border border-[var(--border-color)] space-y-4 shadow-sm"
             >
               {/* Comment Header */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[#27272a] text-[12.5px] text-fog">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[var(--border-color)] text-[12.5px] text-[var(--text-muted)]">
                 <div className="flex items-center gap-2">
-                  <User className="w-4 h-4 text-ember" />
-                  <span className="font-bold text-white">{c.reader.displayName}</span>
-                  <span className="text-ash">({c.reader.email})</span>
+                  <User className="w-4 h-4 text-[var(--accent)]" />
+                  <span className="font-bold text-[var(--text-primary)]">{c.reader.displayName}</span>
+                  <span className="text-[var(--text-muted)]">({c.reader.email})</span>
                   {c.reader.isBlocked && (
                     <Badge variant="status-retracted" size="sm">
                       DIBLOKIR
@@ -119,20 +119,20 @@ export function CommentModerationList({ initialComments }: { initialComments: Co
               </div>
 
               {/* Article Link */}
-              <div className="text-[12px] text-ash">
+              <div className="text-[12px] text-[var(--text-muted)]">
                 Komentar pada artikel:{' '}
                 <a
                   href={`/${c.article.slug}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="font-semibold text-white hover:text-ember transition-colors"
+                  className="font-semibold text-[var(--text-primary)] hover:text-[var(--accent)] transition-colors"
                 >
                   &quot;{c.article.title}&quot; ↗
                 </a>
               </div>
 
               {/* Comment Body */}
-              <div className="p-4 rounded-[16px] bg-[#121214] border border-[#27272a] text-[14px] text-[#fafafa] leading-relaxed whitespace-pre-wrap">
+              <div className="p-4 rounded-[16px] bg-[var(--bg-card-muted)] border border-[var(--border-color)] text-[14px] text-[var(--text-primary)] leading-relaxed whitespace-pre-wrap">
                 {c.content}
               </div>
 
@@ -145,7 +145,7 @@ export function CommentModerationList({ initialComments }: { initialComments: Co
                       size="sm"
                       onClick={() => handleAction(c.id, 'APPROVED')}
                       disabled={loadingId === c.id}
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-btn px-4"
+                      className="bg-[var(--success)] hover:brightness-110 text-[var(--bg-primary)] rounded-btn px-4"
                     >
                       <Check className="w-3.5 h-3.5" />
                       Setujui (Tayang)
@@ -158,7 +158,7 @@ export function CommentModerationList({ initialComments }: { initialComments: Co
                       size="sm"
                       onClick={() => handleAction(c.id, 'REJECTED')}
                       disabled={loadingId === c.id}
-                      className="bg-[#27272a] text-ash hover:text-white border-[#3f3f46]"
+                      className="bg-[var(--bg-card-muted)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border-[var(--border-color)]"
                     >
                       <X className="w-3.5 h-3.5" />
                       Tolak
@@ -187,12 +187,12 @@ export function CommentModerationList({ initialComments }: { initialComments: Co
           ))}
         </div>
       ) : (
-        <div className="p-12 text-center rounded-[28px] border border-dashed border-[#27272a] bg-[#18181b] space-y-2">
-          <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto" />
-          <p className="text-[15px] font-medium text-white">
+        <div className="p-12 text-center rounded-[28px] border border-dashed border-[var(--border-color)] bg-[var(--bg-card)] space-y-2">
+          <CheckCircle2 className="w-8 h-8 text-[var(--success)] mx-auto" />
+          <p className="text-[15px] font-medium text-[var(--text-primary)]">
             Tidak ada komentar dalam kategori ini.
           </p>
-          <p className="text-[12.5px] text-ash">Semua tanggapan pembaca telah diproses.</p>
+          <p className="text-[12.5px] text-[var(--text-muted)]">Semua tanggapan pembaca telah diproses.</p>
         </div>
       )}
     </div>

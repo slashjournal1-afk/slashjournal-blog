@@ -37,7 +37,7 @@ export function BannerAd({ ad, adsenseSlot, className = '' }: BannerAdProps) {
 
         <Link
           href="/contact?subject=sponsor"
-          className="px-5 py-3 rounded-[14px] bg-[#09090b] dark:bg-white text-white dark:text-[#09090b] hover:bg-[#18181b] dark:hover:bg-zinc-200 text-xs font-bold shadow-awesomic-dark-btn transition-all shrink-0 flex items-center gap-2 active:scale-95 z-10"
+          className="px-5 py-3 rounded-[14px] bg-[var(--text-primary)] text-[var(--bg-primary)] hover:bg-[var(--text-secondary)] text-xs font-bold transition-all shrink-0 flex items-center gap-2 active:scale-95 z-10"
         >
           <span>Pasang Iklan Terkurasi</span>
           <ArrowUpRight className="w-4 h-4 text-[var(--accent)]" />
@@ -49,7 +49,7 @@ export function BannerAd({ ad, adsenseSlot, className = '' }: BannerAdProps) {
 
   return (
     <div
-      className={`w-full my-10 rounded-[32px] bg-white dark:bg-[#18181b] border border-[#ececee] dark:border-[#27272a] overflow-hidden p-6 sm:p-7 flex flex-col md:flex-row items-center justify-between gap-6 relative group transition-all duration-300 hover:border-[var(--accent-line)] shadow-xs ${className}`}
+        className={`w-full my-10 rounded-[32px] bg-[var(--bg-card)] border border-[var(--border-color)] overflow-hidden p-6 sm:p-7 flex flex-col md:flex-row items-center justify-between gap-6 relative group transition-all duration-300 hover:border-[var(--accent-line)] shadow-xs ${className}`}
     >
       {ad.imageUrl && (
         <div className="w-full md:w-44 h-28 rounded-[20px] overflow-hidden relative shrink-0 border border-[#ececee] dark:border-[#27272a] bg-zinc-100 dark:bg-zinc-800">
@@ -84,7 +84,7 @@ export function BannerAd({ ad, adsenseSlot, className = '' }: BannerAdProps) {
         href={ad.targetUrl}
         target="_blank"
         rel="noopener noreferrer nofollow"
-        className="px-5 py-3 rounded-[14px] bg-[#09090b] dark:bg-white text-white dark:text-[#09090b] hover:bg-[#18181b] dark:hover:bg-zinc-200 text-xs font-bold shadow-awesomic-dark-btn transition-all shrink-0 flex items-center gap-2 active:scale-95"
+        className="px-5 py-3 rounded-[14px] bg-[var(--text-primary)] text-[var(--bg-primary)] hover:bg-[var(--text-secondary)] text-xs font-bold transition-all shrink-0 flex items-center gap-2 active:scale-95"
       >
         <span>Kunjungi Situs</span>
         <ArrowUpRight className="w-4 h-4 text-[var(--accent)]" />

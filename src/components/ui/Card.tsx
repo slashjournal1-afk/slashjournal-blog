@@ -17,11 +17,11 @@ export function Card({
 
   const variants = {
     // Standard 36px white card with hairline border
-    surface: 'bg-snow border-cloud text-graphite',
-    subtle: 'bg-[#fafafa] border-cloud text-graphite',
+    surface: 'bg-[var(--bg-card)] border-[var(--border-color)] text-[var(--text-primary)]',
+    subtle: 'bg-[var(--bg-card-muted)] border-[var(--border-color)] text-[var(--text-primary)]',
     // Inverted dark card (#18181b or #27272a)
-    dark: 'bg-slate border-[#3f3f46] text-white',
-    glass: 'bg-white/80 backdrop-blur-md border-cloud text-graphite',
+    dark: 'bg-[#18181b] border-[#3f3f46] text-white',
+    glass: 'bg-[var(--bg-card)]/80 backdrop-blur-md border-[var(--border-color)] text-[var(--text-primary)]',
   };
 
   const paddings = {

@@ -51,15 +51,15 @@ export function WikiLinkPopover({
               <Sparkles className="w-3 h-3" />
               {cat}
             </span>
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#f4f4f5] dark:bg-[#27272a] text-[#71717a] font-mono">
+             <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--bg-card-muted)] text-[var(--text-muted)] font-mono">
               {metadata?.type === 'article' ? 'Artikel' : 'Glosarium'}
             </span>
           </div>
 
-          <h4 className="text-sm font-bold text-[#09090b] dark:text-white mt-2">
+           <h4 className="text-sm font-bold text-[var(--text-primary)] mt-2">
             {termName}
           </h4>
-          <p className="text-xs text-[#52525b] dark:text-[#a1a1aa] mt-1 line-clamp-3 leading-relaxed">
+           <p className="text-xs text-[var(--text-secondary)] mt-1 line-clamp-3 leading-relaxed">
             {def}
           </p>
 

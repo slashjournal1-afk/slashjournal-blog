@@ -130,7 +130,7 @@ export function NewSeriesModal({
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-[#ececee] dark:border-[#27272a]">
           <div className="flex items-center gap-2.5">
-            <div className="p-2.5 rounded-[14px] bg-orange-50 dark:bg-orange-950/40 text-[#ff5a00]">
+            <div className="p-2.5 rounded-[14px] bg-[var(--accent-soft)] text-[var(--accent)]">
               <BookOpen className="w-5 h-5" />
             </div>
             <div>
@@ -171,7 +171,7 @@ export function NewSeriesModal({
               value={title}
               onChange={handleTitleChange}
               placeholder="Contoh: Arsitektur Event-Driven &amp; Kafka"
-              className="w-full px-3.5 py-2.5 rounded-[12px] bg-[#f4f4f5] dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-xs font-semibold text-[#09090b] dark:text-white focus:outline-none focus:border-[#ff5a00]"
+              className="w-full px-3.5 py-2.5 rounded-[12px] bg-[var(--bg-card-muted)] border border-[var(--border-color)] text-xs font-semibold text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--accent)]"
             />
           </div>
 
@@ -185,7 +185,7 @@ export function NewSeriesModal({
               value={slug}
               onChange={(e) => setSlug(slugify(e.target.value))}
               placeholder="arsitektur-event-driven-kafka"
-              className="w-full px-3.5 py-2.5 rounded-[12px] bg-[#f4f4f5] dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-xs font-mono text-[#09090b] dark:text-white focus:outline-none focus:border-[#ff5a00]"
+              className="w-full px-3.5 py-2.5 rounded-[12px] bg-[var(--bg-card-muted)] border border-[var(--border-color)] text-xs font-mono text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--accent)]"
             />
           </div>
 
@@ -199,7 +199,7 @@ export function NewSeriesModal({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Rangkaian panduan dari fundamental arsitektur, pola idempotensi, hingga implementasi produksi..."
-              className="w-full px-3.5 py-2.5 rounded-[12px] bg-[#f4f4f5] dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-xs text-[#09090b] dark:text-white focus:outline-none focus:border-[#ff5a00] resize-none"
+              className="w-full px-3.5 py-2.5 rounded-[12px] bg-[var(--bg-card-muted)] border border-[var(--border-color)] text-xs text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--accent)] resize-none"
             />
           </div>
 
@@ -215,7 +215,7 @@ export function NewSeriesModal({
                 value={coverImageUrl}
                 onChange={(e) => setCoverImageUrl(e.target.value)}
                 placeholder="https://... atau klik tombol Unggah"
-                className="flex-1 px-3.5 py-2.5 rounded-[12px] bg-[#f4f4f5] dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-xs text-[#09090b] dark:text-white focus:outline-none focus:border-[#ff5a00]"
+                className="flex-1 px-3.5 py-2.5 rounded-[12px] bg-[var(--bg-card-muted)] border border-[var(--border-color)] text-xs text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--accent)]"
               />
               <input
                 ref={fileInputRef}
@@ -228,12 +228,12 @@ export function NewSeriesModal({
                 type="button"
                 disabled={isUploadingCover}
                 onClick={() => fileInputRef.current?.click()}
-                className="px-3.5 py-2.5 rounded-[12px] bg-[#f4f4f5] dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-xs font-bold text-[#09090b] dark:text-white hover:text-[#ff5a00] transition-colors shrink-0 flex items-center gap-1.5 active:scale-95"
+                className="px-3.5 py-2.5 rounded-[12px] bg-[var(--bg-card-muted)] border border-[var(--border-color)] text-xs font-bold text-[var(--text-primary)] hover:text-[var(--accent)] transition-colors shrink-0 flex items-center gap-1.5 active:scale-95"
               >
                 {isUploadingCover ? (
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
                 ) : (
-                  <Upload className="w-3.5 h-3.5 text-[#ff5a00]" />
+                  <Upload className="w-3.5 h-3.5 text-[var(--accent)]" />
                 )}
                 <span>Upload WebP</span>
               </button>
@@ -256,10 +256,10 @@ export function NewSeriesModal({
               type="checkbox"
               checked={isPublished}
               onChange={(e) => setIsPublished(e.target.checked)}
-              className="w-4 h-4 rounded text-[#ff5a00] focus:ring-[#ff5a00]"
+              className="w-4 h-4 rounded text-[var(--accent)] focus:ring-[var(--accent)]"
             />
             <span className="text-xs font-medium text-[#09090b] dark:text-white">
-              Publikasikan seri ini (Tampilkan di halaman katalog publik <code className="font-mono text-[11px] text-[#ff5a00]">/series</code>)
+              Publikasikan seri ini (Tampilkan di halaman katalog publik <code className="font-mono text-[11px] text-[var(--accent)]">/series</code>)
             </span>
           </label>
 
@@ -284,7 +284,7 @@ export function NewSeriesModal({
                 </>
               ) : (
                 <>
-                  <Plus className="w-3.5 h-3.5 text-[#ff5a00]" />
+                  <Plus className="w-3.5 h-3.5 text-[var(--accent)]" />
                   <span>Simpan Seri Panduan</span>
                 </>
               )}

@@ -32,7 +32,7 @@ export function InFeedAd({ ad, adsenseSlot, className = '' }: InFeedAdProps) {
             <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]" />
             Native In-Feed Slot
           </div>
-          <h4 className="text-base font-bold text-[#09090b] dark:text-white leading-snug">
+          <h4 className="text-base font-bold text-[var(--text-primary)] leading-snug">
             Promosikan Produk Engineering &amp; SaaS Anda
           </h4>
           <p className="text-xs text-[#52525b] dark:text-[#a1a1aa] leading-relaxed">
@@ -76,7 +76,7 @@ export function InFeedAd({ ad, adsenseSlot, className = '' }: InFeedAdProps) {
             </span>
           </div>
 
-          <h4 className="text-base font-bold text-[#09090b] dark:text-white leading-snug group-hover:text-[var(--accent)] transition-colors">
+          <h4 className="text-base font-bold text-[var(--text-primary)] leading-snug group-hover:text-[var(--accent)] transition-colors">
             {ad.title}
           </h4>
 
@@ -88,7 +88,7 @@ export function InFeedAd({ ad, adsenseSlot, className = '' }: InFeedAdProps) {
         </div>
 
         <div className="pt-4 border-t border-[#ececee] dark:border-[#27272a] flex items-center justify-between">
-          <span className="text-[11px] text-[#71717a]">Rekomendasi Redaksi</span>
+          <span className="text-[11px] text-[var(--text-muted)]">Rekomendasi Redaksi</span>
           <a
             href={ad.targetUrl}
             target="_blank"
