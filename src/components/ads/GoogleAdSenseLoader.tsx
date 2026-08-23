@@ -3,6 +3,9 @@
 import { useEffect } from 'react';
 
 const CONSENT_KEY = 'slashjournal-consent-v2';
+const ADSENSE_SCRIPT_SELECTOR = 'script[src*="pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"]';
+
+let adsenseScriptLoaded = false;
 
 export function GoogleAdSenseLoader() {
   const publisherId = process.env.NEXT_PUBLIC_ADSENSE_PUBLISHER_ID;
@@ -17,19 +20,25 @@ export function GoogleAdSenseLoader() {
         return;
       }
 
-      const existing = document.querySelector<HTMLScriptElement>('script[data-slashjournal-adsense]');
+      const existing = document.querySelector<HTMLScriptElement>(ADSENSE_SCRIPT_SELECTOR);
       if (existing) {
-        if (existing.dataset.loaded === 'true') window.dispatchEvent(new CustomEvent('slashjournal:adsense-ready'));
+        if (adsenseScriptLoaded) {
+          window.dispatchEvent(new CustomEvent('slashjournal:adsense-ready'));
+        } else {
+          existing.addEventListener('load', () => {
+            adsenseScriptLoaded = true;
+            window.dispatchEvent(new CustomEvent('slashjournal:adsense-ready'));
+          }, { once: true });
+        }
         return;
       }
 
       const script = document.createElement('script');
       script.async = true;
       script.crossOrigin = 'anonymous';
-      script.dataset.slashjournalAdsense = 'true';
       script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${publisherId}`;
       script.addEventListener('load', () => {
-        script.dataset.loaded = 'true';
+        adsenseScriptLoaded = true;
         window.dispatchEvent(new CustomEvent('slashjournal:adsense-ready'));
       }, { once: true });
       script.addEventListener('error', () => console.error('AdSense script failed to load'), { once: true });
