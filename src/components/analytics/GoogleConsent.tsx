@@ -37,7 +37,14 @@ export function GoogleConsent() {
     try {
       const parsed = storedValue ? JSON.parse(storedValue) : null;
       if (parsed?.analytics && parsed?.advertising) stored = parsed;
-    } catch {}
+    } catch {
+      stored = null;
+    }
+    // Migrate the previous single-value consent format without granting ad consent.
+    if (!stored && (storedValue === 'granted' || storedValue === 'denied')) {
+      stored = { analytics: storedValue, advertising: 'denied' };
+      updateConsent(stored);
+    }
     if (stored) updateConsent(stored);
     // localStorage is an external store; this update intentionally happens after hydration.
     // eslint-disable-next-line react-hooks/set-state-in-effect

@@ -204,7 +204,7 @@ export default async function HomePage() {
                     sponsored={article.isSponsored}
                     sponsorName={article.sponsorName}
                   />
-                  {index === 1 && <InFeedAd ad={inFeedAd} className="my-6" />}
+                  {index === 1 && <InFeedAd ad={inFeedAd} adsenseSlot={process.env.ADSENSE_IN_FEED_SLOT} className="my-6" />}
                 </React.Fragment>
               ))}
             </div>
@@ -267,7 +267,7 @@ export default async function HomePage() {
       </section>
 
       {/* 5. Non-intrusive Billboard Ad */}
-      <BannerAd ad={leaderboardAd} />
+      <BannerAd ad={leaderboardAd} adsenseSlot={process.env.ADSENSE_LEADERBOARD_SLOT} />
 
       {/* 6. Newsletter */}
       <section className="border-t border-[var(--border-color)] pt-12">
