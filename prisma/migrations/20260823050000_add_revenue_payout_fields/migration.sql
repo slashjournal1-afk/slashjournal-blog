@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "AuthorRevenue" ADD COLUMN "paidAt" TIMESTAMP(3),
+ADD COLUMN "paidBy" TEXT,
+ADD COLUMN "payoutReference" TEXT,
+ADD COLUMN "payoutStatus" TEXT NOT NULL DEFAULT 'NOT_ELIGIBLE';

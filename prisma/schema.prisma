@@ -358,6 +358,10 @@ model AuthorRevenue {
   adjustmentAmount       Decimal       @default(0) @db.Decimal(18, 6)
   payableAmount          Decimal       @default(0) @db.Decimal(18, 6)
   status                 String        @default("PROVISIONAL")
+  payoutStatus           String        @default("NOT_ELIGIBLE") // NOT_ELIGIBLE, ELIGIBLE, PAID, ON_HOLD
+  paidAt                 DateTime?
+  paidBy                 String?
+  payoutReference        String?
   authorSnapshot         String
   createdAt              DateTime      @default(now())
   updatedAt              DateTime      @updatedAt

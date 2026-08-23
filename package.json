@@ -10,6 +10,7 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint .",
+    "test": "node --import tsx --test src/**/*.test.ts",
     "seo:audit": "node scripts/seo-audit.mjs",
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
