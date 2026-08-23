@@ -1,6 +1,5 @@
 'use client';
 
-import Script from 'next/script';
 import { useEffect, useRef, useState } from 'react';
 import { pushDataLayer } from '@/lib/data-layer';
 
@@ -52,22 +51,6 @@ export function GoogleAdSense({ slot, format = 'auto', className = '' }: GoogleA
 
   return (
     <div className={`min-h-[100px] overflow-hidden ${className}`} aria-label="Iklan">
-      <Script
-        id="google-adsense-script"
-        async
-        strategy="afterInteractive"
-        crossOrigin="anonymous"
-        src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${publisherId}`}
-        onLoad={() => {
-          setScriptReady(true);
-          window.dispatchEvent(new CustomEvent('slashjournal:adsense-ready'));
-        }}
-        onReady={() => {
-          setScriptReady(true);
-          window.dispatchEvent(new CustomEvent('slashjournal:adsense-ready'));
-        }}
-        onError={() => console.error('AdSense script failed to load')}
-      />
       <ins className="adsbygoogle block" style={{ display: 'block' }} data-ad-client={publisherId} data-ad-slot={slot} data-ad-format={format} data-full-width-responsive="true" />
     </div>
   );

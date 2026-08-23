@@ -10,6 +10,7 @@ import { GoogleTagManager } from '@/components/analytics/GoogleTagManager';
 import { GoogleConsent } from '@/components/analytics/GoogleConsent';
 import { siteConfig } from '@/lib/site';
 import { Toaster } from 'sonner';
+import { GoogleAdSenseLoader } from '@/components/ads/GoogleAdSenseLoader';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -102,6 +103,7 @@ export default function RootLayout({
         className={`${inter.variable} ${newsreader.variable} ${jetbrainsMono.variable} min-h-screen flex flex-col antialiased bg-[var(--bg-primary)] text-[var(--text-primary)] transition-colors`}
       >
         <GoogleTagManager />
+        <GoogleAdSenseLoader />
         <ThemeProvider>
           <AuthProvider>
             <Suspense fallback={null}>
