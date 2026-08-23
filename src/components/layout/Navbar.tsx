@@ -13,6 +13,7 @@ import {
   Menu,
   Search,
   Shield,
+  User,
   X,
   LogIn,
 } from 'lucide-react';
@@ -96,6 +97,14 @@ export function Navbar({ categories }: { categories: Category[] }) {
   const openSearch = () => window.dispatchEvent(new CustomEvent('open-command-palette'));
   const categoryActive = pathname.startsWith('/category');
 
+  const dashboardEntry = user
+    ? user.role === 'ADMIN'
+      ? { href: '/dashboard/superadmin', label: 'Superadmin Control', Icon: Shield }
+      : user.role === 'EDITOR' || user.role === 'AUTHOR'
+      ? { href: '/dashboard/creator', label: 'Studio Penulis', Icon: FileText }
+      : { href: '/dashboard/member', label: 'Dasbor Anggota', Icon: User }
+    : null;
+
   return (
     <>
       <header className="sticky top-0 z-40 border-b border-[var(--border-color)] bg-[var(--bg-primary)]/95 backdrop-blur-md">
@@ -142,7 +151,7 @@ export function Navbar({ categories }: { categories: Category[] }) {
               </button>
 
               {categoryOpen && (
-                <div id={categoryPanelId} className="absolute left-0 top-11 z-10 w-[min(340px,calc(100vw-2rem))] border border-[var(--border-color)] bg-[var(--bg-card)] p-2 shadow-floating animate-in fade-in slide-in-from-top-1 duration-100">
+                <div id={categoryPanelId} className="absolute left-0 top-11 z-10 max-h-[min(70vh,560px)] w-[min(340px,calc(100vw_-_2rem))] overflow-y-auto border border-[var(--border-color)] bg-[var(--bg-card)] p-2 shadow-floating animate-in fade-in slide-in-from-top-1 duration-100">
                   <div className="border-b border-[var(--border-color)] px-3 pb-2 pt-1">
                     <p className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--accent)]">Index topik</p>
                     <p className="mt-1 text-xs text-[var(--text-muted)]">Pilih jalur baca berdasarkan bidang rekayasa.</p>
@@ -155,8 +164,8 @@ export function Navbar({ categories }: { categories: Category[] }) {
                         onClick={closeMenus}
                         className="group flex items-start justify-between gap-3 px-3 py-2.5 transition-colors hover:bg-[var(--bg-card-muted)]"
                       >
-                        <span className="min-w-0">
-                          <span className="block text-xs font-semibold text-[var(--text-primary)]">{category.name}</span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block break-words text-xs font-semibold text-[var(--text-primary)]">{category.name}</span>
                           {category.description && (
                             <span className="mt-0.5 block truncate text-[10px] text-[var(--text-muted)]">{category.description}</span>
                           )}
@@ -247,7 +256,7 @@ export function Navbar({ categories }: { categories: Category[] }) {
 
         {isMenuOpen && (
           <div ref={mobileNavigationRef} id={mobileNavigationId} className="border-t border-[var(--border-color)] bg-[var(--bg-card)] lg:hidden">
-            <nav aria-label="Navigasi mobile" className="mx-auto max-h-[calc(100vh-69px)] max-w-editorial overflow-y-auto px-4 py-4 sm:px-8">
+            <nav aria-label="Navigasi mobile" className="mx-auto max-h-[calc(100vh_-_69px)] max-w-editorial overflow-y-auto px-4 py-4 sm:px-8">
               <div className="mb-3 flex items-center justify-between px-1">
                 <span className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--accent)]">Navigasi SlashJournal</span>
                 <span className="text-[10px] text-[var(--text-muted)]">{categories.length} topik aktif</span>
@@ -262,6 +271,16 @@ export function Navbar({ categories }: { categories: Category[] }) {
                 {primaryLinks.slice(1).map((link) => <MobileLink key={link.href} href={link.href} label={link.label} active={isActivePath(pathname, link.href)} onClick={closeMenus} />)}
               </div>
               <div className="mt-4 grid gap-2 border-t border-[var(--border-color)] pt-4 sm:grid-cols-2">
+                {dashboardEntry && (
+                  <Link
+                    href={dashboardEntry.href}
+                    onClick={closeMenus}
+                    className="flex min-h-12 items-center gap-3 border border-[var(--accent-line)] bg-[var(--accent-soft)] px-3 text-sm font-semibold text-[var(--text-primary)] transition-colors hover:border-[var(--accent)]"
+                  >
+                    <dashboardEntry.Icon className="h-4 w-4 text-[var(--accent)]" />
+                    {dashboardEntry.label}
+                  </Link>
+                )}
                 <button type="button" onClick={() => { closeMenus(); openSearch(); }} className="flex min-h-12 items-center gap-3 border border-[var(--border-color)] px-3 text-sm font-semibold text-[var(--text-primary)] hover:bg-[var(--bg-card-muted)]"><Search className="h-4 w-4 text-[var(--accent)]" /> Cari tulisan</button>
                 {!user && <button type="button" onClick={() => { if (mobileMenuButtonRef.current) openAuth(mobileMenuButtonRef.current); }} className="flex min-h-12 items-center justify-center gap-2 bg-[var(--color-ink)] px-3 text-sm font-semibold text-white hover:bg-[var(--color-charcoal)]"><LogIn className="h-4 w-4" />Masuk / Buat akun</button>}
                 {user && <button type="button" onClick={() => { closeMenus(); logout(); }} className="flex min-h-12 items-center gap-3 border border-rose-200 px-3 text-sm font-semibold text-rose-600 hover:bg-rose-50 dark:border-rose-900 dark:hover:bg-rose-950/20"><LogOut className="h-4 w-4" /> Keluar akun</button>}

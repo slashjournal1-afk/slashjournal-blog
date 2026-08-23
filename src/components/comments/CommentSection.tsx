@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { formatDateTime } from '@/lib/utils';
 import { MessageSquare, Send, Trash2, LogIn, AlertCircle } from 'lucide-react';
@@ -31,6 +31,13 @@ export function CommentSection({ articleId, docId, initialComments }: CommentSec
   const [content, setContent] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const loginPromptShownRef = useRef(false);
+
+  const promptLoginOnce = () => {
+    if (loginPromptShownRef.current) return;
+    loginPromptShownRef.current = true;
+    openAuthModal();
+  };
 
   useEffect(() => {
     if (!targetId) return;
@@ -137,7 +144,7 @@ export function CommentSection({ articleId, docId, initialComments }: CommentSec
             value={content}
             onChange={(e) => setContent(e.target.value)}
             onFocus={() => {
-              if (!user) openAuthModal();
+              if (!user) promptLoginOnce();
             }}
             placeholder={
               user

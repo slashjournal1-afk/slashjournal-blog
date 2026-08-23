@@ -50,7 +50,7 @@ export function siteGraphSchema() {
       {
         '@type': 'Person',
         '@id': authorId,
-        name: 'Choirul Arsitek',
+        name: 'Choirul Humam',
         url: absoluteUrl('/about'),
         worksFor: { '@id': organizationId },
       },

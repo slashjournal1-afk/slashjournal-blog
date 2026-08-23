@@ -45,7 +45,7 @@ export function DocSidebar({ modules }: DocSidebarProps) {
   };
 
   return (
-    <aside className="w-full lg:w-72 shrink-0 py-6 pr-4 lg:border-r border-[#ececee] dark:border-[#27272a] overflow-y-auto max-h-[calc(100vh-4rem)] sticky top-16">
+    <aside className="w-full lg:w-72 shrink-0 py-6 pr-4 lg:border-r border-[#ececee] dark:border-[#27272a] overflow-y-auto max-h-[calc(100vh_-_4rem)] sticky top-16">
       <div className="space-y-6">
         <div className="px-3">
            <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">

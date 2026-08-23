@@ -123,7 +123,7 @@ function AuthModalContent({ restoreFocusRef }: { restoreFocusRef?: RefObject<HTM
         role="dialog"
         aria-modal="true"
         aria-labelledby="auth-modal-title"
-        className="relative my-auto max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-[36px] border border-[#ececee] dark:border-[#27272a] bg-white p-6 shadow-2xl dark:bg-[#18181b] sm:p-8 animate-in zoom-in-95 duration-150"
+         className="relative my-auto max-h-[calc(100dvh_-_2rem)] w-full max-w-md overflow-y-auto rounded-[36px] border border-[#ececee] dark:border-[#27272a] bg-white p-6 shadow-2xl dark:bg-[#18181b] sm:p-8 animate-in zoom-in-95 duration-150"
       >
         {/* Close Button */}
         <button

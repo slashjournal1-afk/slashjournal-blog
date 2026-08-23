@@ -1,7 +1,7 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Shield, Sparkles, Terminal, Award, BookOpen, Layers, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Shield, Terminal, Award, ArrowRight } from 'lucide-react';
 import { PageIntro } from '@/components/layout/PageIntro';
 import type { Metadata } from 'next';
 import { absoluteUrl } from '@/lib/site';
@@ -10,29 +10,57 @@ import { authorId, organizationId } from '@/lib/structured-data';
 
 export const metadata: Metadata = {
   title: 'Tentang Penulis & Standar Rekayasa',
-  description: 'Profil penulis, latar belakang 15 tahun rekayasa sistem, dan komitmen kualitas konten.',
+  description: 'Profil Choirul Humam, alumni Universitas Amikom Yogyakarta asal Pati, beserta standar rekayasa dan komitmen kualitas konten SlashJournal.',
   alternates: { canonical: absoluteUrl('/about') },
 };
 
 export default function AboutPage() {
   const personSchema = {
     '@context': 'https://schema.org', '@type': 'Person', '@id': authorId,
-    name: 'Choirul Arsitek', url: absoluteUrl('/about'), jobTitle: 'Software Architect',
+    name: 'Choirul Humam', url: absoluteUrl('/about'), jobTitle: 'Software Engineer & Technical Writer',
     worksFor: { '@id': organizationId },
+    alumniOf: { '@type': 'CollegeOrUniversity', name: 'Universitas Amikom Yogyakarta' },
+    homeLocation: { '@type': 'Place', name: 'Pati, Jawa Tengah, Indonesia' },
   };
   return (
     <div className="min-h-screen max-w-[1200px] mx-auto px-4 sm:px-6 py-12">
       <JsonLd data={personSchema} />
       <div className="mb-12">
         <div id="author" className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center scroll-mt-24">
-          <div className="lg:col-span-8 space-y-5"><PageIntro eyebrow="Tentang penulis dan arsitek" title="15 tahun merancang fondasi sistem dan antarmuka digital" description="SlashJournal adalah ruang publikasi independen tentang rekayasa sistem terdistribusi, integritas database transaksional, dan keputusan desain yang dapat dipertanggungjawabkan." /></div>
+          <div className="lg:col-span-8 space-y-6">
+            <PageIntro
+              eyebrow="Tentang penulis"
+              title="Choirul Humam, penulis di balik SlashJournal"
+              description="SlashJournal adalah ruang publikasi independen tentang rekayasa sistem terdistribusi, integritas database transaksional, dan keputusan desain yang dapat dipertanggungjawabkan."
+            />
+            <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="rounded-[20px] bg-white dark:bg-[#18181b] border border-[#ececee] dark:border-[#27272a] p-4">
+                <dt className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--text-muted)]">Nama Lengkap</dt>
+                <dd className="mt-1 text-sm font-bold text-[#09090b] dark:text-white">Choirul Humam</dd>
+              </div>
+              <div className="rounded-[20px] bg-white dark:bg-[#18181b] border border-[#ececee] dark:border-[#27272a] p-4">
+                <dt className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--text-muted)]">Institusi Pendidikan</dt>
+                <dd className="mt-1 text-sm font-bold text-[#09090b] dark:text-white">Alumni Universitas Amikom Yogyakarta</dd>
+              </div>
+              <div className="rounded-[20px] bg-white dark:bg-[#18181b] border border-[#ececee] dark:border-[#27272a] p-4">
+                <dt className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--text-muted)]">Asal</dt>
+                <dd className="mt-1 text-sm font-bold text-[#09090b] dark:text-white">Pati, Jawa Tengah</dd>
+              </div>
+              <div className="rounded-[20px] bg-white dark:bg-[#18181b] border border-[#ececee] dark:border-[#27272a] p-4">
+                <dt className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--text-muted)]">Bidang Fokus</dt>
+                <dd className="mt-1 text-sm font-bold text-[#09090b] dark:text-white">Rekayasa Sistem Terdistribusi &amp; Pengembangan Web</dd>
+              </div>
+            </dl>
+          </div>
 
           <div className="lg:col-span-4 flex justify-center">
-            <div className="w-48 h-48 rounded-[36px] overflow-hidden relative border-2 border-[#ececee] dark:border-[#27272a] shadow-md">
+            <div className="relative w-full max-w-[280px] aspect-[3/4] rounded-[36px] overflow-hidden border-2 border-[#ececee] dark:border-[#27272a] shadow-md">
               <Image
-                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80"
-                alt="Choirul - Chief Architect"
+                src="/choirul-humam.webp"
+                alt="Foto Choirul Humam, penulis SlashJournal"
                 fill
+                priority
+                sizes="(min-width: 1024px) 280px, 70vw"
                 className="object-cover"
               />
             </div>
