@@ -47,7 +47,14 @@ function reportAccount() {
 }
 
 function reportDate(value: Date) {
-  return { year: value.getUTCFullYear(), month: value.getUTCMonth() + 1, day: value.getUTCDate() };
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Jakarta',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(value);
+  const date = Object.fromEntries(parts.filter((part) => part.type !== 'literal').map((part) => [part.type, part.value]));
+  return { year: Number(date.year), month: Number(date.month), day: Number(date.day) };
 }
 
 function parseRows(data: { headers?: Array<{ name?: string | null }>; rows?: Array<{ cells?: Array<{ value?: string | null }> }> }): AdSenseRevenueRow[] {
