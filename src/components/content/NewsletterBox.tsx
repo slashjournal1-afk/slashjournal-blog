@@ -7,9 +7,10 @@ import { pushDataLayer } from '@/lib/data-layer';
 interface NewsletterBoxProps {
   className?: string;
   defaultTopic?: string;
+  compact?: boolean;
 }
 
-export function NewsletterBox({ className = '', defaultTopic = 'all' }: NewsletterBoxProps) {
+export function NewsletterBox({ className = '', defaultTopic = 'all', compact = false }: NewsletterBoxProps) {
   const [email, setEmail] = useState('');
   const [topic, setTopic] = useState(defaultTopic);
   const [loading, setLoading] = useState(false);
@@ -54,22 +55,24 @@ export function NewsletterBox({ className = '', defaultTopic = 'all' }: Newslett
             Terima kasih telah berlangganan.
           </h4>
           <p className="max-w-md text-sm leading-relaxed text-[var(--text-muted)]">
-            Anda akan menerima catatan berkala langsung di kotak masuk email Anda.
+            Alamat email Anda telah tercatat. Pemberitahuan buletin akan dikirim begitu layanan pengiriman aktif.
           </p>
         </div>
       ) : (
         <div className="space-y-5">
-          <div className="space-y-2">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--accent)]">
-              Catatan Mingguan
-            </p>
-            <h3 className="font-display text-2xl font-medium tracking-tight text-[var(--text-primary)]">
-              Bawa naskah baru ke inbox Anda.
-            </h3>
-            <p className="max-w-xl text-sm leading-relaxed text-[var(--text-muted)]">
-              Satu email berkala saat naskah baru terbit. Tanpa spam, tanpa promosi kosong.
-            </p>
-          </div>
+          {!compact && (
+            <div className="space-y-2">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--accent)]">
+                Catatan Mingguan
+              </p>
+              <h3 className="font-display text-2xl font-medium tracking-tight text-[var(--text-primary)]">
+                Bawa naskah baru ke inbox Anda.
+              </h3>
+              <p className="max-w-xl text-sm leading-relaxed text-[var(--text-muted)]">
+                Satu email berkala saat naskah baru terbit. Tanpa spam, tanpa promosi kosong.
+              </p>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Topic Selector */}
@@ -102,6 +105,7 @@ export function NewsletterBox({ className = '', defaultTopic = 'all' }: Newslett
                 <input
                   type="email"
                   required
+                  aria-label="Alamat email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="alamat-email@contoh.com"

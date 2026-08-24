@@ -8,6 +8,7 @@ import { InFeedAd } from '@/components/ads/InFeedAd';
 import { ArticleRow } from '@/components/content/ArticleRow';
 import { ReferenceRail } from '@/components/content/ReferenceRail';
 import { SectionHeading } from '@/components/layout/SectionHeading';
+import { NewsletterBox } from '@/components/content/NewsletterBox';
 import type { Metadata } from 'next';
 import { absoluteUrl, siteConfig } from '@/lib/site';
 import { JsonLd } from '@/components/seo/JsonLd';
@@ -275,23 +276,7 @@ export default async function HomePage() {
               Satu email saat ada tulisan baru. Tanpa rangkuman kosong atau promosi yang tidak relevan.
             </p>
           </div>
-          <form action="/api/subscribe" method="POST" className="flex w-full max-w-md flex-col gap-2 sm:flex-row">
-            <label htmlFor="homepage-email" className="sr-only">Alamat email</label>
-            <input
-              id="homepage-email"
-              type="email"
-              name="email"
-              required
-              placeholder="nama@contoh.com"
-              className="min-h-11 min-w-0 flex-1 rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)] px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none"
-            />
-            <button
-              type="submit"
-              className="min-h-11 shrink-0 rounded-lg bg-[var(--text-primary)] px-5 text-sm font-medium text-[var(--bg-primary)] transition-colors hover:bg-[var(--text-secondary)]"
-            >
-              Berlangganan
-            </button>
-          </form>
+          <NewsletterBox compact className="w-full max-w-md" />
         </div>
       </section>
     </div>
