@@ -80,7 +80,10 @@ async function getCurrentUserInternal(): Promise<UserSession | null> {
     if (!token) return null;
 
     const parsed = parseToken(token);
-    if (!parsed) return null;
+    if (!parsed) {
+      console.error('[auth-debug] token gagal di-parse atau ditolak');
+      return null;
+    }
 
     const user = await prisma.user.findUnique({
       where: { id: parsed.userId },
@@ -99,7 +102,8 @@ async function getCurrentUserInternal(): Promise<UserSession | null> {
     if (!user || user.isBlocked) return null;
 
     return user as UserSession;
-  } catch {
+  } catch (debugErr) {
+    console.error('[auth-debug] getCurrentUser gagal:', debugErr);
     return null;
   }
 }
