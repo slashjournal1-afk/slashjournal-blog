@@ -1,15 +1,8 @@
 import React from 'react';
 import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth';
-import {
-  FileText,
-  Plus,
-  Inbox,
-  Activity,
-  Shield,
-  PenTool,
-} from 'lucide-react';
-import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
+import { DashboardSidebar, type DashboardNavItem } from '@/components/dashboard/DashboardSidebar';
+import type { UserRole } from '@/lib/types';
 
 export const metadata = {
   title: 'Editorial CMS Workspace — SlashJournal',
@@ -23,13 +16,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     redirect('/');
   }
 
-  const navItems = [
-    { label: 'Overview Superadmin', href: '/dashboard/superadmin', icon: Shield, roles: ['ADMIN'] },
-    { label: 'Studio Penulis', href: '/dashboard/creator', icon: PenTool, roles: ['ADMIN', 'EDITOR', 'AUTHOR'] },
-    { label: 'Tulis Dokumen Baru', href: '/admin/docs/new', icon: Plus, roles: ['ADMIN', 'EDITOR', 'AUTHOR'] },
-    { label: 'Antrean Review Draf', href: '/admin/review-queue', icon: Inbox, roles: ['ADMIN', 'EDITOR'] },
-    { label: 'Telemetri Pencarian', href: '/admin/telemetry', icon: Activity, roles: ['ADMIN', 'EDITOR'] },
-    { label: 'Log Audit & Revisi', href: '/admin/audit-logs', icon: FileText, roles: ['ADMIN'] },
+  const navItems: (DashboardNavItem & { roles: UserRole[] })[] = [
+    { label: 'Overview Superadmin', href: '/dashboard/superadmin', icon: 'shield', roles: ['ADMIN'] },
+    { label: 'Studio Penulis', href: '/dashboard/creator', icon: 'pen-tool', roles: ['ADMIN', 'EDITOR', 'AUTHOR'] },
+    { label: 'Tulis Dokumen Baru', href: '/admin/docs/new', icon: 'plus', roles: ['ADMIN', 'EDITOR', 'AUTHOR'] },
+    { label: 'Antrean Review Draf', href: '/admin/review-queue', icon: 'inbox', roles: ['ADMIN', 'EDITOR'] },
+    { label: 'Telemetri Pencarian', href: '/admin/telemetry', icon: 'activity', roles: ['ADMIN', 'EDITOR'] },
+    { label: 'Log Audit & Revisi', href: '/admin/audit-logs', icon: 'file-text', roles: ['ADMIN'] },
   ];
 
   const allowedNav = navItems

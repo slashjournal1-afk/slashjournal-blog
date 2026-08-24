@@ -1,18 +1,7 @@
 import React from 'react';
 import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth';
-import {
-  LayoutDashboard,
-  FileText,
-  Plus,
-  Inbox,
-  Activity,
-  Shield,
-  Bookmark,
-  User,
-  PenTool,
-} from 'lucide-react';
-import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
+import { DashboardSidebar, type DashboardNavItem } from '@/components/dashboard/DashboardSidebar';
 
 export const metadata = {
   title: 'Dashboard Workspace — SlashJournal',
@@ -29,27 +18,27 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const role = user.role; // 'ADMIN', 'EDITOR', 'AUTHOR', 'READER'
 
   // Dynamic Navigation Items based on Role
-  const superAdminNav = [
-    { label: 'Overview Superadmin', href: '/dashboard/superadmin', icon: Shield },
-    { label: 'Antrean Review Draf', href: '/admin/review-queue', icon: Inbox },
-    { label: 'Telemetri & Kata Kunci', href: '/admin/telemetry', icon: Activity },
-    { label: 'Google Analytics & AdSense', href: '/dashboard/superadmin/analytics', icon: Activity },
-    { label: 'Log Audit & Keamanan', href: '/admin/audit-logs', icon: FileText },
+  const superAdminNav: DashboardNavItem[] = [
+    { label: 'Overview Superadmin', href: '/dashboard/superadmin', icon: 'shield' },
+    { label: 'Antrean Review Draf', href: '/admin/review-queue', icon: 'inbox' },
+    { label: 'Telemetri & Kata Kunci', href: '/admin/telemetry', icon: 'activity' },
+    { label: 'Google Analytics & AdSense', href: '/dashboard/superadmin/analytics', icon: 'activity' },
+    { label: 'Log Audit & Keamanan', href: '/admin/audit-logs', icon: 'file-text' },
   ];
 
-  const creatorNav = [
-    { label: 'Studio Penulis', href: '/dashboard/creator', icon: PenTool },
-    { label: 'Pendapatan Artikel', href: '/dashboard/creator/revenue', icon: Activity },
-    { label: 'Tulis Dokumen Baru', href: '/admin/docs/new', icon: Plus },
+  const creatorNav: DashboardNavItem[] = [
+    { label: 'Studio Penulis', href: '/dashboard/creator', icon: 'pen-tool' },
+    { label: 'Pendapatan Artikel', href: '/dashboard/creator/revenue', icon: 'activity' },
+    { label: 'Tulis Dokumen Baru', href: '/admin/docs/new', icon: 'plus' },
     ...(role === 'EDITOR' || role === 'ADMIN'
-      ? [{ label: 'Antrean Review Redaksi', href: '/admin/review-queue', icon: Inbox }]
+      ? ([{ label: 'Antrean Review Redaksi', href: '/admin/review-queue', icon: 'inbox' }] satisfies DashboardNavItem[])
       : []),
-    { label: 'Ruang Anggota (Member)', href: '/dashboard/member', icon: User },
+    { label: 'Ruang Anggota (Member)', href: '/dashboard/member', icon: 'user' },
   ];
 
-  const memberNav = [
-    { label: 'Ikhtisar Anggota', href: '/dashboard/member', icon: LayoutDashboard },
-    { label: 'Pustaka Bookmark', href: '/bookmarks', icon: Bookmark },
+  const memberNav: DashboardNavItem[] = [
+    { label: 'Ikhtisar Anggota', href: '/dashboard/member', icon: 'layout-dashboard' },
+    { label: 'Pustaka Bookmark', href: '/bookmarks', icon: 'bookmark' },
   ];
 
   const activeNav =

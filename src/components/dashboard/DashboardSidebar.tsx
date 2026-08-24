@@ -3,15 +3,38 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Menu, X } from 'lucide-react';
+import { Home, Menu, X, LayoutDashboard, FileText, Plus, Inbox, Activity, Shield, Bookmark, User, PenTool } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { BrandLogo } from '@/components/layout/BrandLogo';
 import { LogoutButton } from '@/components/auth/LogoutButton';
 
+export type DashboardIconKey =
+  | 'layout-dashboard'
+  | 'file-text'
+  | 'plus'
+  | 'inbox'
+  | 'activity'
+  | 'shield'
+  | 'bookmark'
+  | 'user'
+  | 'pen-tool';
+
+const DASHBOARD_ICONS: Record<DashboardIconKey, LucideIcon> = {
+  'layout-dashboard': LayoutDashboard,
+  'file-text': FileText,
+  plus: Plus,
+  inbox: Inbox,
+  activity: Activity,
+  shield: Shield,
+  bookmark: Bookmark,
+  user: User,
+  'pen-tool': PenTool,
+};
+
 export interface DashboardNavItem {
   label: string;
   href: string;
-  icon: LucideIcon;
+  icon: DashboardIconKey;
 }
 
 interface DashboardSidebarProps {
@@ -85,7 +108,7 @@ export function DashboardSidebar({ navItems, sectionLabel, user, roleBadge }: Da
               {sectionLabel}
             </div>
             {navItems.map((item) => {
-              const Icon = item.icon;
+              const Icon = DASHBOARD_ICONS[item.icon] ?? Activity;
               const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
               return (
                 <Link
