@@ -34,6 +34,7 @@ const getCachedPublishedArticle = unstable_cache(async (slug: string) => {
       },
       author: { select: { displayName: true } },
       tags: { include: { tag: true } },
+      sources: { orderBy: { sortOrder: 'asc' } },
     },
   });
 }, ['published-article-by-slug'], { revalidate: 900 });

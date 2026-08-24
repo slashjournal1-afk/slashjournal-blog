@@ -20,7 +20,7 @@ export default async function EditArticlePage({ params }: PageProps) {
   const [article, categories, seriesList] = await Promise.all([
     prisma.article.findUnique({
       where: { id },
-      include: { tags: { include: { tag: true } } },
+      include: { tags: { include: { tag: true } }, sources: { orderBy: { sortOrder: 'asc' } } },
     }),
     prisma.category.findMany({
       orderBy: { sortOrder: 'asc' },
@@ -53,6 +53,7 @@ export default async function EditArticlePage({ params }: PageProps) {
           sponsorUrl: article.sponsorUrl,
           status: article.status,
           tags: article.tags,
+          sources: article.sources,
         }}
         categories={categories}
         seriesList={seriesList}

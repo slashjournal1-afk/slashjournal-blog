@@ -14,7 +14,7 @@ import { BookmarkButton } from '@/components/wiki/BookmarkButton';
 import { CommentSection } from '@/components/comments/CommentSection';
 import { SponsoredBadge } from '@/components/ads/SponsoredBadge';
 import { SidebarStickyAd } from '@/components/ads/SidebarStickyAd';
-import { Calendar, Clock, Eye, ArrowLeft, ArrowRight } from 'lucide-react';
+import { Calendar, Clock, Eye, ArrowLeft, ArrowRight, ExternalLink } from 'lucide-react';
 import type { Metadata } from 'next';
 import { absoluteUrl, siteConfig } from '@/lib/site';
 import { JsonLd } from '@/components/seo/JsonLd';
@@ -160,7 +160,10 @@ export default async function ArticleDetailPage({ params }: PageProps) {
     articleSection: article.category.name,
     keywords: article.tags.map(({ tag }) => tag.name),
     isPartOf: { '@id': websiteId },
-    citation: extractExternalReferences(article.contentMarkdown || ''),
+    citation: [
+      ...(article.sources || []).map((s) => s.url).filter((url): url is string => Boolean(url)),
+      ...extractExternalReferences(article.contentMarkdown || ''),
+    ],
   };
   const breadcrumbJsonLd = breadcrumbSchema([
     { name: 'Beranda', path: '/' },
@@ -339,6 +342,37 @@ export default async function ArticleDetailPage({ params }: PageProps) {
                     <span>{tag.name}</span>
                   </Link>
                 ))}
+              </div>
+            )}
+
+            {/* Sumber / Referensi */}
+            {article.sources && article.sources.length > 0 && (
+              <div className="border-t border-[var(--border-color)] pt-7">
+                <h2 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                  <ExternalLink className="h-3.5 w-3.5" />
+                  Sumber
+                </h2>
+                <ol className="mt-4 space-y-2.5">
+                  {article.sources.map((source) => (
+                    <li key={source.id} className="flex gap-3 text-sm leading-relaxed text-[var(--text-primary)]">
+                      <span className="font-mono text-xs font-bold text-[var(--accent)] pt-0.5 shrink-0">
+                        [{source.sortOrder + 1}]
+                      </span>
+                      {source.url ? (
+                        <a
+                          href={source.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline decoration-[var(--border-color)] underline-offset-4 transition-colors hover:text-[var(--accent-hover)] hover:decoration-[var(--accent-hover)]"
+                        >
+                          {source.label}
+                        </a>
+                      ) : (
+                        <span>{source.label}</span>
+                      )}
+                    </li>
+                  ))}
+                </ol>
               </div>
             )}
 

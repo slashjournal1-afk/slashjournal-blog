@@ -59,6 +59,7 @@ export async function POST(req: NextRequest) {
       sponsorUrl,
       status = 'DRAFT',
       tags = [],
+      sources,
     } = body;
 
     let finalCategoryId = categoryId;
@@ -83,6 +84,19 @@ export async function POST(req: NextRequest) {
     const generatedSlug = slug ? slugify(slug) : slugify(title);
     const readingTime = calculateReadingTime(contentMarkdown);
 
+    const validSources = Array.isArray(sources)
+      ? sources
+          .filter((s: { label?: unknown }) => typeof s?.label === 'string' && s.label.trim())
+          .map((s: { label: string; url?: unknown }, i: number) => ({
+            label: s.label.trim().slice(0, 500),
+            url:
+              typeof s.url === 'string' && s.url.trim()
+                ? s.url.trim().slice(0, 2048)
+                : null,
+            sortOrder: i,
+          }))
+      : [];
+
     const article = await prisma.article.create({
       data: {
         title,
@@ -103,6 +117,14 @@ export async function POST(req: NextRequest) {
         publishedAt: status === 'PUBLISHED' ? new Date() : null,
       },
     });
+    if (validSources.length > 0) {
+      await prisma.articleSource.createMany({
+        data: validSources.map((s: { label: string; url: string | null; sortOrder: number }) => ({
+          ...s,
+          articleId: article.id,
+        })),
+      });
+    }
     await registerArticleRevenueIdentity(article.id, user.id, article.slug, article.title);
 
     // Handle tags
