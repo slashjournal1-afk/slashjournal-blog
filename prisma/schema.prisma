@@ -113,6 +113,7 @@ model Article {
   revenues             ArticleRevenue[]
   revisions            ArticleRevision[]
   tags                 ArticleTag[]
+  sources              ArticleSource[]
   urlHistory           ArticleUrl[]
   bookmarks            Bookmark[]
   comments             Comment[]
@@ -244,6 +245,17 @@ model ArticleRevision {
   article         Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
 
   @@index([articleId, createdAt])
+}
+
+model ArticleSource {
+  id        String  @id @default(cuid())
+  label     String
+  url       String?
+  sortOrder Int     @default(0)
+  articleId String
+  article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@index([articleId, sortOrder])
 }
 
 model RevenuePeriod {

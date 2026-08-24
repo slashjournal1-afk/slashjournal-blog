@@ -72,11 +72,15 @@ interface SlashEditorProps {
     sponsorUrl?: string | null;
     status: string;
     tags?: Array<{ tag?: { name: string }; name?: string }>;
+    sources?: Array<{ label: string; url?: string | null }>;
   };
   categories: { id: string; name: string; slug?: string; isIndexable?: boolean }[];
   seriesList: { id: string; title: string }[];
   userRole?: string;
 }
+
+const KNOWN_COVER_SOURCE_TYPES = ['FREE_STOCK', 'SELF_SHOT', 'AI_GENERATED'];
+export const CUSTOM_COVER_SOURCE_SENTINEL = '__CUSTOM__';
 
 const DEFAULT_DEMO_CONTENT = `## 1. Analisis Latar Belakang & Problem Statement
 
@@ -196,12 +200,24 @@ export function SlashEditor({
   });
   const [seriesListState, setSeriesListState] = useState(seriesList);
   const [isSeriesModalOpen, setIsSeriesModalOpen] = useState(false);
+  const [sources, setSources] = useState<Array<{ label: string; url: string }>>(() => {
+    if (initialArticle?.sources && Array.isArray(initialArticle.sources)) {
+      return initialArticle.sources.map((s) => ({ label: s.label || '', url: s.url || '' }));
+    }
+    return [];
+  });
   const [seriesId, setSeriesId] = useState(initialArticle?.seriesId || '');
   const [seriesOrder, setSeriesOrder] = useState(initialArticle?.seriesOrder || 1);
   const [coverImageUrl, setCoverImageUrl] = useState(initialArticle?.coverImageUrl || '');
-  const [coverImageSourceType, setCoverImageSourceType] = useState(
-    initialArticle?.coverImageSourceType || 'FREE_STOCK'
-  );
+  const [coverImageSourceType, setCoverImageSourceType] = useState(() => {
+    const value = initialArticle?.coverImageSourceType || '';
+    if (value && !KNOWN_COVER_SOURCE_TYPES.includes(value)) return CUSTOM_COVER_SOURCE_SENTINEL;
+    return value || 'FREE_STOCK';
+  });
+  const [customCoverSource, setCustomCoverSource] = useState(() => {
+    const value = initialArticle?.coverImageSourceType || '';
+    return value && !KNOWN_COVER_SOURCE_TYPES.includes(value) ? value : '';
+  });
   const [isCoverError, setIsCoverError] = useState(false);
   const [isCopiedCoverUrl, setIsCopiedCoverUrl] = useState(false);
   const [isSponsored, setIsSponsored] = useState(initialArticle?.isSponsored || false);
@@ -246,12 +262,26 @@ export function SlashEditor({
         setIsCoverError(false);
       }
       if (initialArticle.coverImageSourceType !== undefined) {
-        setCoverImageSourceType(initialArticle.coverImageSourceType || 'FREE_STOCK');
+        const value = initialArticle.coverImageSourceType || '';
+        if (value && !KNOWN_COVER_SOURCE_TYPES.includes(value)) {
+          setCoverImageSourceType(CUSTOM_COVER_SOURCE_SENTINEL);
+          setCustomCoverSource(value);
+        } else {
+          setCoverImageSourceType(value || 'FREE_STOCK');
+          if (!value) setCustomCoverSource('');
+        }
       }
       if (initialArticle.status !== undefined) setStatus(initialArticle.status || 'DRAFT');
       if (initialArticle.isSponsored !== undefined) setIsSponsored(Boolean(initialArticle.isSponsored));
       if (initialArticle.sponsorName !== undefined) setSponsorName(initialArticle.sponsorName || '');
       if (initialArticle.sponsorUrl !== undefined) setSponsorUrl(initialArticle.sponsorUrl || '');
+      if (initialArticle.sources !== undefined) {
+        setSources(
+          Array.isArray(initialArticle.sources)
+            ? initialArticle.sources.map((s) => ({ label: s.label || '', url: s.url || '' }))
+            : []
+        );
+      }
     }
   }, [initialArticle, categories]);
 
@@ -326,9 +356,11 @@ export function SlashEditor({
           seriesOrder,
           coverImageUrl,
           coverImageSourceType,
+          customCoverSource,
           isSponsored,
           sponsorName,
           sponsorUrl,
+          sources,
           savedAt: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
         };
         localStorage.setItem(draftStorageKey, JSON.stringify(draftData));
@@ -348,9 +380,11 @@ export function SlashEditor({
     seriesOrder,
     coverImageUrl,
     coverImageSourceType,
+    customCoverSource,
     isSponsored,
     sponsorName,
     sponsorUrl,
+    sources,
     draftStorageKey,
   ]);
 
@@ -368,10 +402,20 @@ export function SlashEditor({
         if (parsed.seriesId) setSeriesId(parsed.seriesId);
         if (parsed.seriesOrder) setSeriesOrder(parsed.seriesOrder);
         if (parsed.coverImageUrl) setCoverImageUrl(parsed.coverImageUrl);
-        if (parsed.coverImageSourceType) setCoverImageSourceType(parsed.coverImageSourceType);
+        if (parsed.coverImageSourceType) {
+          const value = parsed.coverImageSourceType;
+          if (value === CUSTOM_COVER_SOURCE_SENTINEL || !KNOWN_COVER_SOURCE_TYPES.includes(value)) {
+            setCoverImageSourceType(CUSTOM_COVER_SOURCE_SENTINEL);
+            if (value !== CUSTOM_COVER_SOURCE_SENTINEL) setCustomCoverSource(value);
+          } else {
+            setCoverImageSourceType(value);
+          }
+        }
+        if (parsed.customCoverSource) setCustomCoverSource(parsed.customCoverSource);
         if (parsed.isSponsored !== undefined) setIsSponsored(parsed.isSponsored);
         if (parsed.sponsorName) setSponsorName(parsed.sponsorName);
         if (parsed.sponsorUrl) setSponsorUrl(parsed.sponsorUrl);
+        if (Array.isArray(parsed.sources)) setSources(parsed.sources);
 
         setHasLocalDraft(false);
         toast.success('Draf Lokal Dipulihkan', {
@@ -690,12 +734,14 @@ export function SlashEditor({
     setCoverImageUrl('');
     setIsCoverError(false);
     setCoverImageSourceType('FREE_STOCK');
+    setCustomCoverSource('');
     setTags([]);
     setSeriesId('');
     setSeriesOrder(1);
     setIsSponsored(false);
     setSponsorName('');
     setSponsorUrl('');
+    setSources([]);
     setStatus('DRAFT');
     setHistory([{ content: '', cursor: 0 }]);
     setHistoryIndex(0);
@@ -751,7 +797,7 @@ export function SlashEditor({
       formData.append('file', file);
       formData.append('folder', isCover ? 'thumbnail' : 'konten-artikel');
       formData.append('isCover', isCover ? 'true' : 'false');
-      formData.append('sourceType', coverImageSourceType);
+      formData.append('sourceType', coverImageSourceType === CUSTOM_COVER_SOURCE_SENTINEL ? (customCoverSource.trim() || 'SELF_SHOT') : coverImageSourceType);
       formData.append('altText', title || file.name);
 
       const res = await fetch('/api/upload', {
@@ -812,12 +858,19 @@ export function SlashEditor({
       seriesId: seriesId || null,
       seriesOrder: seriesId ? Number(seriesOrder) : null,
       coverImageUrl: coverImageUrl || null,
-      coverImageSourceType: coverImageUrl ? coverImageSourceType : null,
+      coverImageSourceType: coverImageUrl
+        ? coverImageSourceType === CUSTOM_COVER_SOURCE_SENTINEL
+          ? customCoverSource.trim() || null
+          : coverImageSourceType
+        : null,
       isSponsored,
       sponsorName: isSponsored ? sponsorName : null,
       sponsorUrl: isSponsored ? sponsorUrl : null,
       status: nextStatus,
       tags,
+      sources: sources
+        .filter((s) => s.label.trim())
+        .map((s, i) => ({ label: s.label.trim(), url: s.url.trim() || null, sortOrder: i })),
     };
 
     try {
@@ -1144,6 +1197,75 @@ export function SlashEditor({
               <TagInput tags={tags} onChange={setTags} />
             </div>
 
+            {/* Sumber / Referensi (Sources) Manager Card */}
+            <div className="p-4 sm:p-5 rounded-[24px] bg-[#fafafa] dark:bg-[#151518] border border-[#ececee] dark:border-[#27272a] space-y-4 shadow-2xs">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#ececee] dark:border-[#27272a] pb-3">
+                <div className="flex items-center gap-2">
+                  <span className="p-1 rounded-[8px] bg-[var(--accent-soft)] text-[var(--accent)]">
+                    <ExternalLink className="w-4 h-4" />
+                  </span>
+                  <label className="text-xs font-bold text-[#09090b] dark:text-white uppercase tracking-wider">
+                    Sumber / Referensi
+                  </label>
+                </div>
+                {sources.length > 0 && (
+                  <span className="text-[10.5px] px-2.5 py-0.5 rounded-full font-mono font-bold bg-[var(--accent-soft)] text-[var(--accent)]">
+                    {sources.length} sumber
+                  </span>
+                )}
+              </div>
+
+              <p className="text-[11px] text-[#71717a] dark:text-[#a1a1aa] leading-relaxed">
+                Daftar sumber akan otomatis ditampilkan di halaman artikel. Kosongkan untuk menyembunyikan bagian ini.
+              </p>
+
+              <div className="space-y-3">
+                {sources.map((source, index) => (
+                  <div key={index} className="flex flex-col sm:flex-row gap-2 items-stretch">
+                    <input
+                      type="text"
+                      value={source.label}
+                      onChange={(e) => {
+                        const next = [...sources];
+                        next[index] = { ...next[index], label: e.target.value };
+                        setSources(next);
+                      }}
+                      placeholder={`Judul sumber #${index + 1}`}
+                      className="flex-1 px-4 py-3 rounded-[14px] bg-[#f4f4f5] dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-xs font-semibold text-[#09090b] dark:text-white focus:outline-none focus:border-[var(--accent)]"
+                    />
+                    <input
+                      type="url"
+                      value={source.url}
+                      onChange={(e) => {
+                        const next = [...sources];
+                        next[index] = { ...next[index], url: e.target.value };
+                        setSources(next);
+                      }}
+                      placeholder="https://tautan-sumber.com (opsional)"
+                      className="flex-1 px-4 py-3 rounded-[14px] bg-[#f4f4f5] dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-xs font-semibold text-[#09090b] dark:text-white focus:outline-none focus:border-[var(--accent)]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setSources(sources.filter((_, i) => i !== index))}
+                      className="shrink-0 self-center p-2.5 rounded-[12px] bg-white dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-red-500 hover:border-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors active:scale-95"
+                      title="Hapus sumber"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setSources([...sources, { label: '', url: '' }])}
+                className="w-full py-3 rounded-[14px] border border-dashed border-[#d4d4d8] dark:border-[#3f3f46] text-xs font-bold text-[#71717a] dark:text-[#a1a1aa] hover:border-[var(--accent)] hover:text-[var(--accent)] transition-colors flex items-center justify-center gap-1.5"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Tambah Sumber</span>
+              </button>
+            </div>
+
             {/* Cover Image Manager Card (WebP, Preview, Change, Remove & Source Attribution) */}
             <div className="p-4 sm:p-5 rounded-[24px] bg-[#fafafa] dark:bg-[#151518] border border-[#ececee] dark:border-[#27272a] space-y-4 shadow-2xs">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#ececee] dark:border-[#27272a] pb-3">
@@ -1282,7 +1404,18 @@ export function SlashEditor({
                           <option value="FREE_STOCK">Stok Bebas Royalti (Unsplash / Pexels)</option>
                           <option value="SELF_SHOT">Dokumentasi / Screenshot Sendiri</option>
                           <option value="AI_GENERATED">Ilustrasi AI Berlabel</option>
+                          <option value={CUSTOM_COVER_SOURCE_SENTINEL}>Lainnya (Input Manual)</option>
                         </select>
+                        {coverImageSourceType === CUSTOM_COVER_SOURCE_SENTINEL && (
+                          <input
+                            type="text"
+                            value={customCoverSource}
+                            onChange={(e) => setCustomCoverSource(e.target.value)}
+                            placeholder="Contoh: Foto oleh Budi Santoso / NASA / Wikimedia Commons"
+                            maxLength={200}
+                            className="w-full px-3.5 py-2.5 rounded-[12px] bg-[var(--accent-soft)] border border-[var(--accent)]/40 text-xs font-semibold text-[#09090b] dark:text-white focus:outline-none focus:border-[var(--accent)]"
+                          />
+                        )}
                       </div>
                     </div>
                   </div>
@@ -1339,7 +1472,18 @@ export function SlashEditor({
                         <option value="FREE_STOCK">Stok Bebas Royalti (Unsplash)</option>
                         <option value="SELF_SHOT">Dokumentasi / Foto Sendiri</option>
                         <option value="AI_GENERATED">Ilustrasi AI Berlabel</option>
+                        <option value={CUSTOM_COVER_SOURCE_SENTINEL}>Lainnya (Input Manual)</option>
                       </select>
+                      {coverImageSourceType === CUSTOM_COVER_SOURCE_SENTINEL && (
+                        <input
+                          type="text"
+                          value={customCoverSource}
+                          onChange={(e) => setCustomCoverSource(e.target.value)}
+                          placeholder="Contoh: Foto oleh Budi Santoso / NASA / Wikimedia Commons"
+                          maxLength={200}
+                          className="w-full px-3.5 py-2.5 rounded-[12px] bg-[var(--accent-soft)] border border-[var(--accent)]/40 text-xs font-semibold text-[#09090b] dark:text-white focus:outline-none focus:border-[var(--accent)]"
+                        />
+                      )}
                     </div>
                   </div>
                 </div>

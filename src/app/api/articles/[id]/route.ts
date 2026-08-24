@@ -19,6 +19,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       series: true,
       author: { select: { id: true, displayName: true, avatarUrl: true } },
       tags: { include: { tag: true } },
+      sources: { orderBy: { sortOrder: 'asc' } },
       revisions: { orderBy: { createdAt: 'desc' }, take: 10 },
     },
   });
@@ -63,6 +64,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       sponsorUrl,
       status,
       tags,
+      sources,
       reviewNote,
       revisionNote,
     } = body;
@@ -136,6 +138,27 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         await prisma.articleTag.create({
           data: { articleId: id, tagId: tag.id },
         }).catch(() => {});
+      }
+    }
+
+    // Handle sources update if provided (replace whole list)
+    if (Array.isArray(sources)) {
+      await prisma.articleSource.deleteMany({ where: { articleId: id } });
+
+      const validSources = sources
+        .filter((s) => s && typeof s.label === 'string' && s.label.trim())
+        .map((s, i) => ({
+          articleId: id,
+          label: s.label.trim().slice(0, 500),
+          url:
+            typeof s.url === 'string' && s.url.trim()
+              ? s.url.trim().slice(0, 2048)
+              : null,
+          sortOrder: i,
+        }));
+
+      if (validSources.length > 0) {
+        await prisma.articleSource.createMany({ data: validSources });
       }
     }
 
