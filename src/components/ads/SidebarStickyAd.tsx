@@ -2,10 +2,9 @@
 
 import React from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 import { AdSlot } from '@/lib/types';
-import { GoogleAdSense } from './GoogleAdSense';
+import { ManualAdPlaceholder } from './ManualAdPlaceholder';
 
 interface SidebarStickyAdProps {
   ad?: AdSlot | null;
@@ -13,39 +12,9 @@ interface SidebarStickyAdProps {
   className?: string;
 }
 
-export function SidebarStickyAd({ ad, adsenseSlot, className = '' }: SidebarStickyAdProps) {
+export function SidebarStickyAd({ ad, className = '' }: SidebarStickyAdProps) {
   if (!ad || !ad.isActive) {
-    return (
-      <div className={className}>
-        <GoogleAdSense slot={adsenseSlot || process.env.NEXT_PUBLIC_ADSENSE_SIDEBAR_STICKY_SLOT} className="mb-4" />
-        <div className="rounded-[28px] bg-white dark:bg-[#18181b] border border-[#ececee] dark:border-[#27272a] p-5 text-left space-y-3 shadow-xs">
-        <div className="flex items-center justify-between">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[8px] bg-[#f4f4f5] dark:bg-[#27272a] text-[#71717a] dark:text-[#a1a1aa] text-[10px] font-bold uppercase tracking-wider">
-            <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]" />
-            Ruang Sponsor
-          </div>
-        </div>
-
-        <h5 className="text-xs font-bold text-[#09090b] dark:text-white leading-snug">
-          Promosikan Solusi &amp; Tooling Anda
-        </h5>
-
-        <p className="text-[11px] text-[#52525b] dark:text-[#a1a1aa] leading-relaxed">
-          Dilihat oleh para pengambil keputusan teknis, arsitek cloud, dan engineering lead.
-        </p>
-
-        <div className="pt-1">
-          <Link
-            href="/contact?subject=sponsor"
-            className="inline-flex items-center gap-1 text-[11px] font-bold text-[var(--accent)] hover:underline"
-          >
-            <span>Kemitraan &amp; Pasang Iklan</span>
-            <ArrowUpRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
-        </div>
-      </div>
-    );
+    return <ManualAdPlaceholder slotName="sidebar_sticky" className={className} />;
   }
 
   return (
@@ -87,7 +56,7 @@ export function SidebarStickyAd({ ad, adsenseSlot, className = '' }: SidebarStic
             rel="noopener noreferrer nofollow"
              className="w-full py-2 px-3 rounded-[10px] bg-[var(--bg-card-muted)] hover:bg-[var(--text-primary)] hover:text-[var(--bg-primary)] text-[11px] font-bold text-[var(--text-primary)] transition-all flex items-center justify-center gap-1.5 active:scale-95 shadow-2xs"
           >
-            <span>Pelajari Lebih Lanjut</span>
+             <span>{ad.ctaLabel || 'Pelajari Lebih Lanjut'}</span>
             <ArrowUpRight className="w-3.5 h-3.5 text-[var(--accent)]" />
           </a>
         </div>

@@ -2,10 +2,9 @@
 
 import React from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 import { AdSlot } from '@/lib/types';
-import { GoogleAdSense } from './GoogleAdSense';
+import { ManualAdPlaceholder } from './ManualAdPlaceholder';
 
 interface InFeedAdProps {
   ad?: AdSlot | null;
@@ -13,44 +12,9 @@ interface InFeedAdProps {
   className?: string;
 }
 
-export function InFeedAd({ ad, adsenseSlot, className = '' }: InFeedAdProps) {
-  const inFeedSlot = adsenseSlot || process.env.NEXT_PUBLIC_ADSENSE_IN_FEED_SLOT;
-  const inFeedLayoutKey = process.env.NEXT_PUBLIC_ADSENSE_IN_FEED_LAYOUT_KEY || '-6t+ed+2i-1n-4w';
-
+export function InFeedAd({ ad, className = '' }: InFeedAdProps) {
   if (!ad || !ad.isActive) {
-    return (
-      <div className={className}>
-        <GoogleAdSense
-          slot={inFeedSlot}
-          format="fluid"
-          layoutKey={inFeedLayoutKey}
-          className="mb-4"
-        />
-        <div className="rounded-[36px] bg-gradient-to-b from-[#f4f4f5]/60 to-white dark:from-[#18181b]/60 dark:to-[#121214] border border-dashed border-[#d4d4d8] dark:border-[#3f3f46] p-7 flex flex-col justify-between shadow-xs">
-        <div className="space-y-3">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[8px] bg-white dark:bg-[#27272a] text-[#71717a] dark:text-[#a1a1aa] text-[10px] font-bold uppercase tracking-wider shadow-2xs">
-            <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]" />
-            Native In-Feed Slot
-          </div>
-          <h4 className="text-base font-bold text-[var(--text-primary)] leading-snug">
-            Promosikan Produk Engineering &amp; SaaS Anda
-          </h4>
-          <p className="text-xs text-[#52525b] dark:text-[#a1a1aa] leading-relaxed">
-            Format terpadu yang membaur harmonis dengan aliran artikel dan kurasi mingguan.
-          </p>
-        </div>
-        <div className="mt-6 pt-4 border-t border-[#ececee] dark:border-[#27272a]">
-          <Link
-            href="/contact?subject=sponsor"
-            className="inline-flex items-center gap-1 text-xs font-bold text-[var(--accent)] hover:underline"
-          >
-            <span>Hubungi untuk Kemitraan</span>
-            <ArrowUpRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
-        </div>
-      </div>
-    );
+    return <ManualAdPlaceholder slotName="in_feed" className={className} />;
   }
 
   return (
@@ -95,7 +59,7 @@ export function InFeedAd({ ad, adsenseSlot, className = '' }: InFeedAdProps) {
             rel="noopener noreferrer nofollow"
             className="inline-flex items-center gap-1 text-xs font-bold text-[#09090b] dark:text-white hover:text-[var(--accent)] transition-colors"
           >
-            <span>Kunjungi Situs</span>
+             <span>{ad.ctaLabel || 'Kunjungi Situs'}</span>
             <ArrowUpRight className="w-3.5 h-3.5 text-[var(--accent)]" />
           </a>
         </div>

@@ -23,6 +23,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     { label: 'Antrean Review Draf', href: '/admin/review-queue', icon: 'inbox' },
     { label: 'Telemetri & Kata Kunci', href: '/admin/telemetry', icon: 'activity' },
     { label: 'Google Analytics & AdSense', href: '/dashboard/superadmin/analytics', icon: 'activity' },
+    { label: 'Iklan Manual & Sponsor', href: '/dashboard/superadmin/ads', icon: 'activity' },
     { label: 'Log Audit & Keamanan', href: '/admin/audit-logs', icon: 'file-text' },
   ];
 
