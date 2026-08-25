@@ -15,6 +15,9 @@ import { JsonLd } from '@/components/seo/JsonLd';
 import { siteGraphSchema } from '@/lib/structured-data';
 import { publicArticleWhere } from '@/lib/visibility';
 import { selectHomeArticleSections } from '@/lib/home-article-sections';
+import { selectTrendingKeywords } from '@/lib/home-trending';
+import { HomeSignalDesk } from '@/components/content/HomeSignalDesk';
+import { HomeCategorySections } from '@/components/content/HomeCategorySections';
 
 export const revalidate = 300;
 
@@ -35,13 +38,34 @@ export default async function HomePage() {
     sponsorName: true,
     readingTime: true,
     viewCount: true,
+    helpfulVotes: true,
     publishedAt: true,
     createdAt: true,
     category: { select: { name: true, slug: true } },
     author: { select: { displayName: true } },
   } as const;
 
-  const [recentArticles, popularArticles, seriesList, glossaryTerms, leaderboardAd, inFeedAd] = await Promise.all([
+  const signalArticleSelect = {
+    id: true,
+    slug: true,
+    title: true,
+    viewCount: true,
+    helpfulVotes: true,
+    unhelpfulVotes: true,
+    category: { select: { name: true } },
+  } as const;
+
+  const [
+    recentArticles,
+    popularArticles,
+    helpfulArticles,
+    searchQueries,
+    categorySections,
+    seriesList,
+    glossaryTerms,
+    leaderboardAd,
+    inFeedAd,
+  ] = await Promise.all([
     prisma.article.findMany({
       where: publicArticleWhere,
       select: articleSelect,
@@ -59,6 +83,42 @@ export default async function HomePage() {
       ],
       take: 30,
     }),
+    prisma.article.findMany({
+      where: publicArticleWhere,
+      select: signalArticleSelect,
+      orderBy: [
+        { helpfulVotes: 'desc' },
+        { unhelpfulVotes: 'asc' },
+        { publishedAt: { sort: 'desc', nulls: 'last' } },
+        { id: 'asc' },
+      ],
+      take: 12,
+    }),
+    prisma.searchQueryLog.findMany({
+      select: { query: true, createdAt: true },
+      orderBy: { createdAt: 'desc' },
+      take: 500,
+    }),
+    prisma.category.findMany({
+      where: {
+        isIndexable: true,
+        articles: { some: { status: 'PUBLISHED', isIndexable: true } },
+      },
+      orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
+      take: 3,
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        articles: {
+          where: { status: 'PUBLISHED', isIndexable: true },
+          orderBy: [{ publishedAt: { sort: 'desc', nulls: 'last' } }, { createdAt: 'desc' }, { id: 'asc' }],
+          take: 4,
+          select: { id: true, slug: true, title: true, publishedAt: true, createdAt: true },
+        },
+      },
+    }),
     prisma.series.findMany({
       where: { isPublished: true },
       orderBy: { sortOrder: 'asc' },
@@ -70,6 +130,10 @@ export default async function HomePage() {
   ]);
 
   const { featured, secondary, latest, recent: moreRecent, popular } = selectHomeArticleSections(recentArticles, popularArticles);
+  const mostRead = popularArticles.slice(0, 5);
+  const mostReadIds = new Set(mostRead.map(({ id }) => id));
+  const mostHelpful = helpfulArticles.filter(({ id }) => !mostReadIds.has(id)).slice(0, 5);
+  const trendingKeywords = selectTrendingKeywords(searchQueries);
 
   return (
     <div className="mx-auto min-h-screen max-w-editorial px-5 pb-24 sm:px-8">
@@ -175,7 +239,9 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* 3. Latest Articles + Reference Rail */}
+      <HomeSignalDesk mostRead={mostRead} mostHelpful={mostHelpful} keywords={trendingKeywords} />
+
+      {/* 4. Latest Articles + Reference Rail */}
       <section className="grid gap-12 py-12 lg:grid-cols-[minmax(0,1.4fr)_minmax(300px,0.6fr)] lg:gap-16">
         <div>
           <SectionHeading
@@ -218,7 +284,9 @@ export default async function HomePage() {
         <ReferenceRail popular={popular} recent={moreRecent} />
       </section>
 
-      {/* 4. Serie & Glosarium */}
+      <HomeCategorySections categories={categorySections} />
+
+      {/* 6. Serie & Glosarium */}
       <section className="grid gap-12 border-t border-[var(--border-color)] py-12 lg:grid-cols-2 lg:gap-16">
         <div>
           <SectionHeading title="Seri Panduan" href="/series" action="Semua seri" />
@@ -259,10 +327,10 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* 5. Non-intrusive Billboard Ad */}
+      {/* 7. Non-intrusive Billboard Ad */}
       <BannerAd ad={leaderboardAd} adsenseSlot={process.env.NEXT_PUBLIC_ADSENSE_LEADERBOARD_SLOT || process.env.ADSENSE_LEADERBOARD_SLOT} />
 
-      {/* 6. Newsletter */}
+      {/* 8. Newsletter */}
       <section className="border-t border-[var(--border-color)] pt-12">
         <div className="grid gap-8 md:grid-cols-2 md:items-end">
           <div>
