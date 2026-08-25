@@ -133,5 +133,6 @@ export interface AdSlot {
   imageUrl?: string | null;
   targetUrl: string;
   sponsorName: string;
+  ctaLabel?: string;
   isActive: boolean;
 }

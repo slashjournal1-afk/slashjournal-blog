@@ -26,7 +26,13 @@ export async function POST(req: NextRequest) {
     if (file.size > MAX_UPLOAD_BYTES) return NextResponse.json({ error: 'Ukuran gambar maksimal 10 MB' }, { status: 413 });
     if (!VALID_MIMES.has(file.type)) return NextResponse.json({ error: 'Format gambar tidak didukung' }, { status: 400 });
 
-    const folder = ['thumbnail', 'cover'].includes(String(formData.get('folder'))) || ['true', '1'].includes(String(formData.get('isCover')))
+    const requestedFolder = String(formData.get('folder') || '');
+    if (requestedFolder === 'ads' && user.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Akses upload iklan ditolak' }, { status: 403 });
+    }
+    const folder = requestedFolder === 'ads'
+      ? 'ads'
+      : ['thumbnail', 'cover'].includes(requestedFolder) || ['true', '1'].includes(String(formData.get('isCover')))
       ? 'thumbnail'
       : 'konten-artikel';
     const buffer = Buffer.from(await file.arrayBuffer());

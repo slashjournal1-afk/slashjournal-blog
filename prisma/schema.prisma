@@ -186,6 +186,7 @@ model AdSlot {
   imageUrl    String?
   targetUrl   String
   sponsorName String
+  ctaLabel    String   @default("Kunjungi Situs")
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

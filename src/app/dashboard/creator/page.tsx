@@ -5,29 +5,33 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { formatDateTime } from '@/lib/utils';
 import { CreatorSeriesSection } from '@/components/admin/CreatorSeriesSection';
+import { ArticleSortSelect } from '@/components/admin/ArticleSortSelect';
+import { getArticleOrderBy, parseArticleSort } from '@/lib/article-sort';
 import {
   PenTool,
   Plus,
   FileText,
   Clock,
   Eye,
-  Sparkles,
   CheckCircle2,
   AlertCircle,
   ThumbsUp,
   ArrowUpRight,
   Edit3,
-  BookOpen,
 } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
-export default async function CreatorDashboardPage() {
+export default async function CreatorDashboardPage({ searchParams }: { searchParams: Promise<{ sort?: string }> }) {
   const user = await getCurrentUser();
 
   if (!user || user.role === 'READER') {
     redirect('/dashboard/member');
   }
+
+  const { sort } = await searchParams;
+  const selectedSort = parseArticleSort(sort);
+  const orderBy = getArticleOrderBy(selectedSort);
 
   // Fetch articles authored by current user and all available series
   const [
@@ -39,7 +43,7 @@ export default async function CreatorDashboardPage() {
   ] = await Promise.all([
     prisma.article.findMany({
       where: { authorId: user.id },
-      orderBy: { updatedAt: 'desc' },
+      orderBy,
       take: 20,
       select: {
         id: true,
@@ -182,7 +186,7 @@ export default async function CreatorDashboardPage() {
 
       {/* My Articles Master View */}
       <div className="rounded-[28px] border border-[var(--border-color)] bg-[var(--bg-card)] p-6 sm:p-8 space-y-6 shadow-xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[var(--border-color)] pb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[var(--border-color)] pb-4">
           <div>
             <h3 className="text-[16px] font-bold text-[var(--text-primary)]">
               Koleksi Naskah &amp; Status Editorial Saya
@@ -191,9 +195,7 @@ export default async function CreatorDashboardPage() {
               Kelola seluruh artikel yang Anda tulis di platform SlashJournal.
             </p>
           </div>
-          <span className="text-xs font-mono text-[var(--text-muted)] font-bold">
-            Total {myArticles.length} Naskah
-          </span>
+           <ArticleSortSelect value={selectedSort} />
         </div>
 
         {myArticles.length === 0 ? (

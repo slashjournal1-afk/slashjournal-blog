@@ -63,7 +63,7 @@ export const getCachedGlossaryItems = unstable_cache(
 export const getCachedSidebarAd = unstable_cache(
   async () => prisma.adSlot.findUnique({ where: { slotName: 'sidebar_sticky' } }),
   ['sidebar-sticky-ad'],
-  { revalidate: 300 },
+  { revalidate: 300, tags: ['sidebar-sticky-ad'] },
 );
 
 export const getRelatedArticles = cache(async (categoryId: string, articleId: string) => {
