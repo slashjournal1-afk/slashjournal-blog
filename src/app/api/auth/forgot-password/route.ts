@@ -4,8 +4,15 @@ import { generateResetToken } from '@/lib/auth';
 import { jsonError } from '@/lib/api-errors';
 import { z } from 'zod';
 import crypto from 'node:crypto';
+import { rateLimit, requestKey } from '@/lib/rate-limit';
 
 export async function POST(req: Request) {
+  if (!rateLimit(requestKey(req, 'forgot-password'), 5, 3600_000)) {
+    return NextResponse.json(
+      { error: 'Terlalu banyak permintaan pemulihan. Silakan coba lagi nanti.' },
+      { status: 429 }
+    );
+  }
   try {
     const parsed = z.object({ email: z.string().trim().email().max(320) }).safeParse(await req.json());
     if (!parsed.success) {

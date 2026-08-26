@@ -1,0 +1,2 @@
+ALTER TABLE "AdSlot"
+ADD COLUMN "ctaLabel" TEXT NOT NULL DEFAULT 'Kunjungi Situs';

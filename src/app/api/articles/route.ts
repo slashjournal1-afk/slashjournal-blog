@@ -7,6 +7,9 @@ import { revalidatePath } from 'next/cache';
 import { jsonError } from '@/lib/api-errors';
 import { publicArticleWhere } from '@/lib/visibility';
 import { registerArticleRevenueIdentity } from '@/lib/revenue';
+import { articleCreateSchema } from '@/lib/validation';
+
+const EDITORIAL_ROLES = new Set(['ADMIN', 'EDITOR']);
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -41,35 +44,37 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
   }
 
+  let rawBody: unknown;
   try {
-    const body = await req.json();
-    const {
-      title,
-      slug,
-      excerpt,
-      contentMarkdown,
-      categoryId,
-      newCategoryName,
-      seriesId,
-      seriesOrder,
-      coverImageUrl,
-      coverImageSourceType,
-      isSponsored,
-      sponsorName,
-      sponsorUrl,
-      status = 'DRAFT',
-      tags = [],
-      sources,
-    } = body;
+    rawBody = await req.json();
+  } catch {
+    return NextResponse.json({ error: 'Body permintaan tidak valid' }, { status: 400 });
+  }
 
-    let finalCategoryId = categoryId;
-    if (!finalCategoryId && newCategoryName) {
-      const catSlug = slugify(newCategoryName);
+  const parsed = articleCreateSchema.safeParse(rawBody);
+  if (!parsed.success) {
+    return jsonError(parsed.error.issues[0]?.message || 'Data artikel tidak valid', 400);
+  }
+  const body = parsed.data;
+
+  const isEditorial = EDITORIAL_ROLES.has(user.role);
+  const status = body.status ?? 'DRAFT';
+  if (status === 'PUBLISHED' && !isEditorial) {
+    return NextResponse.json(
+      { error: 'Hanya admin atau editor yang dapat mempublikasikan artikel langsung' },
+      { status: 403 }
+    );
+  }
+
+  try {
+    let finalCategoryId = body.categoryId;
+    if (!finalCategoryId && body.newCategoryName) {
+      const catSlug = slugify(body.newCategoryName);
       const newCat = await prisma.category.upsert({
         where: { slug: catSlug },
         update: {},
         create: {
-          name: newCategoryName.trim(),
+          name: body.newCategoryName.trim(),
           slug: catSlug,
           icon: 'Layers',
         },
@@ -77,41 +82,37 @@ export async function POST(req: NextRequest) {
       finalCategoryId = newCat.id;
     }
 
-    if (!title || !contentMarkdown || !finalCategoryId) {
+    if (!finalCategoryId) {
       return NextResponse.json({ error: 'Title, contentMarkdown, dan kategori wajib diisi' }, { status: 400 });
     }
 
-    const generatedSlug = slug ? slugify(slug) : slugify(title);
-    const readingTime = calculateReadingTime(contentMarkdown);
+    const generatedSlug = body.slug ? slugify(body.slug) : slugify(body.title);
+    if (!generatedSlug) {
+      return NextResponse.json({ error: 'Slug tidak dapat dibuat dari judul' }, { status: 400 });
+    }
+    const readingTime = calculateReadingTime(body.contentMarkdown);
 
-    const validSources = Array.isArray(sources)
-      ? sources
-          .filter((s: { label?: unknown }) => typeof s?.label === 'string' && s.label.trim())
-          .map((s: { label: string; url?: unknown }, i: number) => ({
-            label: s.label.trim().slice(0, 500),
-            url:
-              typeof s.url === 'string' && s.url.trim()
-                ? s.url.trim().slice(0, 2048)
-                : null,
-            sortOrder: i,
-          }))
-      : [];
+    const validSources = (body.sources ?? []).map((s, i) => ({
+      label: s.label,
+      url: s.url ?? null,
+      sortOrder: i,
+    }));
 
     const article = await prisma.article.create({
       data: {
-        title,
+        title: body.title,
         slug: generatedSlug,
-        excerpt: excerpt || title,
-        contentMarkdown,
+        excerpt: body.excerpt || body.title,
+        contentMarkdown: body.contentMarkdown,
         categoryId: finalCategoryId,
-        seriesId: seriesId || null,
-        seriesOrder: seriesOrder ? parseInt(seriesOrder) : null,
-        coverImageUrl: coverImageUrl || null,
-        coverImageSourceType: coverImageSourceType || null,
-        isSponsored: Boolean(isSponsored),
-        sponsorName: sponsorName || null,
-        sponsorUrl: sponsorUrl || null,
-        status: status || 'DRAFT',
+        seriesId: body.seriesId ?? null,
+        seriesOrder: body.seriesOrder ?? null,
+        coverImageUrl: body.coverImageUrl ?? null,
+        coverImageSourceType: body.coverImageSourceType ?? null,
+        isSponsored: isEditorial ? Boolean(body.isSponsored) : false,
+        sponsorName: isEditorial ? body.sponsorName ?? null : null,
+        sponsorUrl: isEditorial ? body.sponsorUrl ?? null : null,
+        status,
         readingTime,
         authorId: user.id,
         publishedAt: status === 'PUBLISHED' ? new Date() : null,
@@ -119,17 +120,14 @@ export async function POST(req: NextRequest) {
     });
     if (validSources.length > 0) {
       await prisma.articleSource.createMany({
-        data: validSources.map((s: { label: string; url: string | null; sortOrder: number }) => ({
-          ...s,
-          articleId: article.id,
-        })),
+        data: validSources.map((s) => ({ ...s, articleId: article.id })),
       });
     }
     await registerArticleRevenueIdentity(article.id, user.id, article.slug, article.title);
 
     // Handle tags
-    if (tags && tags.length > 0) {
-      for (const tagName of tags) {
+    if (body.tags && body.tags.length > 0) {
+      for (const tagName of body.tags) {
         const tagSlug = slugify(tagName);
         const tag = await prisma.tag.upsert({
           where: { slug: tagSlug },
@@ -147,7 +145,7 @@ export async function POST(req: NextRequest) {
     await recordAuditLog({
       actorEmail: user.email,
       action: 'ARTICLE_CREATE',
-      details: `Membuat artikel "${title}" (${article.status})`,
+      details: `Membuat artikel "${article.title}" (${article.status})`,
       userId: user.id,
     });
 

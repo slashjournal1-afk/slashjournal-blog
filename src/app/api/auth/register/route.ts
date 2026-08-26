@@ -1,23 +1,39 @@
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 import { prisma } from '@/lib/db';
 import { hashPassword, generateToken } from '@/lib/auth';
 import { jsonError } from '@/lib/api-errors';
+import { rateLimit, requestKey } from '@/lib/rate-limit';
 
 export function getRegistrationRole(accountType?: unknown): 'READER' | 'AUTHOR' {
   return accountType === 'author' ? 'AUTHOR' : 'READER';
 }
 
+const registerSchema = z.object({
+  email: z.string().trim().toLowerCase().email('Alamat email tidak valid').max(320),
+  password: z.string().min(8, 'Kata sandi minimal harus 8 karakter').max(128, 'Kata sandi maksimal 128 karakter'),
+  displayName: z.string().trim().min(1, 'Nama tampilan wajib diisi').max(80, 'Nama tampilan terlalu panjang'),
+  accountType: z.string().trim().max(32).optional(),
+});
+
 export async function POST(req: Request) {
+  if (!rateLimit(requestKey(req, 'register'), 5, 3600_000)) {
+    return NextResponse.json(
+      { error: 'Terlalu banyak permintaan pendaftaran. Silakan coba lagi nanti.' },
+      { status: 429 }
+    );
+  }
+
   try {
-    const { email, password, displayName, accountType } = await req.json();
+    const parsed = registerSchema.safeParse(await req.json());
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error.issues[0]?.message || 'Data pendaftaran tidak valid' }, { status: 400 });
+    }
+    const { email, password, displayName, accountType } = parsed.data;
     const role = getRegistrationRole(accountType);
 
-    if (!email || !password || !displayName) {
-      return NextResponse.json({ error: 'Semua kolom wajib diisi' }, { status: 400 });
-    }
-
     const existing = await prisma.user.findUnique({
-      where: { email: email.toLowerCase().trim() },
+      where: { email },
     });
 
     if (existing) {
@@ -28,8 +44,8 @@ export async function POST(req: Request) {
 
     const user = await prisma.user.create({
       data: {
-        email: email.toLowerCase().trim(),
-        displayName: displayName.trim(),
+        email,
+        displayName,
         passwordHash,
         role,
         provider: 'LOCAL',

@@ -1,18 +1,32 @@
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 import { prisma } from '@/lib/db';
 import { verifyPassword, generateToken } from '@/lib/auth';
 import { jsonError } from '@/lib/api-errors';
+import { rateLimit, requestKey } from '@/lib/rate-limit';
+
+const loginSchema = z.object({
+  email: z.string().trim().toLowerCase().email().max(320),
+  password: z.string().min(1).max(1024),
+});
 
 export async function POST(req: Request) {
-  try {
-    const { email, password } = await req.json();
+  if (!rateLimit(requestKey(req, 'login'), 10, 60_000)) {
+    return NextResponse.json(
+      { error: 'Terlalu banyak percobaan masuk. Silakan coba lagi dalam beberapa saat.' },
+      { status: 429 }
+    );
+  }
 
-    if (!email || !password) {
-      return NextResponse.json({ error: 'Email dan kata sandi wajib diisi' }, { status: 400 });
+  try {
+    const parsed = loginSchema.safeParse(await req.json());
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Email dan kata sandi wajib diisi dengan format yang benar' }, { status: 400 });
     }
+    const { email, password } = parsed.data;
 
     const user = await prisma.user.findUnique({
-      where: { email: email.toLowerCase().trim() },
+      where: { email },
     });
 
     if (!user || !user.passwordHash) {
