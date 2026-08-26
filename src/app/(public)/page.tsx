@@ -1,7 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { prisma } from '@/lib/db';
 import { formatDate } from '@/lib/utils';
 import { BannerAd } from '@/components/ads/BannerAd';
 import { InFeedAd } from '@/components/ads/InFeedAd';
@@ -13,11 +12,11 @@ import type { Metadata } from 'next';
 import { absoluteUrl, siteConfig } from '@/lib/site';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { siteGraphSchema } from '@/lib/structured-data';
-import { publicArticleWhere } from '@/lib/visibility';
 import { selectHomeArticleSections } from '@/lib/home-article-sections';
 import { selectTrendingKeywords } from '@/lib/home-trending';
 import { HomeSignalDesk } from '@/components/content/HomeSignalDesk';
 import { HomeCategorySections } from '@/components/content/HomeCategorySections';
+import { getHomePageData } from '@/lib/content-loaders';
 
 export const revalidate = 300;
 
@@ -28,34 +27,7 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const articleSelect = {
-    id: true,
-    slug: true,
-    title: true,
-    excerpt: true,
-    coverImageUrl: true,
-    isSponsored: true,
-    sponsorName: true,
-    readingTime: true,
-    viewCount: true,
-    helpfulVotes: true,
-    publishedAt: true,
-    createdAt: true,
-    category: { select: { name: true, slug: true } },
-    author: { select: { displayName: true } },
-  } as const;
-
-  const signalArticleSelect = {
-    id: true,
-    slug: true,
-    title: true,
-    viewCount: true,
-    helpfulVotes: true,
-    unhelpfulVotes: true,
-    category: { select: { name: true } },
-  } as const;
-
-  const [
+  const {
     recentArticles,
     popularArticles,
     helpfulArticles,
@@ -65,69 +37,7 @@ export default async function HomePage() {
     glossaryTerms,
     leaderboardAd,
     inFeedAd,
-  ] = await Promise.all([
-    prisma.article.findMany({
-      where: publicArticleWhere,
-      select: articleSelect,
-      orderBy: [{ publishedAt: { sort: 'desc', nulls: 'last' } }, { createdAt: 'desc' }, { id: 'asc' }],
-      take: 24,
-    }),
-    prisma.article.findMany({
-      where: publicArticleWhere,
-      select: articleSelect,
-      orderBy: [
-        { viewCount: 'desc' },
-        { publishedAt: { sort: 'desc', nulls: 'last' } },
-        { createdAt: 'desc' },
-        { id: 'asc' },
-      ],
-      take: 30,
-    }),
-    prisma.article.findMany({
-      where: publicArticleWhere,
-      select: signalArticleSelect,
-      orderBy: [
-        { helpfulVotes: 'desc' },
-        { unhelpfulVotes: 'asc' },
-        { publishedAt: { sort: 'desc', nulls: 'last' } },
-        { id: 'asc' },
-      ],
-      take: 12,
-    }),
-    prisma.searchQueryLog.findMany({
-      select: { query: true, createdAt: true },
-      orderBy: { createdAt: 'desc' },
-      take: 500,
-    }),
-    prisma.category.findMany({
-      where: {
-        isIndexable: true,
-        articles: { some: { status: 'PUBLISHED', isIndexable: true } },
-      },
-      orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
-      take: 3,
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        description: true,
-        articles: {
-          where: { status: 'PUBLISHED', isIndexable: true },
-          orderBy: [{ publishedAt: { sort: 'desc', nulls: 'last' } }, { createdAt: 'desc' }, { id: 'asc' }],
-          take: 4,
-          select: { id: true, slug: true, title: true, publishedAt: true, createdAt: true },
-        },
-      },
-    }),
-    prisma.series.findMany({
-      where: { isPublished: true },
-      orderBy: { sortOrder: 'asc' },
-      include: { _count: { select: { articles: { where: { status: 'PUBLISHED' } } } } },
-    }),
-    prisma.glossaryTerm.findMany({ orderBy: { term: 'asc' }, take: 6 }),
-    prisma.adSlot.findUnique({ where: { slotName: 'leaderboard' } }),
-    prisma.adSlot.findUnique({ where: { slotName: 'in_feed' } }),
-  ]);
+  } = await getHomePageData();
 
   const { featured, secondary, latest, recent: moreRecent, popular } = selectHomeArticleSections(recentArticles, popularArticles);
   const mostRead = popularArticles.slice(0, 5);
