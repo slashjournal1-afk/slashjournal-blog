@@ -608,6 +608,18 @@ function renderToken(token: MarkdownToken, idx: number, glossary: GlossaryItem[]
 // Inline Markdown & WikiLink Parser
 // ==========================================
 
+function resolveSafeHref(raw: string): string | null {
+  const href = raw.trim();
+  if (!href) return null;
+  if (href.startsWith('/') && !href.startsWith('//')) return href;
+  try {
+    const url = new URL(href);
+    return url.protocol === 'https:' || url.protocol === 'http:' ? href : null;
+  } catch {
+    return null;
+  }
+}
+
 export function renderInlineFormattedText(text: string, glossary: GlossaryItem[] = []): React.ReactNode {
   if (!text) return null;
 
@@ -680,8 +692,10 @@ function parseStandardInline(text: string): React.ReactNode {
     // 2. Link: [label](url)
     const linkMatch = seg.match(/^\[(.*?)\]\((.*?)\)$/);
     if (linkMatch) {
-      const [, label, href] = linkMatch;
-      const isExternal = href.startsWith('http') || href.startsWith('//');
+      const [, label, rawHref] = linkMatch;
+      const href = resolveSafeHref(rawHref);
+      if (!href) return <span key={idx}>{label}</span>;
+      const isExternal = href.startsWith('https://') || href.startsWith('http://');
       return (
         <Link
           key={idx}

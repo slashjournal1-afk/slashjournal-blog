@@ -1,13 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
+import crypto from 'node:crypto';
 import { syncRollingRevenue } from '@/lib/revenue';
 import { prisma } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
+function safeEqual(a: string, b: string): boolean {
+  const bufA = Buffer.from(a);
+  const bufB = Buffer.from(b);
+  return bufA.length === bufB.length && crypto.timingSafeEqual(bufA, bufB);
+}
+
 export async function GET(request: NextRequest) {
   const expected = process.env.CRON_SECRET;
-  const provided = request.headers.get('authorization')?.replace(/^Bearer\s+/i, '');
-  if (!expected || provided !== expected) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const provided = request.headers.get('authorization')?.replace(/^Bearer\s+/i, '') || '';
+  if (!expected || !safeEqual(expected, provided)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   try {
     const result = await syncRollingRevenue();
     return NextResponse.json({ success: true, periods: result });
