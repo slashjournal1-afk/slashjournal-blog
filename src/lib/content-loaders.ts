@@ -52,6 +52,141 @@ export const getArticleComments = cache(async (articleId: string) => {
   });
 });
 
+const getCachedNavbarCategories = unstable_cache(async () => {
+  return prisma.category.findMany({
+    where: { isIndexable: true },
+    orderBy: { name: 'asc' },
+    take: 8,
+    select: { name: true, slug: true, description: true },
+  });
+}, ['navbar-categories'], { revalidate: 900 });
+
+export const getNavbarCategories = cache(async () => {
+  try {
+    return await getCachedNavbarCategories();
+  } catch (error) {
+    console.error('[public-layout] Category fetch failed, rendering without categories.', error);
+    return [];
+  }
+});
+
+const getCachedHomePageData = unstable_cache(async () => {
+  const articleSelect = {
+    id: true,
+    slug: true,
+    title: true,
+    excerpt: true,
+    coverImageUrl: true,
+    isSponsored: true,
+    sponsorName: true,
+    readingTime: true,
+    viewCount: true,
+    helpfulVotes: true,
+    publishedAt: true,
+    createdAt: true,
+    category: { select: { name: true, slug: true } },
+    author: { select: { displayName: true } },
+  } as const;
+
+  const signalArticleSelect = {
+    id: true,
+    slug: true,
+    title: true,
+    viewCount: true,
+    helpfulVotes: true,
+    unhelpfulVotes: true,
+    category: { select: { name: true } },
+  } as const;
+
+  const [
+    recentArticles,
+    popularArticles,
+    helpfulArticles,
+    searchQueries,
+    categorySections,
+    seriesList,
+    glossaryTerms,
+    leaderboardAd,
+    inFeedAd,
+  ] = await Promise.all([
+    prisma.article.findMany({
+      where: publicArticleWhere,
+      select: articleSelect,
+      orderBy: [{ publishedAt: { sort: 'desc', nulls: 'last' } }, { createdAt: 'desc' }, { id: 'asc' }],
+      take: 24,
+    }),
+    prisma.article.findMany({
+      where: publicArticleWhere,
+      select: articleSelect,
+      orderBy: [
+        { viewCount: 'desc' },
+        { publishedAt: { sort: 'desc', nulls: 'last' } },
+        { createdAt: 'desc' },
+        { id: 'asc' },
+      ],
+      take: 30,
+    }),
+    prisma.article.findMany({
+      where: publicArticleWhere,
+      select: signalArticleSelect,
+      orderBy: [
+        { helpfulVotes: 'desc' },
+        { unhelpfulVotes: 'asc' },
+        { publishedAt: { sort: 'desc', nulls: 'last' } },
+        { id: 'asc' },
+      ],
+      take: 12,
+    }),
+    prisma.searchQueryLog.findMany({
+      select: { query: true, createdAt: true },
+      orderBy: { createdAt: 'desc' },
+      take: 500,
+    }),
+    prisma.category.findMany({
+      where: {
+        isIndexable: true,
+        articles: { some: { status: 'PUBLISHED', isIndexable: true } },
+      },
+      orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
+      take: 3,
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        articles: {
+          where: { status: 'PUBLISHED', isIndexable: true },
+          orderBy: [{ publishedAt: { sort: 'desc', nulls: 'last' } }, { createdAt: 'desc' }, { id: 'asc' }],
+          take: 4,
+          select: { id: true, slug: true, title: true, publishedAt: true, createdAt: true },
+        },
+      },
+    }),
+    prisma.series.findMany({
+      where: { isPublished: true },
+      orderBy: { sortOrder: 'asc' },
+      include: { _count: { select: { articles: { where: { status: 'PUBLISHED' } } } } },
+    }),
+    prisma.glossaryTerm.findMany({ orderBy: { term: 'asc' }, take: 6 }),
+    prisma.adSlot.findUnique({ where: { slotName: 'leaderboard' } }),
+    prisma.adSlot.findUnique({ where: { slotName: 'in_feed' } }),
+  ]);
+
+  return {
+    recentArticles,
+    popularArticles,
+    helpfulArticles,
+    searchQueries,
+    categorySections,
+    seriesList,
+    glossaryTerms,
+    leaderboardAd,
+    inFeedAd,
+  };
+}, ['home-page-data'], { revalidate: 300 });
+
+export const getHomePageData = cache(() => getCachedHomePageData());
+
 export const getCachedGlossaryItems = unstable_cache(
   async () => prisma.glossaryTerm.findMany({
     select: { term: true, slug: true, shortDef: true, category: true },
