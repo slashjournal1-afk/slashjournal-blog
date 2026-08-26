@@ -19,7 +19,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     where: { slug },
   });
 
-  if (!tag) return { title: 'Tag Tidak Ditemukan', robots: { index: false, follow: false } };
+  // Resolve inside metadata so the HTTP 404 status is set before streaming begins.
+  if (!tag) notFound();
 
   return {
     title: `#${tag.name}`,

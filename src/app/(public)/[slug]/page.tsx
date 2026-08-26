@@ -33,8 +33,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { slug } = await params;
   const article = await getPublishedArticle(slug);
 
+  // Resolve inside metadata so the HTTP 404 status is set before streaming begins.
   if (!article || article.status !== 'PUBLISHED') {
-    return { title: 'Artikel Tidak Ditemukan', robots: { index: false, follow: false } };
+    notFound();
   }
 
   const publishedIso = article.publishedAt
