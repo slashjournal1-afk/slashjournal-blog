@@ -52,6 +52,24 @@ export const getArticleComments = cache(async (articleId: string) => {
   });
 });
 
+const getCachedNavbarCategories = unstable_cache(async () => {
+  return prisma.category.findMany({
+    where: { isIndexable: true },
+    orderBy: { name: 'asc' },
+    take: 8,
+    select: { name: true, slug: true, description: true },
+  });
+}, ['navbar-categories'], { revalidate: 900 });
+
+export const getNavbarCategories = cache(async () => {
+  try {
+    return await getCachedNavbarCategories();
+  } catch (error) {
+    console.error('[public-layout] Category fetch failed, rendering without categories.', error);
+    return [];
+  }
+});
+
 export const getCachedGlossaryItems = unstable_cache(
   async () => prisma.glossaryTerm.findMany({
     select: { term: true, slug: true, shortDef: true, category: true },
