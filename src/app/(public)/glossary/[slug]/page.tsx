@@ -23,7 +23,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     where: { slug },
   });
 
-  if (!term) return { title: 'Istilah Tidak Ditemukan', robots: { index: false, follow: false } };
+  // Resolve inside metadata so the HTTP 404 status is set before streaming begins.
+  if (!term) notFound();
 
   return {
     title: `${term.term} — Glosarium Arsitektur`,

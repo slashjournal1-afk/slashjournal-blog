@@ -21,7 +21,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     where: { slug },
   });
 
-  if (!series || !series.isPublished) return { title: 'Seri Tidak Ditemukan', robots: { index: false, follow: false } };
+  // Resolve inside metadata so the HTTP 404 status is set before streaming begins.
+  if (!series || !series.isPublished) notFound();
 
   const ogImageUrl = series.coverImageUrl
     ? series.coverImageUrl.startsWith('http://') || series.coverImageUrl.startsWith('https://')

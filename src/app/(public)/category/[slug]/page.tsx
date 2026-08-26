@@ -29,7 +29,12 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
     where: { slug },
   });
 
-  if (!category) return { title: 'Kanal Tidak Ditemukan', robots: { index: false, follow: false } };
+  // Resolve inside metadata so the HTTP 404 status is set before streaming begins.
+  if (!category) notFound();
+
+  if (!category.isIndexable) {
+    return { title: category.name, robots: { index: false, follow: false } };
+  }
 
   return {
     title: category.name,

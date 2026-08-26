@@ -1,9 +1,6 @@
-import React from 'react';
-
-export default function ArticleDetailLoading() {
+export default function Loading() {
   return (
     <div className="min-h-screen animate-pulse pb-20">
-      {/* Breadcrumb Skeleton */}
       <div className="border-b border-[var(--border-color)]">
         <div className="mx-auto flex max-w-editorial items-center gap-3 px-5 py-4 sm:px-8">
           <div className="h-3 w-16 rounded bg-[var(--bg-card-muted)]" />
@@ -11,9 +8,7 @@ export default function ArticleDetailLoading() {
           <div className="h-3 w-28 rounded bg-[var(--bg-card-muted)]" />
         </div>
       </div>
-
       <div className="mx-auto max-w-editorial px-5 sm:px-8">
-        {/* Header Skeleton */}
         <div className="mx-auto max-w-[760px] space-y-6 pt-10 sm:pt-14">
           <div className="h-3 w-24 rounded-full bg-[var(--bg-card-muted)]" />
           <div className="space-y-3">
@@ -29,20 +24,12 @@ export default function ArticleDetailLoading() {
             </div>
           </div>
         </div>
-
-        {/* Cover Skeleton */}
         <div className="mx-auto mt-10 max-w-[1000px]">
           <div className="aspect-[16/9] w-full rounded-2xl bg-[var(--bg-card-muted)]" />
         </div>
-
-        {/* Body Skeleton */}
         <div className="mx-auto mt-12 max-w-[720px] space-y-4">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div
-              key={i}
-              className="h-4 rounded bg-[var(--bg-card-muted)]"
-              style={{ width: `${[100, 96, 88, 92, 70, 80][i - 1]}%` }}
-            />
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="h-4 rounded bg-[var(--bg-card-muted)]" style={{ width: `${[100, 96, 88, 92, 70, 80][i]}%` }} />
           ))}
         </div>
       </div>
