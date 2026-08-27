@@ -2,11 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-
-type ConsentChoice = 'granted' | 'denied';
-type ConsentState = { analytics: ConsentChoice; advertising: ConsentChoice };
-
-const STORAGE_KEY = 'slashjournal-consent-v2';
+import { CONSENT_STORAGE_KEY, type ConsentState } from '@/lib/consent';
 
 declare global {
   interface Window {
@@ -24,7 +20,7 @@ export function updateConsent(state: ConsentState) {
     ad_personalization: state.advertising,
   });
   window.dataLayer.push({ event: 'consent_update', analytics_storage: state.analytics, ad_storage: state.advertising });
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  localStorage.setItem(CONSENT_STORAGE_KEY, JSON.stringify(state));
   window.dispatchEvent(new CustomEvent('slashjournal:consent-update', { detail: state }));
 }
 
@@ -32,7 +28,7 @@ export function GoogleConsent() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const storedValue = localStorage.getItem(STORAGE_KEY);
+    const storedValue = localStorage.getItem(CONSENT_STORAGE_KEY);
     let stored: ConsentState | null = null;
     try {
       const parsed = storedValue ? JSON.parse(storedValue) : null;

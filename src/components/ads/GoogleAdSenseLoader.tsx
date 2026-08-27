@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect } from 'react';
+import { readConsent } from '@/lib/consent';
 
-const CONSENT_KEY = 'slashjournal-consent-v2';
 const ADSENSE_SCRIPT_SELECTOR = 'script[src*="pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"]';
 
 let adsenseScriptLoaded = false;
@@ -13,12 +13,7 @@ export function GoogleAdSenseLoader() {
   useEffect(() => {
     const load = () => {
       if (!publisherId) return;
-      try {
-        const state = JSON.parse(localStorage.getItem(CONSENT_KEY) || 'null');
-        if (state?.advertising !== 'granted') return;
-      } catch {
-        return;
-      }
+      if (readConsent()?.advertising !== 'granted') return;
 
       const existing = document.querySelector<HTMLScriptElement>(ADSENSE_SCRIPT_SELECTOR);
       if (existing) {

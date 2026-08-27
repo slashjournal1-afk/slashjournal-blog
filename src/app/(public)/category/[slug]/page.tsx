@@ -5,8 +5,7 @@ import { prisma } from '@/lib/db';
 import { formatDate } from '@/lib/utils';
 import { ArticleRow } from '@/components/content/ArticleRow';
 import { PageIntro } from '@/components/layout/PageIntro';
-import { BannerAd } from '@/components/ads/BannerAd';
-import { InFeedAd } from '@/components/ads/InFeedAd';
+import { AdSlotView } from '@/components/ads/AdSlotView';
 import { Lock } from 'lucide-react';
 import type { Metadata } from 'next';
 import { absoluteUrl } from '@/lib/site';
@@ -110,7 +109,15 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
           <React.Fragment key={art.id}>
             <ArticleRow href={`/${art.slug}`} title={art.title} excerpt={art.excerpt} date={formatDate(art.publishedAt || art.createdAt)} readingTime={art.readingTime} imageUrl={art.coverImageUrl} sponsored={art.isSponsored} sponsorName={art.sponsorName} />
 
-            {idx === 1 && <InFeedAd ad={inFeedAd} adsenseSlot={process.env.NEXT_PUBLIC_ADSENSE_IN_FEED_SLOT || process.env.ADSENSE_IN_FEED_SLOT} />}
+            {idx === 1 && (
+              <AdSlotView
+                slotName="in_feed"
+                ad={inFeedAd}
+                adsenseSlot={process.env.NEXT_PUBLIC_ADSENSE_IN_FEED_SLOT || process.env.ADSENSE_IN_FEED_SLOT}
+                adsenseLayoutKey={process.env.NEXT_PUBLIC_ADSENSE_IN_FEED_LAYOUT_KEY}
+                className="my-6"
+              />
+            )}
           </React.Fragment>
         ))}
       </div>
@@ -122,7 +129,12 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
         </nav>
       )}
 
-      <BannerAd ad={leaderboardAd} adsenseSlot={process.env.NEXT_PUBLIC_ADSENSE_LEADERBOARD_SLOT || process.env.ADSENSE_LEADERBOARD_SLOT} />
+      <AdSlotView
+        slotName="leaderboard"
+        ad={leaderboardAd}
+        adsenseSlot={process.env.NEXT_PUBLIC_ADSENSE_LEADERBOARD_SLOT || process.env.ADSENSE_LEADERBOARD_SLOT}
+        className="mt-10"
+      />
     </div>
   );
 }

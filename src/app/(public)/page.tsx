@@ -2,8 +2,7 @@ import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { formatDate } from '@/lib/utils';
-import { BannerAd } from '@/components/ads/BannerAd';
-import { InFeedAd } from '@/components/ads/InFeedAd';
+import { AdSlotView } from '@/components/ads/AdSlotView';
 import { ArticleRow } from '@/components/content/ArticleRow';
 import { ReferenceRail } from '@/components/content/ReferenceRail';
 import { SectionHeading } from '@/components/layout/SectionHeading';
@@ -37,6 +36,7 @@ export default async function HomePage() {
     glossaryTerms,
     leaderboardAd,
     inFeedAd,
+    belowHeroAd,
   } = await getHomePageData();
 
   const { featured, secondary, latest, recent: moreRecent, popular } = selectHomeArticleSections(recentArticles, popularArticles);
@@ -44,6 +44,8 @@ export default async function HomePage() {
   const mostReadIds = new Set(mostRead.map(({ id }) => id));
   const mostHelpful = helpfulArticles.filter(({ id }) => !mostReadIds.has(id)).slice(0, 5);
   const trendingKeywords = selectTrendingKeywords(searchQueries);
+  const belowHeroFilled = Boolean(belowHeroAd?.isActive)
+    || Boolean(process.env.NEXT_PUBLIC_ADSENSE_BELOW_HERO_SLOT || process.env.ADSENSE_BELOW_HERO_SLOT);
 
   return (
     <div className="mx-auto min-h-screen max-w-editorial px-5 pb-24 sm:px-8">
@@ -102,6 +104,16 @@ export default async function HomePage() {
             </div>
           </div>
         </section>
+      )}
+
+      {/* 1b. Billboard bawah hero */}
+      {featured && (
+        <AdSlotView
+          slotName="below_hero"
+          ad={belowHeroAd}
+          adsenseSlot={process.env.NEXT_PUBLIC_ADSENSE_BELOW_HERO_SLOT || process.env.ADSENSE_BELOW_HERO_SLOT}
+          className="my-10"
+        />
       )}
 
       {/* 2. Secondary Stories */}
@@ -173,7 +185,15 @@ export default async function HomePage() {
                     sponsored={article.isSponsored}
                     sponsorName={article.sponsorName}
                   />
-                  {index === 1 && <InFeedAd ad={inFeedAd} adsenseSlot={process.env.NEXT_PUBLIC_ADSENSE_IN_FEED_SLOT || process.env.ADSENSE_IN_FEED_SLOT} className="my-6" />}
+                  {index === 1 && (
+                    <AdSlotView
+                      slotName="in_feed"
+                      ad={inFeedAd}
+                      adsenseSlot={process.env.NEXT_PUBLIC_ADSENSE_IN_FEED_SLOT || process.env.ADSENSE_IN_FEED_SLOT}
+                      adsenseLayoutKey={process.env.NEXT_PUBLIC_ADSENSE_IN_FEED_LAYOUT_KEY}
+                      className="my-6"
+                    />
+                  )}
                 </React.Fragment>
               ))}
             </div>
@@ -237,8 +257,15 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* 7. Non-intrusive Billboard Ad */}
-      <BannerAd ad={leaderboardAd} adsenseSlot={process.env.NEXT_PUBLIC_ADSENSE_LEADERBOARD_SLOT || process.env.ADSENSE_LEADERBOARD_SLOT} />
+      {/* 7. Billboard Ad (kondisional: hanya saat slot bawah hero kosong) */}
+      {!belowHeroFilled && (
+        <AdSlotView
+          slotName="leaderboard"
+          ad={leaderboardAd}
+          adsenseSlot={process.env.NEXT_PUBLIC_ADSENSE_LEADERBOARD_SLOT || process.env.ADSENSE_LEADERBOARD_SLOT}
+          className="my-10"
+        />
+      )}
 
       {/* 8. Newsletter */}
       <section className="border-t border-[var(--border-color)] pt-12">

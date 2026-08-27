@@ -108,6 +108,7 @@ const getCachedHomePageData = unstable_cache(async () => {
     glossaryTerms,
     leaderboardAd,
     inFeedAd,
+    belowHeroAd,
   ] = await Promise.all([
     prisma.article.findMany({
       where: publicArticleWhere,
@@ -170,6 +171,7 @@ const getCachedHomePageData = unstable_cache(async () => {
     prisma.glossaryTerm.findMany({ orderBy: { term: 'asc' }, take: 6 }),
     prisma.adSlot.findUnique({ where: { slotName: 'leaderboard' } }),
     prisma.adSlot.findUnique({ where: { slotName: 'in_feed' } }),
+    prisma.adSlot.findUnique({ where: { slotName: 'below_hero' } }),
   ]);
 
   return {
@@ -182,8 +184,9 @@ const getCachedHomePageData = unstable_cache(async () => {
     glossaryTerms,
     leaderboardAd,
     inFeedAd,
+    belowHeroAd,
   };
-}, ['home-page-data'], { revalidate: 300 });
+}, ['home-page-data'], { revalidate: 300, tags: ['home-page-data'] });
 
 export const getHomePageData = cache(() => getCachedHomePageData());
 
@@ -199,6 +202,12 @@ export const getCachedSidebarAd = unstable_cache(
   async () => prisma.adSlot.findUnique({ where: { slotName: 'sidebar_sticky' } }),
   ['sidebar-sticky-ad'],
   { revalidate: 300, tags: ['sidebar-sticky-ad'] },
+);
+
+export const getCachedTopBannerAd = unstable_cache(
+  async () => prisma.adSlot.findUnique({ where: { slotName: 'top_banner' } }),
+  ['top-banner-ad'],
+  { revalidate: 300, tags: ['top-banner-ad'] },
 );
 
 export const getRelatedArticles = cache(async (categoryId: string, articleId: string) => {
