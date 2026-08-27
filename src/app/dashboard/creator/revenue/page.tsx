@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import Link from 'next/link';
+import { formatDate } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,6 +27,6 @@ export default async function CreatorRevenuePage() {
       <div className="border border-[var(--border-color)] bg-[var(--bg-card)] p-5"><p className="text-xs text-[var(--text-muted)]">Status payout terbaru</p><p className="mt-2 text-sm font-semibold">{rows[0]?.payoutStatus || 'NOT_ELIGIBLE'}</p></div>
     </div>
     <p className="text-xs text-[var(--text-muted)]">Minimum payout default IDR 100.000. Pembayaran manual setelah period finalized dan threshold tercapai.</p>
-    <section><h2 className="mb-4 text-lg font-bold">Pendapatan per artikel</h2><div className="overflow-x-auto border border-[var(--border-color)] bg-[var(--bg-card)]"><table className="w-full text-left text-sm"><thead className="border-b border-[var(--border-color)] text-xs text-[var(--text-muted)]"><tr><th className="p-4">Artikel</th><th className="p-4">Periode</th><th className="p-4">Gross</th><th className="p-4">Bagian penulis</th><th className="p-4">Status</th></tr></thead><tbody className="divide-y divide-[var(--border-color)]">{articles.map((row) => <tr key={row.id}><td className="p-4"><Link className="font-medium hover:text-[var(--accent)]" href={`/${row.article.slug}`}>{row.article.title}</Link></td><td className="p-4 text-xs text-[var(--text-muted)]">{row.revenuePeriod.periodStart.toLocaleDateString('id-ID')}</td><td className="p-4">{money(Number(row.grossRevenue))}</td><td className="p-4">{money(Number(row.authorShare))}</td><td className="p-4 text-xs">{row.revenuePeriod.status}</td></tr>)}</tbody></table></div></section>
+    <section><h2 className="mb-4 text-lg font-bold">Pendapatan per artikel</h2><div className="overflow-x-auto border border-[var(--border-color)] bg-[var(--bg-card)]"><table className="w-full text-left text-sm"><thead className="border-b border-[var(--border-color)] text-xs text-[var(--text-muted)]"><tr><th className="p-4">Artikel</th><th className="p-4">Periode</th><th className="p-4">Gross</th><th className="p-4">Bagian penulis</th><th className="p-4">Status</th></tr></thead><tbody className="divide-y divide-[var(--border-color)]">{articles.map((row) => <tr key={row.id}><td className="p-4"><Link className="font-medium hover:text-[var(--accent)]" href={`/${row.article.slug}`}>{row.article.title}</Link></td><td className="p-4 text-xs text-[var(--text-muted)]">{formatDate(row.revenuePeriod.periodStart)}</td><td className="p-4">{money(Number(row.grossRevenue))}</td><td className="p-4">{money(Number(row.authorShare))}</td><td className="p-4 text-xs">{row.revenuePeriod.status}</td></tr>)}</tbody></table></div></section>
   </div>;
 }
