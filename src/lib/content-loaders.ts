@@ -202,9 +202,14 @@ export const getCachedGlossaryItems = unstable_cache(
 );
 
 export const getCachedSidebarAd = unstable_cache(
-  async () => prisma.adSlot.findUnique({ where: { slotName: 'sidebar_sticky' } }),
+  async () => {
+    const ad = await prisma.adSlot.findUnique({ where: { slotName: 'sidebar_sticky' } });
+    if (ad && ad.isActive) return ad;
+    const rail = await prisma.adSlot.findUnique({ where: { slotName: 'sidebar_rail' } });
+    return ad || rail;
+  },
   ['sidebar-sticky-ad'],
-  { revalidate: 300, tags: ['sidebar-sticky-ad'] },
+  { revalidate: 300, tags: ['sidebar-sticky-ad', 'home-page-data'] },
 );
 
 export const getCachedBelowHeroAd = unstable_cache(
@@ -225,9 +230,16 @@ export const getCachedArticleInFeedAd = unstable_cache(
 );
 
 export const getCachedArticleMidAd = unstable_cache(
-  async () => prisma.adSlot.findUnique({ where: { slotName: 'article_mid_content' } }),
+  async () => {
+    const ad = await prisma.adSlot.findUnique({ where: { slotName: 'article_mid_content' } });
+    if (ad && ad.isActive) return ad;
+    const inFeed = await prisma.adSlot.findUnique({ where: { slotName: 'in_feed' } });
+    if (inFeed && inFeed.isActive) return inFeed;
+    const belowHero = await prisma.adSlot.findUnique({ where: { slotName: 'below_hero' } });
+    return ad || inFeed || belowHero;
+  },
   ['article-mid-ad'],
-  { revalidate: 300, tags: ['article-mid-ad'] },
+  { revalidate: 300, tags: ['article-mid-ad', 'home-page-data', 'below-hero-ad'] },
 );
 
 export const getCachedTopBannerAd = unstable_cache(

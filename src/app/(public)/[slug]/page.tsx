@@ -456,10 +456,10 @@ export default async function ArticleDetailPage({ params }: PageProps) {
             />
           </div>
 
-          {/* Right Sidebar: iklan non-sticky (patuh kebijakan penempatan AdSense) + navigasi lekat */}
+          {/* Right Sidebar: iklan vertikal sinkron landing page (sidebar_rail) + navigasi lekat */}
           <aside className="hidden lg:block">
             <AdSlotView
-              slotName="sidebar_sticky"
+              slotName={sidebarAd?.slotName === 'sidebar_sticky' ? 'sidebar_sticky' : 'sidebar_rail'}
               ad={sidebarAd}
               adsenseSlot={process.env.NEXT_PUBLIC_ADSENSE_SIDEBAR_STICKY_SLOT || process.env.ADSENSE_SIDEBAR_STICKY_SLOT}
               className="mb-10"
