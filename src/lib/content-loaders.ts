@@ -207,6 +207,17 @@ export const getCachedSidebarAd = unstable_cache(
   { revalidate: 300, tags: ['sidebar-sticky-ad'] },
 );
 
+export const getCachedBelowHeroAd = unstable_cache(
+  async () => {
+    const ad = await prisma.adSlot.findUnique({ where: { slotName: 'below_hero' } });
+    if (ad && ad.isActive) return ad;
+    const leaderboard = await prisma.adSlot.findUnique({ where: { slotName: 'leaderboard' } });
+    return ad || leaderboard;
+  },
+  ['below-hero-ad'],
+  { revalidate: 300, tags: ['home-page-data', 'below-hero-ad'] },
+);
+
 export const getCachedArticleInFeedAd = unstable_cache(
   async () => prisma.adSlot.findUnique({ where: { slotName: 'article_in_feed' } }),
   ['article-in-feed-ad'],
