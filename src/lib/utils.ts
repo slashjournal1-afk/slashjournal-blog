@@ -25,19 +25,21 @@ export function formatDate(date: Date | string | null | undefined): string {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
+    timeZone: 'Asia/Jakarta',
   }).format(d);
 }
 
 export function formatDateTime(date: Date | string | null | undefined): string {
   if (!date) return '';
   const d = typeof date === 'string' ? new Date(date) : date;
-  return new Intl.DateTimeFormat('id-ID', {
+  return `${new Intl.DateTimeFormat('id-ID', {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
-  }).format(d);
+    timeZone: 'Asia/Jakarta',
+  }).format(d)} WIB`;
 }
 
 export function calculateReadingTime(markdownText: string): number {

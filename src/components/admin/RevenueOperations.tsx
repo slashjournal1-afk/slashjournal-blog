@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { formatDate } from '@/lib/utils';
 
 type Period = { id: string; periodStart: string; status: string };
 type AuthorRow = { id: string; authorId: string; author: { displayName: string }; revenuePeriod: { currencyCode: string }; authorShare: string | number; payoutStatus: string };
@@ -34,7 +35,7 @@ export function RevenueOperations({ periods, authors }: { periods: Period[]; aut
         <p className="mt-1 text-xs text-[var(--text-muted)]">Gunakan finalize setelah period melewati masa rekonsiliasi minimal 7 hari.</p>
       </div>
       <form onSubmit={(event) => { event.preventDefault(); post('/api/admin/revenue/adjustment', { revenuePeriodId: adjustment.periodId, authorId: adjustment.authorId, amount: adjustment.amount, reason: adjustment.reason }); }} className="grid gap-2 border-t border-[var(--border-color)] pt-4 sm:grid-cols-2 lg:grid-cols-5">
-        <select aria-label="Periode adjustment" value={adjustment.periodId} onChange={(event) => setAdjustment((value) => ({ ...value, periodId: event.target.value }))} className="border border-[var(--border-color)] bg-[var(--bg-primary)] px-2 py-2 text-xs"><option value="">Pilih periode</option>{periods.map((period) => <option key={period.id} value={period.id}>{period.periodStart.slice(0, 10)} · {period.status}</option>)}</select>
+        <select aria-label="Periode adjustment" value={adjustment.periodId} onChange={(event) => setAdjustment((value) => ({ ...value, periodId: event.target.value }))} className="border border-[var(--border-color)] bg-[var(--bg-primary)] px-2 py-2 text-xs"><option value="">Pilih periode</option>{periods.map((period) => <option key={period.id} value={period.id}>{formatDate(period.periodStart)} · {period.status}</option>)}</select>
         <select aria-label="Penulis adjustment" value={adjustment.authorId} onChange={(event) => setAdjustment((value) => ({ ...value, authorId: event.target.value }))} className="border border-[var(--border-color)] bg-[var(--bg-primary)] px-2 py-2 text-xs"><option value="">Pilih penulis</option>{[...new Map(authors.map((row) => [row.authorId, row])).values()].map((row) => <option key={row.authorId} value={row.authorId}>{row.author.displayName}</option>)}</select>
         <input aria-label="Jumlah adjustment" value={adjustment.amount} onChange={(event) => setAdjustment((value) => ({ ...value, amount: event.target.value }))} placeholder="Jumlah (+/-)" inputMode="decimal" className="border border-[var(--border-color)] bg-[var(--bg-primary)] px-2 py-2 text-xs" />
         <input aria-label="Alasan adjustment" value={adjustment.reason} onChange={(event) => setAdjustment((value) => ({ ...value, reason: event.target.value }))} placeholder="Alasan adjustment" className="border border-[var(--border-color)] bg-[var(--bg-primary)] px-2 py-2 text-xs" />

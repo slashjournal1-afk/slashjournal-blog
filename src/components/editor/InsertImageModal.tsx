@@ -332,7 +332,7 @@ export function InsertImageModal({
             }}
             className={`flex-1 py-2.5 rounded-[12px] text-xs font-bold transition-all flex items-center justify-center gap-2 ${
               activeTab === 'upload'
-                ? 'bg-white dark:bg-[#18181b] text-[#09090b] dark:text-white shadow-xs'
+                ? 'bg-white dark:bg-[#18181b] text-[#09090b] dark:text-white shadow-sm'
                 : 'text-[#71717a] hover:text-[#09090b] dark:hover:text-white'
             }`}
           >
@@ -349,7 +349,7 @@ export function InsertImageModal({
             }}
             className={`flex-1 py-2.5 rounded-[12px] text-xs font-bold transition-all flex items-center justify-center gap-2 ${
               activeTab === 'url'
-                ? 'bg-white dark:bg-[#18181b] text-[#09090b] dark:text-white shadow-xs'
+                ? 'bg-white dark:bg-[#18181b] text-[#09090b] dark:text-white shadow-sm'
                 : 'text-[#71717a] hover:text-[#09090b] dark:hover:text-white'
             }`}
           >
@@ -372,13 +372,13 @@ export function InsertImageModal({
             tabIndex={-1}
             role="status"
             aria-live="polite"
-            className="flex items-center justify-between gap-3 rounded-[12px] border border-[var(--border-color)] bg-[var(--bg-card-muted)] p-3 text-xs text-[var(--text-muted)]"
+            className="flex items-center justify-between gap-3 rounded-[12px] border border-[#ececee] dark:border-[#3f3f46] bg-[#f4f4f5] dark:bg-[#27272a] p-3 text-xs text-[#52525b] dark:text-[#a1a1aa]"
           >
             <span>Mengunggah gambar...</span>
             <button
               type="button"
               onClick={cancelUpload}
-              className="shrink-0 rounded-[8px] border border-[var(--border-color)] bg-[var(--bg-card)] px-3 py-1.5 font-bold text-[var(--text-primary)]"
+              className="shrink-0 rounded-[8px] border border-[#ececee] dark:border-[#3f3f46] bg-white dark:bg-[#18181b] px-3 py-1.5 font-bold text-[#09090b] dark:text-white hover:border-[#ff5a00] transition-colors"
             >
               Batalkan unggahan
             </button>
@@ -524,7 +524,7 @@ export function InsertImageModal({
               <button
                 type="submit"
                 disabled={!selectedFile || isUploading}
-                className="px-5 py-2.5 rounded-[12px] bg-[#09090b] dark:bg-white text-white dark:text-[#09090b] text-xs font-extrabold hover:bg-[#18181b] dark:hover:bg-zinc-200 transition-all disabled:opacity-40 flex items-center gap-2 active:scale-95 shadow-xs"
+                className="px-5 py-2.5 rounded-[12px] bg-[#09090b] dark:bg-white text-white dark:text-[#09090b] text-xs font-extrabold hover:bg-[#18181b] dark:hover:bg-zinc-200 transition-all disabled:opacity-40 flex items-center gap-2 active:scale-95 shadow-sm"
               >
                 {isUploading ? (
                   <>
@@ -549,19 +549,17 @@ export function InsertImageModal({
               <label htmlFor="image-url" className="text-[11px] font-bold uppercase tracking-wider text-[#09090b] dark:text-white">
                 URL Gambar Langsung (Direct Image URL)
               </label>
-              <div className="relative">
-                <input
-                  type="url"
-                  id="image-url"
-                  value={imageUrl}
-                  onChange={(e) => {
-                    setImageUrl(e.target.value);
-                    setIsUrlValid(null);
-                  }}
-                  placeholder="https://images.unsplash.com/photo-... atau URL CDN"
-                  className="w-full px-3.5 py-2.5 rounded-[12px] bg-[#f4f4f5] dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-xs text-[#09090b] dark:text-white focus:outline-none focus:border-[#ff5a00]"
-                />
-              </div>
+              <input
+                type="url"
+                id="image-url"
+                value={imageUrl}
+                onChange={(e) => {
+                  setImageUrl(e.target.value);
+                  setIsUrlValid(null);
+                }}
+                placeholder="https://images.unsplash.com/photo-... atau URL CDN"
+                className="w-full px-3.5 py-2.5 rounded-[12px] bg-[#f4f4f5] dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-xs text-[#09090b] dark:text-white focus:outline-none focus:border-[#ff5a00]"
+              />
             </div>
 
             {/* Live URL Preview */}
@@ -634,7 +632,7 @@ export function InsertImageModal({
               <button
                 type="submit"
                 disabled={isUrlValid !== true}
-                className="px-5 py-2.5 rounded-[12px] bg-[#09090b] dark:bg-white text-white dark:text-[#09090b] text-xs font-extrabold hover:bg-[#18181b] dark:hover:bg-zinc-200 transition-all disabled:opacity-40 flex items-center gap-2 active:scale-95 shadow-xs"
+                className="px-5 py-2.5 rounded-[12px] bg-[#09090b] dark:bg-white text-white dark:text-[#09090b] text-xs font-extrabold hover:bg-[#18181b] dark:hover:bg-zinc-200 transition-all disabled:opacity-40 flex items-center gap-2 active:scale-95 shadow-sm"
               >
                 <Link2 className="w-3.5 h-3.5 text-blue-500" />
                 <span>Sisipkan Tautan Gambar</span>

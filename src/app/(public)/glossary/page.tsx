@@ -74,7 +74,7 @@ export default async function GlossaryIndexPage() {
                 <Link
                   key={term.id}
                   href={`/glossary/${term.slug}`}
-                  className="border-b border-[#ececee] py-5 group flex flex-col justify-between"
+                  className="border-b border-[#ececee] dark:border-[#27272a] py-5 group flex flex-col justify-between"
                 >
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">

@@ -9,6 +9,7 @@ import { InsertImageModal } from './InsertImageModal';
 import { TagInput } from './TagInput';
 import { NewCategoryModal } from './NewCategoryModal';
 import { NewSeriesModal } from './NewSeriesModal';
+import { SearchableSelect } from '@/components/ui/SearchableSelect';
 import { ArticleContentRenderer } from '@/components/content/ArticleContentRenderer';
 import { toast } from 'sonner';
 import {
@@ -361,7 +362,7 @@ export function SlashEditor({
           sponsorName,
           sponsorUrl,
           sources,
-          savedAt: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+          savedAt: `${new Intl.DateTimeFormat('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' }).format(new Date())} WIB`,
         };
         localStorage.setItem(draftStorageKey, JSON.stringify(draftData));
         setLastAutoSaved(draftData.savedAt);
@@ -1122,24 +1123,21 @@ export function SlashEditor({
                     <span>Kategori Baru</span>
                   </button>
                 </div>
-                <select
+                <SearchableSelect
+                  ariaLabel="Kanal Kategori"
+                  searchPlaceholder="Cari kategori..."
+                  options={categoriesList.map((c) => ({
+                    value: c.id,
+                    label: c.name,
+                    hint: c.isIndexable === false ? '(No-Index / Jurnal)' : undefined,
+                  }))}
                   value={categoryId}
-                  onChange={(e) => {
-                    if (e.target.value === '__NEW__') {
-                      setIsCategoryModalOpen(true);
-                    } else {
-                      setCategoryId(e.target.value);
-                    }
+                  onChange={setCategoryId}
+                  footerAction={{
+                    label: '+ Tambah Kategori Baru...',
+                    onSelect: () => setIsCategoryModalOpen(true),
                   }}
-                  className="w-full px-4 py-3 rounded-[14px] bg-[#f4f4f5] dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-xs font-semibold text-[#09090b] dark:text-white focus:outline-none focus:border-[var(--accent)]"
-                >
-                  {categoriesList.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name} {c.isIndexable === false ? '(No-Index / Jurnal)' : ''}
-                    </option>
-                  ))}
-                  <option value="__NEW__">+ Tambah Kategori Baru...</option>
-                </select>
+                />
               </div>
 
               <div className="space-y-1.5">
@@ -1156,25 +1154,20 @@ export function SlashEditor({
                     <span>Seri Baru</span>
                   </button>
                 </div>
-                <select
+                <SearchableSelect
+                  ariaLabel="Seri Panduan"
+                  searchPlaceholder="Cari seri panduan..."
+                  options={[
+                    { value: '', label: 'Bukan Bagian dari Seri' },
+                    ...seriesListState.map((s) => ({ value: s.id, label: s.title })),
+                  ]}
                   value={seriesId}
-                  onChange={(e) => {
-                    if (e.target.value === '__NEW__') {
-                      setIsSeriesModalOpen(true);
-                    } else {
-                      setSeriesId(e.target.value);
-                    }
+                  onChange={setSeriesId}
+                  footerAction={{
+                    label: '+ Tambah Seri Baru...',
+                    onSelect: () => setIsSeriesModalOpen(true),
                   }}
-                  className="w-full px-4 py-3 rounded-[14px] bg-[#f4f4f5] dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-xs font-semibold text-[#09090b] dark:text-white focus:outline-none focus:border-[var(--accent)]"
-                >
-                  <option value="">Bukan Bagian dari Seri</option>
-                  {seriesListState.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.title}
-                    </option>
-                  ))}
-                  <option value="__NEW__">+ Tambah Seri Baru...</option>
-                </select>
+                />
               </div>
 
               <div className="space-y-1.5">

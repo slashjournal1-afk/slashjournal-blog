@@ -102,6 +102,12 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${newsreader.variable} ${jetbrainsMono.variable} min-h-screen flex flex-col antialiased bg-[var(--bg-primary)] text-[var(--text-primary)] transition-colors`}
       >
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "(function(){try{var s=localStorage.getItem('slash_theme');var t=s==='dark'||s==='light'?s:'light';document.documentElement.classList.toggle('dark',t==='dark');document.documentElement.classList.toggle('light',t==='light');}catch(e){}})();",
+          }}
+        />
         <GoogleTagManager />
         <GoogleAdSenseLoader />
         <ThemeProvider>
