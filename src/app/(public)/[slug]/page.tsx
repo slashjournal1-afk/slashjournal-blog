@@ -24,6 +24,7 @@ import { ArticleDiscoveryBand } from '@/components/content/ArticleDiscoveryBand'
 import {
   getArticleDiscovery,
   getCachedArticleInFeedAd,
+  getCachedArticleMidAd,
   getCachedGlossaryItems,
   getCachedSidebarAd,
   getPublishedArticle,
@@ -95,7 +96,7 @@ export default async function ArticleDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  const [glossaryTerms, discovery, sidebarAd, articleInFeedAd] = await Promise.all([
+  const [glossaryTerms, discovery, sidebarAd, articleInFeedAd, articleMidAd] = await Promise.all([
     getCachedGlossaryItems(),
     getArticleDiscovery({
       articleId: article.id,
@@ -105,6 +106,7 @@ export default async function ArticleDetailPage({ params }: PageProps) {
     }),
     getCachedSidebarAd(),
     getCachedArticleInFeedAd(),
+    getCachedArticleMidAd(),
   ]);
 
   // Extract headings for Table of Contents
@@ -331,7 +333,18 @@ export default async function ArticleDetailPage({ params }: PageProps) {
             <InlineSelectionQuote articleTitle={article.title} />
 
             <div id="article-body" className="relative min-w-0 max-w-full break-words">
-              <ArticleContentRenderer content={article.contentMarkdown} glossary={glossaryTerms} />
+              <ArticleContentRenderer
+                content={article.contentMarkdown}
+                glossary={glossaryTerms}
+                inContentAd={
+                  <AdSlotView
+                    slotName="article_mid_content"
+                    ad={articleMidAd}
+                    adsenseSlot={process.env.NEXT_PUBLIC_ADSENSE_ARTICLE_MID_SLOT || process.env.ADSENSE_ARTICLE_MID_SLOT}
+                    adsenseLayoutKey={process.env.NEXT_PUBLIC_ADSENSE_ARTICLE_MID_LAYOUT_KEY}
+                  />
+                }
+              />
             </div>
 
             {/* Tags / Keywords */}

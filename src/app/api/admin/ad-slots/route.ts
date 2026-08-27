@@ -39,6 +39,7 @@ export async function PUT(request: NextRequest) {
     revalidateTag('home-page-data', 'max');
     revalidateTag('sidebar-sticky-ad', 'max');
     revalidateTag('article-in-feed-ad', 'max');
+    revalidateTag('article-mid-ad', 'max');
     revalidateTag('top-banner-ad', 'max');
     return NextResponse.json({ slot });
   } catch (error: unknown) {

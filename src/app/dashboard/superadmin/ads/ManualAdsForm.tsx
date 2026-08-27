@@ -29,8 +29,8 @@ const SLOT_GROUPS: SlotGroup[] = [
   {
     id: 'article_detail',
     title: 'Billboard & Sidebar Halaman Artikel',
-    description: 'Format iklan terkurasi di bawah naskah bacaan dan sidebar vertikal halaman detail artikel /[slug].',
-    slots: ['article_in_feed', 'sidebar_sticky'],
+    description: 'Format iklan terkurasi di tengah konten bacaan, di bawah naskah, dan sidebar vertikal halaman detail artikel /[slug].',
+    slots: ['article_mid_content', 'article_in_feed', 'sidebar_sticky'],
   },
 ];
 
@@ -224,7 +224,7 @@ export function ManualAdsForm({ initialSlots }: { initialSlots: AdSlot[] }) {
                         {/* Creative Billboard Preview */}
                         <div className="space-y-1.5">
                           <p className="text-[11px] font-semibold text-[var(--text-muted)] flex items-center justify-between">
-                            <span>Pratinjau Billboard:</span>
+                            <span>Pratinjau Full Image Billboard:</span>
                             <span className="font-mono text-[10px]">{config.creativeWidth}×{config.creativeHeight}px</span>
                           </p>
                           <div className={`relative overflow-hidden border border-[var(--border-color)] bg-[var(--bg-card-muted)] ${config.aspectClass} ${config.roundedClass}`}>
@@ -235,16 +235,6 @@ export function ManualAdsForm({ initialSlots }: { initialSlots: AdSlot[] }) {
                               sizes="(max-width: 1280px) 100vw, 33vw"
                               className="object-cover"
                             />
-                            {/* Live scrim overlay simulation */}
-                            <div className={`absolute inset-0 ${config.scrimClass}`} />
-                            <div className="absolute inset-x-0 bottom-0 p-3 sm:p-4 text-white">
-                              <span className="inline-block px-2 py-0.5 rounded-full bg-white/90 text-[8px] font-bold uppercase tracking-wider text-[#09090b]">
-                                Iklan · {slot.sponsorName || 'Nama Brand'}
-                              </span>
-                              <p className="mt-1 text-xs font-bold truncate text-white drop-shadow-xs">
-                                {slot.title || 'Judul Billboard'}
-                              </p>
-                            </div>
                           </div>
                         </div>
 

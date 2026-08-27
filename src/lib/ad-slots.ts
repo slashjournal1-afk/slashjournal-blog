@@ -8,6 +8,7 @@ export const AD_SLOT_NAMES = [
   'sidebar_sticky',
   'sidebar_rail',
   'article_in_feed',
+  'article_mid_content',
 ] as const;
 export type AdSlotName = (typeof AD_SLOT_NAMES)[number];
 
@@ -74,7 +75,7 @@ export const AD_SLOT_CONFIG: Record<AdSlotName, AdSlotConfig> = {
     adsenseAllowed: true,
   },
   sidebar_sticky: {
-    label: 'Sidebar Vertikal',
+    label: 'Sidebar Vertikal Artikel',
     placement: 'Rail kanan 280px pada halaman artikel (non-sticky, patuh kebijakan penempatan AdSense).',
     aspectClass: 'aspect-[4/5]',
     roundedClass: 'rounded-[28px]',
@@ -87,21 +88,33 @@ export const AD_SLOT_CONFIG: Record<AdSlotName, AdSlotConfig> = {
   },
   sidebar_rail: {
     label: 'Iklan Sidebar Beranda',
-    placement: 'Tersisip di antara deretan daftar naskah "Paling Banyak Dibaca" pada rel referensi beranda.',
-    aspectClass: 'aspect-[16/9] sm:aspect-[16/8] lg:aspect-[16/10]',
+    placement: 'Tersisip di antara deretan daftar naskah "Paling Banyak Dibaca" pada rel referensi beranda (Format Vertikal).',
+    aspectClass: 'aspect-[4/5]',
     roundedClass: 'rounded-[20px]',
     contentLayout: 'stack',
     scrimClass: 'bg-gradient-to-t from-[#09090b]/95 via-[#09090b]/65 to-transparent',
     sizes: '(max-width: 1024px) 100vw, 360px',
-    creativeWidth: 800,
-    creativeHeight: 500,
+    creativeWidth: 560,
+    creativeHeight: 700,
     adsenseAllowed: true,
   },
   article_in_feed: {
-    label: 'Billboard / In-Feed Artikel',
+    label: 'Billboard / In-Feed Bawah Artikel',
     placement: 'Tepat di bawah badan naskah artikel sebelum blok interaksi & komentar pembaca pada halaman detail artikel.',
     aspectClass: 'aspect-[320/120] sm:aspect-[970/250]',
     roundedClass: 'rounded-[28px]',
+    contentLayout: 'stack',
+    scrimClass: 'bg-gradient-to-t from-[#09090b]/95 via-[#09090b]/65 to-transparent',
+    sizes: '(max-width: 1024px) 100vw, 760px',
+    creativeWidth: 1520,
+    creativeHeight: 400,
+    adsenseAllowed: true,
+  },
+  article_mid_content: {
+    label: 'Iklan Tengah Konten Artikel',
+    placement: 'Tersisip otomatis di tengah-tengah alur isi naskah artikel pada halaman detail artikel (In-Article).',
+    aspectClass: 'aspect-[320/120] sm:aspect-[970/250]',
+    roundedClass: 'rounded-[24px]',
     contentLayout: 'stack',
     scrimClass: 'bg-gradient-to-t from-[#09090b]/95 via-[#09090b]/65 to-transparent',
     sizes: '(max-width: 1024px) 100vw, 760px',
@@ -133,5 +146,7 @@ export function parseAdSlotPayload(input: unknown): AdSlotPayload {
 }
 
 export function getDummyAdImage(slotName: string) {
-  return slotName === 'sidebar_sticky' ? '/vertical_dummy_ads.webp' : '/horizontal_dummy_ads.webp';
+  return slotName === 'sidebar_sticky' || slotName === 'sidebar_rail'
+    ? '/vertical_dummy_ads.webp'
+    : '/horizontal_dummy_ads.webp';
 }

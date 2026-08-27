@@ -213,6 +213,12 @@ export const getCachedArticleInFeedAd = unstable_cache(
   { revalidate: 300, tags: ['article-in-feed-ad'] },
 );
 
+export const getCachedArticleMidAd = unstable_cache(
+  async () => prisma.adSlot.findUnique({ where: { slotName: 'article_mid_content' } }),
+  ['article-mid-ad'],
+  { revalidate: 300, tags: ['article-mid-ad'] },
+);
+
 export const getCachedTopBannerAd = unstable_cache(
   async () => prisma.adSlot.findUnique({ where: { slotName: 'top_banner' } }),
   ['top-banner-ad'],
