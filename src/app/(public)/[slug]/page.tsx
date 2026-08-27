@@ -24,7 +24,6 @@ import { ArticleDiscoveryBand } from '@/components/content/ArticleDiscoveryBand'
 import {
   getArticleDiscovery,
   getCachedBelowHeroAd,
-  getCachedArticleMidAd,
   getCachedGlossaryItems,
   getCachedSidebarAd,
   getPublishedArticle,
@@ -59,22 +58,26 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title: article.title,
     description: article.excerpt,
-    alternates: { canonical: absoluteUrl(`/${article.slug}`) },
-    robots: article.isIndexable && article.category.isIndexable ? 'index, follow' : 'noindex, nofollow',
+    keywords: article.tags.map(({ tag }) => tag.name),
+    alternates: {
+      canonical: `/${article.slug}`,
+    },
     openGraph: {
       title: article.title,
       description: article.excerpt,
+      url: `/${article.slug}`,
       type: 'article',
-      url: absoluteUrl(`/${article.slug}`),
-      siteName: siteConfig.name,
-      locale: siteConfig.locale,
       publishedTime: publishedIso,
+      modifiedTime: new Date(article.updatedAt).toISOString(),
+      authors: [article.author.displayName],
+      section: article.category.name,
+      tags: article.tags.map(({ tag }) => tag.name),
       images: [
         {
           url: ogImageUrl,
-          alt: article.title,
           width: 1200,
           height: 630,
+          alt: article.title,
         },
       ],
     },
@@ -96,7 +99,7 @@ export default async function ArticleDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  const [glossaryTerms, discovery, sidebarAd, belowHeroAd, articleMidAd] = await Promise.all([
+  const [glossaryTerms, discovery, sidebarAd, belowHeroAd] = await Promise.all([
     getCachedGlossaryItems(),
     getArticleDiscovery({
       articleId: article.id,
@@ -106,7 +109,6 @@ export default async function ArticleDetailPage({ params }: PageProps) {
     }),
     getCachedSidebarAd(),
     getCachedBelowHeroAd(),
-    getCachedArticleMidAd(),
   ]);
 
   // Extract headings for Table of Contents
@@ -338,10 +340,9 @@ export default async function ArticleDetailPage({ params }: PageProps) {
                 glossary={glossaryTerms}
                 inContentAd={
                   <AdSlotView
-                    slotName="article_mid_content"
-                    ad={articleMidAd}
-                    adsenseSlot={process.env.NEXT_PUBLIC_ADSENSE_ARTICLE_MID_SLOT || process.env.ADSENSE_ARTICLE_MID_SLOT}
-                    adsenseLayoutKey={process.env.NEXT_PUBLIC_ADSENSE_ARTICLE_MID_LAYOUT_KEY}
+                    slotName="below_hero"
+                    ad={belowHeroAd}
+                    adsenseSlot={process.env.NEXT_PUBLIC_ADSENSE_BELOW_HERO_SLOT || process.env.ADSENSE_BELOW_HERO_SLOT}
                   />
                 }
               />
