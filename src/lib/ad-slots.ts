@@ -1,6 +1,15 @@
 import { z } from 'zod';
 
-export const AD_SLOT_NAMES = ['top_banner', 'below_hero', 'leaderboard', 'in_feed', 'sidebar_sticky'] as const;
+export const AD_SLOT_NAMES = [
+  'top_banner',
+  'below_hero',
+  'leaderboard',
+  'in_feed',
+  'sidebar_sticky',
+  'sidebar_rail',
+  'article_in_feed',
+  'article_mid_content',
+] as const;
 export type AdSlotName = (typeof AD_SLOT_NAMES)[number];
 
 export interface AdSlotConfig {
@@ -66,7 +75,7 @@ export const AD_SLOT_CONFIG: Record<AdSlotName, AdSlotConfig> = {
     adsenseAllowed: true,
   },
   sidebar_sticky: {
-    label: 'Sidebar Vertikal',
+    label: 'Sidebar Vertikal Artikel',
     placement: 'Rail kanan 280px pada halaman artikel (non-sticky, patuh kebijakan penempatan AdSense).',
     aspectClass: 'aspect-[4/5]',
     roundedClass: 'rounded-[28px]',
@@ -75,6 +84,42 @@ export const AD_SLOT_CONFIG: Record<AdSlotName, AdSlotConfig> = {
     sizes: '(max-width: 1024px) 0px, 320px',
     creativeWidth: 560,
     creativeHeight: 700,
+    adsenseAllowed: true,
+  },
+  sidebar_rail: {
+    label: 'Iklan Sidebar Beranda',
+    placement: 'Tersisip di antara deretan daftar naskah "Paling Banyak Dibaca" pada rel referensi beranda (Format Vertikal).',
+    aspectClass: 'aspect-[4/5]',
+    roundedClass: 'rounded-[20px]',
+    contentLayout: 'stack',
+    scrimClass: 'bg-gradient-to-t from-[#09090b]/95 via-[#09090b]/65 to-transparent',
+    sizes: '(max-width: 1024px) 100vw, 360px',
+    creativeWidth: 560,
+    creativeHeight: 700,
+    adsenseAllowed: true,
+  },
+  article_in_feed: {
+    label: 'Billboard / In-Feed Bawah Artikel',
+    placement: 'Tepat di bawah badan naskah artikel sebelum blok interaksi & komentar pembaca pada halaman detail artikel.',
+    aspectClass: 'aspect-[320/120] sm:aspect-[970/250]',
+    roundedClass: 'rounded-[28px]',
+    contentLayout: 'stack',
+    scrimClass: 'bg-gradient-to-t from-[#09090b]/95 via-[#09090b]/65 to-transparent',
+    sizes: '(max-width: 1024px) 100vw, 760px',
+    creativeWidth: 1520,
+    creativeHeight: 400,
+    adsenseAllowed: true,
+  },
+  article_mid_content: {
+    label: 'Iklan Tengah Konten Artikel',
+    placement: 'Tersisip otomatis di tengah-tengah alur isi naskah artikel pada halaman detail artikel (In-Article).',
+    aspectClass: 'aspect-[320/120] sm:aspect-[970/250]',
+    roundedClass: 'rounded-[24px]',
+    contentLayout: 'stack',
+    scrimClass: 'bg-gradient-to-t from-[#09090b]/95 via-[#09090b]/65 to-transparent',
+    sizes: '(max-width: 1024px) 100vw, 760px',
+    creativeWidth: 1520,
+    creativeHeight: 400,
     adsenseAllowed: true,
   },
 };
@@ -89,7 +134,7 @@ const adSlotSchema = z.object({
   description: z.string().trim().max(500).nullable().optional(),
   sponsorName: z.string().trim().min(1).max(100),
   targetUrl: z.string().url().refine((value) => value.startsWith('https://'), 'URL tujuan harus HTTPS'),
-  ctaLabel: z.string().trim().min(1).max(40),
+  ctaLabel: z.string().trim().max(40).optional().default('Kunjungi Situs'),
   imageUrl: z.string().trim().max(500).nullable().optional(),
   isActive: z.boolean().default(true),
 });
@@ -101,5 +146,7 @@ export function parseAdSlotPayload(input: unknown): AdSlotPayload {
 }
 
 export function getDummyAdImage(slotName: string) {
-  return slotName === 'sidebar_sticky' ? '/vertical_dummy_ads.webp' : '/horizontal_dummy_ads.webp';
+  return slotName === 'sidebar_sticky' || slotName === 'sidebar_rail'
+    ? '/vertical_dummy_ads.webp'
+    : '/horizontal_dummy_ads.webp';
 }

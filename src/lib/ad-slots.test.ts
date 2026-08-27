@@ -40,17 +40,17 @@ test('rejects unsupported slots and non-HTTPS target URLs', () => {
   );
 });
 
-test('accepts the top banner and below hero slots', () => {
-  for (const slotName of ['top_banner', 'below_hero'] as const) {
+test('accepts the top banner and below hero slots and works without ctaLabel', () => {
+  for (const slotName of ['top_banner', 'below_hero', 'sidebar_rail', 'article_in_feed', 'article_mid_content'] as const) {
     const payload = parseAdSlotPayload({
       slotName,
       title: 'Kampanye Sponsor',
       sponsorName: 'Example Labs',
       targetUrl: 'https://example.com/campaign',
-      ctaLabel: 'Pelajari Penawaran',
     });
     assert.equal(payload.slotName, slotName);
     assert.equal(payload.isActive, true);
+    assert.equal(payload.ctaLabel, 'Kunjungi Situs');
   }
 });
 
@@ -71,10 +71,16 @@ test('reserves top banner for manual creatives only', () => {
   assert.equal(AD_SLOT_CONFIG.leaderboard.adsenseAllowed, true);
   assert.equal(AD_SLOT_CONFIG.in_feed.adsenseAllowed, true);
   assert.equal(AD_SLOT_CONFIG.sidebar_sticky.adsenseAllowed, true);
+  assert.equal(AD_SLOT_CONFIG.sidebar_rail.adsenseAllowed, true);
+  assert.equal(AD_SLOT_CONFIG.article_in_feed.adsenseAllowed, true);
+  assert.equal(AD_SLOT_CONFIG.article_mid_content.adsenseAllowed, true);
 });
 
 test('maps dummy images by orientation', () => {
   assert.equal(getDummyAdImage('sidebar_sticky'), '/vertical_dummy_ads.webp');
+  assert.equal(getDummyAdImage('sidebar_rail'), '/vertical_dummy_ads.webp');
   assert.equal(getDummyAdImage('top_banner'), '/horizontal_dummy_ads.webp');
   assert.equal(getDummyAdImage('below_hero'), '/horizontal_dummy_ads.webp');
+  assert.equal(getDummyAdImage('article_in_feed'), '/horizontal_dummy_ads.webp');
+  assert.equal(getDummyAdImage('article_mid_content'), '/horizontal_dummy_ads.webp');
 });

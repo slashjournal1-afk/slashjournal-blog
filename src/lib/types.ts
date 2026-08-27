@@ -127,7 +127,7 @@ export interface ArticleFeedbackItem {
 
 export interface AdSlot {
   id: string;
-  slotName: 'top_banner' | 'below_hero' | 'leaderboard' | 'in_feed' | 'sidebar_sticky' | string;
+  slotName: 'top_banner' | 'below_hero' | 'leaderboard' | 'in_feed' | 'sidebar_sticky' | 'sidebar_rail' | 'article_in_feed' | 'article_mid_content' | string;
   title: string;
   description?: string | null;
   imageUrl?: string | null;

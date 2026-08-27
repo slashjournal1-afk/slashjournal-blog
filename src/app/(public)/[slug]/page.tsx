@@ -21,7 +21,14 @@ import { JsonLd } from '@/components/seo/JsonLd';
 import { authorId, breadcrumbSchema, organizationId, websiteId } from '@/lib/structured-data';
 import { ArticleViewTracker } from '@/components/content/ArticleViewTracker';
 import { ArticleDiscoveryBand } from '@/components/content/ArticleDiscoveryBand';
-import { getArticleDiscovery, getCachedGlossaryItems, getCachedSidebarAd, getPublishedArticle } from '@/lib/content-loaders';
+import {
+  getArticleDiscovery,
+  getCachedArticleInFeedAd,
+  getCachedArticleMidAd,
+  getCachedGlossaryItems,
+  getCachedSidebarAd,
+  getPublishedArticle,
+} from '@/lib/content-loaders';
 
 export const revalidate = 900;
 
@@ -89,7 +96,7 @@ export default async function ArticleDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  const [glossaryTerms, discovery, sidebarAd] = await Promise.all([
+  const [glossaryTerms, discovery, sidebarAd, articleInFeedAd, articleMidAd] = await Promise.all([
     getCachedGlossaryItems(),
     getArticleDiscovery({
       articleId: article.id,
@@ -98,6 +105,8 @@ export default async function ArticleDetailPage({ params }: PageProps) {
       tagIds: article.tags.map(({ tagId }) => tagId),
     }),
     getCachedSidebarAd(),
+    getCachedArticleInFeedAd(),
+    getCachedArticleMidAd(),
   ]);
 
   // Extract headings for Table of Contents
@@ -324,7 +333,18 @@ export default async function ArticleDetailPage({ params }: PageProps) {
             <InlineSelectionQuote articleTitle={article.title} />
 
             <div id="article-body" className="relative min-w-0 max-w-full break-words">
-              <ArticleContentRenderer content={article.contentMarkdown} glossary={glossaryTerms} />
+              <ArticleContentRenderer
+                content={article.contentMarkdown}
+                glossary={glossaryTerms}
+                inContentAd={
+                  <AdSlotView
+                    slotName="article_mid_content"
+                    ad={articleMidAd}
+                    adsenseSlot={process.env.NEXT_PUBLIC_ADSENSE_ARTICLE_MID_SLOT || process.env.ADSENSE_ARTICLE_MID_SLOT}
+                    adsenseLayoutKey={process.env.NEXT_PUBLIC_ADSENSE_ARTICLE_MID_LAYOUT_KEY}
+                  />
+                }
+              />
             </div>
 
             {/* Tags / Keywords */}
@@ -376,6 +396,16 @@ export default async function ArticleDetailPage({ params }: PageProps) {
                 </ol>
               </div>
             )}
+
+            {/* Billboard / In-Feed Iklan di Bawah Naskah Artikel */}
+            <div className="border-t border-[var(--border-color)] pt-7">
+              <AdSlotView
+                slotName="article_in_feed"
+                ad={articleInFeedAd}
+                adsenseSlot={process.env.NEXT_PUBLIC_ADSENSE_ARTICLE_IN_FEED_SLOT || process.env.ADSENSE_ARTICLE_IN_FEED_SLOT}
+                adsenseLayoutKey={process.env.NEXT_PUBLIC_ADSENSE_ARTICLE_IN_FEED_LAYOUT_KEY}
+              />
+            </div>
 
             {/* Reader Reactions */}
             <ArticleReactions articleId={article.id} />

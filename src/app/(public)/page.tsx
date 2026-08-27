@@ -37,6 +37,7 @@ export default async function HomePage() {
     leaderboardAd,
     inFeedAd,
     belowHeroAd,
+    sidebarRailAd,
   } = await getHomePageData();
 
   const { featured, secondary, latest, recent: moreRecent, popular } = selectHomeArticleSections(recentArticles, popularArticles);
@@ -211,7 +212,7 @@ export default async function HomePage() {
           )}
         </div>
 
-        <ReferenceRail popular={popular} recent={moreRecent} />
+        <ReferenceRail popular={popular} recent={moreRecent} sidebarAd={sidebarRailAd} />
       </section>
 
       <HomeCategorySections categories={categorySections} />

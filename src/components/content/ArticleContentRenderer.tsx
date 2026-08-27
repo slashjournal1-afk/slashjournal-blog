@@ -23,12 +23,14 @@ export interface ArticleContentRendererProps {
   content: string;
   glossary?: GlossaryItem[];
   className?: string;
+  inContentAd?: React.ReactNode;
 }
 
 export function ArticleContentRenderer({
   content,
   glossary = [],
   className = '',
+  inContentAd,
 }: ArticleContentRendererProps) {
   if (!content) return null;
 
@@ -38,9 +40,36 @@ export function ArticleContentRenderer({
   // Step 1: Tokenize blocks separating Fenced Code Blocks, Details accordions, etc.
   const tokens = tokenizeMarkdownBlocks(normalized);
 
+  // Step 2: Calculate mid-point insertion index for in-content ad
+  // AdSense in-article policy: do not insert directly after headings, inside code blocks,
+  // or at very short articles. Prefer inserting after a paragraph around the ~40-50% mark.
+  let insertAfterTokenIdx = -1;
+  if (inContentAd && tokens.length >= 3) {
+    const paragraphIndices = tokens
+      .map((t, idx) => (t.type === 'paragraph' ? idx : -1))
+      .filter((idx) => idx !== -1);
+
+    if (paragraphIndices.length >= 2) {
+      // Pick the paragraph token index near middle
+      const midParaOrder = Math.max(1, Math.floor(paragraphIndices.length / 2));
+      insertAfterTokenIdx = paragraphIndices[midParaOrder];
+    } else if (tokens.length >= 4) {
+      insertAfterTokenIdx = Math.floor(tokens.length / 2);
+    }
+  }
+
   return (
     <div className={`article-prose min-w-0 max-w-full space-y-6 ${className}`}>
-      {tokens.map((token, idx) => renderToken(token, idx, glossary))}
+      {tokens.map((token, idx) => (
+        <React.Fragment key={idx}>
+          {renderToken(token, idx, glossary)}
+          {idx === insertAfterTokenIdx && inContentAd && (
+            <div className="my-10 not-prose" aria-label="Iklan dalam artikel">
+              {inContentAd}
+            </div>
+          )}
+        </React.Fragment>
+      ))}
     </div>
   );
 }
