@@ -23,7 +23,7 @@ import { ArticleViewTracker } from '@/components/content/ArticleViewTracker';
 import { ArticleDiscoveryBand } from '@/components/content/ArticleDiscoveryBand';
 import {
   getArticleDiscovery,
-  getCachedArticleInFeedAd,
+  getCachedBelowHeroAd,
   getCachedArticleMidAd,
   getCachedGlossaryItems,
   getCachedSidebarAd,
@@ -96,7 +96,7 @@ export default async function ArticleDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  const [glossaryTerms, discovery, sidebarAd, articleInFeedAd, articleMidAd] = await Promise.all([
+  const [glossaryTerms, discovery, sidebarAd, belowHeroAd, articleMidAd] = await Promise.all([
     getCachedGlossaryItems(),
     getArticleDiscovery({
       articleId: article.id,
@@ -105,7 +105,7 @@ export default async function ArticleDetailPage({ params }: PageProps) {
       tagIds: article.tags.map(({ tagId }) => tagId),
     }),
     getCachedSidebarAd(),
-    getCachedArticleInFeedAd(),
+    getCachedBelowHeroAd(),
     getCachedArticleMidAd(),
   ]);
 
@@ -397,13 +397,12 @@ export default async function ArticleDetailPage({ params }: PageProps) {
               </div>
             )}
 
-            {/* Billboard / In-Feed Iklan di Bawah Naskah Artikel */}
+            {/* Billboard Iklan di Bawah Naskah Artikel (Sama dengan Billboard Landing Page) */}
             <div className="border-t border-[var(--border-color)] pt-7">
               <AdSlotView
-                slotName="article_in_feed"
-                ad={articleInFeedAd}
-                adsenseSlot={process.env.NEXT_PUBLIC_ADSENSE_ARTICLE_IN_FEED_SLOT || process.env.ADSENSE_ARTICLE_IN_FEED_SLOT}
-                adsenseLayoutKey={process.env.NEXT_PUBLIC_ADSENSE_ARTICLE_IN_FEED_LAYOUT_KEY}
+                slotName="below_hero"
+                ad={belowHeroAd}
+                adsenseSlot={process.env.NEXT_PUBLIC_ADSENSE_BELOW_HERO_SLOT || process.env.ADSENSE_BELOW_HERO_SLOT}
               />
             </div>
 

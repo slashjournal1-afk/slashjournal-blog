@@ -37,6 +37,7 @@ export async function PUT(request: NextRequest) {
     revalidatePath('/category/[slug]', 'page');
     revalidatePath('/[slug]', 'page');
     revalidateTag('home-page-data', 'max');
+    revalidateTag('below-hero-ad', 'max');
     revalidateTag('sidebar-sticky-ad', 'max');
     revalidateTag('article-in-feed-ad', 'max');
     revalidateTag('article-mid-ad', 'max');
