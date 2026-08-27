@@ -180,6 +180,34 @@ Memiliki 3 status utama:
 
   // 6. Ad Slots (M1, M3, M4)
   await prisma.adSlot.upsert({
+    where: { slotName: 'top_banner' },
+    update: {},
+    create: {
+      slotName: 'top_banner',
+      title: 'Deploy Frontend dalam Hitungan Detik di Edge Global',
+      description: 'Build, preview, dan ship aplikasi Next.js lewat jaringan edge di 100+ region.',
+      targetUrl: 'https://vercel.com',
+      sponsorName: 'Vercel Edge Network',
+      imageUrl: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1940&h=180&fit=crop&auto=format&q=80',
+      isActive: true,
+    },
+  });
+
+  await prisma.adSlot.upsert({
+    where: { slotName: 'below_hero' },
+    update: {},
+    create: {
+      slotName: 'below_hero',
+      title: 'Serverless Postgres dengan Database Branching',
+      description: 'Cabang database terpisah untuk setiap pull request, tanpa mengganggu data produksi.',
+      targetUrl: 'https://neon.tech',
+      sponsorName: 'Neon Postgres',
+      imageUrl: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=1940&h=500&fit=crop&auto=format&q=80',
+      isActive: true,
+    },
+  });
+
+  await prisma.adSlot.upsert({
     where: { slotName: 'leaderboard' },
     update: {},
     create: {

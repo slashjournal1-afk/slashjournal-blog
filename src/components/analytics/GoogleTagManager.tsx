@@ -3,21 +3,13 @@
 import Script from 'next/script';
 import { siteConfig } from '@/lib/site';
 import { useEffect, useState } from 'react';
-
-const CONSENT_KEY = 'slashjournal-consent-v2';
+import { readAnalyticsConsent } from '@/lib/consent';
 
 export function GoogleTagManager() {
   const [enabled, setEnabled] = useState(false);
 
   useEffect(() => {
-    const readConsent = () => {
-      try {
-        const value = JSON.parse(localStorage.getItem(CONSENT_KEY) || 'null');
-        setEnabled(value?.analytics === 'granted');
-      } catch {
-        setEnabled(false);
-      }
-    };
+    const readConsent = () => setEnabled(readAnalyticsConsent());
     readConsent();
     window.addEventListener('slashjournal:consent-update', readConsent);
     return () => window.removeEventListener('slashjournal:consent-update', readConsent);

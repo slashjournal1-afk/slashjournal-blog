@@ -33,9 +33,12 @@ export async function PUT(request: NextRequest) {
     });
 
     revalidatePath('/');
+    revalidatePath('/', 'layout');
     revalidatePath('/category/[slug]', 'page');
     revalidatePath('/[slug]', 'page');
+    revalidateTag('home-page-data', 'max');
     revalidateTag('sidebar-sticky-ad', 'max');
+    revalidateTag('top-banner-ad', 'max');
     return NextResponse.json({ slot });
   } catch (error: unknown) {
     return jsonError('Data iklan tidak valid', 400, error);

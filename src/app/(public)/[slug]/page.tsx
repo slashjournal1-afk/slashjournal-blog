@@ -13,7 +13,7 @@ import { InlineSelectionQuote } from '@/components/content/InlineSelectionQuote'
 import { BookmarkButton } from '@/components/wiki/BookmarkButton';
 import { CommentSection } from '@/components/comments/CommentSection';
 import { SponsoredBadge } from '@/components/ads/SponsoredBadge';
-import { SidebarStickyAd } from '@/components/ads/SidebarStickyAd';
+import { AdSlotView } from '@/components/ads/AdSlotView';
 import { Calendar, Clock, Eye, ArrowLeft, ArrowRight, ExternalLink } from 'lucide-react';
 import type { Metadata } from 'next';
 import { absoluteUrl, siteConfig } from '@/lib/site';
@@ -427,8 +427,14 @@ export default async function ArticleDetailPage({ params }: PageProps) {
             />
           </div>
 
-          {/* Sticky Right Sidebar */}
+          {/* Right Sidebar: iklan non-sticky (patuh kebijakan penempatan AdSense) + navigasi lekat */}
           <aside className="hidden lg:block">
+            <AdSlotView
+              slotName="sidebar_sticky"
+              ad={sidebarAd}
+              adsenseSlot={process.env.NEXT_PUBLIC_ADSENSE_SIDEBAR_STICKY_SLOT || process.env.ADSENSE_SIDEBAR_STICKY_SLOT}
+              className="mb-10"
+            />
             <div className="space-y-10 lg:sticky lg:top-24">
               <ScrollSpyTOC headings={headings} />
 
@@ -455,8 +461,6 @@ export default async function ArticleDetailPage({ params }: PageProps) {
                   Profil Lengkap →
                 </Link>
               </div>
-
-              <SidebarStickyAd ad={sidebarAd} adsenseSlot={process.env.NEXT_PUBLIC_ADSENSE_SIDEBAR_STICKY_SLOT || process.env.ADSENSE_SIDEBAR_STICKY_SLOT} />
             </div>
           </aside>
         </div>
