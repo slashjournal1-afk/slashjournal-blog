@@ -14,7 +14,7 @@ import { BookmarkButton } from '@/components/wiki/BookmarkButton';
 import { CommentSection } from '@/components/comments/CommentSection';
 import { SponsoredBadge } from '@/components/ads/SponsoredBadge';
 import { AdSlotView } from '@/components/ads/AdSlotView';
-import { Calendar, Clock, Eye, ArrowLeft, ArrowRight, ExternalLink } from 'lucide-react';
+import { Calendar, Clock, ArrowLeft, ArrowRight, ExternalLink } from 'lucide-react';
 import type { Metadata } from 'next';
 import { absoluteUrl, siteConfig } from '@/lib/site';
 import { JsonLd } from '@/components/seo/JsonLd';
@@ -293,10 +293,6 @@ export default async function ArticleDetailPage({ params }: PageProps) {
               <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--bg-card-muted)] border border-[var(--border-color)] px-3 py-1 font-medium">
                 <Clock className="h-3.5 w-3.5 text-[var(--accent)] shrink-0" />
                 {article.readingTime} mnt baca
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--bg-card-muted)] border border-[var(--border-color)] px-3 py-1 font-medium">
-                <Eye className="h-3.5 w-3.5 text-[var(--accent)] shrink-0" />
-                {article.viewCount} pembaca
               </span>
             </div>
           </div>

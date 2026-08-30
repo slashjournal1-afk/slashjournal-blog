@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowUpRight, Eye, Search, ThumbsUp } from 'lucide-react';
+import { ArrowUpRight, Search, ThumbsUp } from 'lucide-react';
 
 type SignalArticle = {
   id: string;
@@ -23,10 +23,12 @@ function SignalList({ articles, metric }: { articles: SignalArticle[]; metric: '
               <span className="block text-sm font-semibold leading-snug text-[var(--text-primary)] transition-colors group-hover:text-[var(--accent-hover)]">{article.title}</span>
               <span className="mt-1 block text-xs text-[var(--text-muted)]">{article.category.name}</span>
             </span>
-            <span className="flex shrink-0 items-center gap-1 pt-0.5 font-mono text-[10px] text-[var(--text-muted)]">
-              {metric === 'views' ? <Eye className="h-3 w-3" aria-hidden="true" /> : <ThumbsUp className="h-3 w-3" aria-hidden="true" />}
-              {metric === 'views' ? article.viewCount.toLocaleString('id-ID') : article.helpfulVotes.toLocaleString('id-ID')}
-            </span>
+            {metric === 'helpful' && (
+              <span className="flex shrink-0 items-center gap-1 pt-0.5 font-mono text-[10px] text-[var(--text-muted)]">
+                <ThumbsUp className="h-3 w-3" aria-hidden="true" />
+                {article.helpfulVotes.toLocaleString('id-ID')}
+              </span>
+            )}
           </Link>
         </li>
       ))}
@@ -47,7 +49,7 @@ export function HomeSignalDesk({ mostRead, mostHelpful, keywords }: { mostRead: 
 
       <div className="grid gap-10 pt-6 lg:grid-cols-2 lg:gap-12">
         <section aria-labelledby="most-read-title">
-          <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--text-primary)]"><Eye className="h-3.5 w-3.5 text-[var(--accent)]" aria-hidden="true" /><h3 id="most-read-title">Paling dibaca</h3></div>
+          <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--text-primary)]"><h3 id="most-read-title">Paling dibaca</h3></div>
           {mostRead.length > 0 ? <SignalList articles={mostRead} metric="views" /> : <p className="mt-4 text-sm text-[var(--text-muted)]">Belum ada cukup data tayangan.</p>}
         </section>
         <section aria-labelledby="most-helpful-title">

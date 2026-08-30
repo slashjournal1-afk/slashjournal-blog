@@ -58,7 +58,7 @@ function DiscoveryColumn({
                     {article.title}
                   </span>
                   <span className="mt-1.5 block text-xs text-[var(--text-muted)]">
-                    {mode === 'recommended' ? formatDate(article.publishedAt || article.createdAt) : `${article.viewCount.toLocaleString('id-ID')} pembaca`}
+                    {formatDate(article.publishedAt || article.createdAt)}
                   </span>
                 </span>
               </Link>

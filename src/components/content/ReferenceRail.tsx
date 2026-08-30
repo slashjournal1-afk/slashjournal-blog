@@ -56,7 +56,7 @@ export function ReferenceRail({
                       <span className="mt-1.5 flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
                         <span className="font-medium text-[var(--text-secondary)]">{article.category.name}</span>
                         <span aria-hidden="true" className="text-[var(--color-silver)]">·</span>
-                        <span>{article.viewCount.toLocaleString('id-ID')} tayangan</span>
+                        <span>{formatDate(article.publishedAt || article.createdAt)}</span>
                       </span>
                     </div>
                   </Link>
