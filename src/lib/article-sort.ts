@@ -7,6 +7,8 @@ export const ARTICLE_SORT_OPTIONS = [
   'views-asc',
   'helpful-desc',
   'helpful-asc',
+  'comments-desc',
+  'comments-asc',
 ] as const;
 
 export type ArticleSort = (typeof ARTICLE_SORT_OPTIONS)[number];
@@ -18,7 +20,9 @@ type ArticleOrderBy =
   | [{ viewCount: 'desc' }, { id: 'desc' }]
   | [{ viewCount: 'asc' }, { id: 'asc' }]
   | [{ helpfulVotes: 'desc' }, { id: 'desc' }]
-  | [{ helpfulVotes: 'asc' }, { id: 'asc' }];
+  | [{ helpfulVotes: 'asc' }, { id: 'asc' }]
+  | [{ comments: { _count: 'desc' } }, { id: 'desc' }]
+  | [{ comments: { _count: 'asc' } }, { id: 'asc' }];
 
 export function getArticleOrderBy(value: string | undefined): ArticleOrderBy {
   switch (value) {
@@ -29,6 +33,8 @@ export function getArticleOrderBy(value: string | undefined): ArticleOrderBy {
     case 'views-asc': return [{ viewCount: 'asc' }, { id: 'asc' }];
     case 'helpful-desc': return [{ helpfulVotes: 'desc' }, { id: 'desc' }];
     case 'helpful-asc': return [{ helpfulVotes: 'asc' }, { id: 'asc' }];
+    case 'comments-desc': return [{ comments: { _count: 'desc' } }, { id: 'desc' }];
+    case 'comments-asc': return [{ comments: { _count: 'asc' } }, { id: 'asc' }];
     default: return [{ updatedAt: 'desc' }, { id: 'desc' }];
   }
 }

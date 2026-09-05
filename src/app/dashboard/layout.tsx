@@ -25,6 +25,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     { label: 'Google Analytics & AdSense', href: '/dashboard/superadmin/analytics', icon: 'activity' },
     { label: 'Iklan Manual & Sponsor', href: '/dashboard/superadmin/ads', icon: 'activity' },
     { label: 'Log Audit & Keamanan', href: '/admin/audit-logs', icon: 'file-text' },
+    { label: 'Pengaturan', href: '/dashboard/settings', icon: 'settings' },
   ];
 
   const creatorNav: DashboardNavItem[] = [
@@ -35,11 +36,13 @@ export default async function DashboardLayout({ children }: { children: React.Re
       ? ([{ label: 'Antrean Review Redaksi', href: '/admin/review-queue', icon: 'inbox' }] satisfies DashboardNavItem[])
       : []),
     { label: 'Ruang Anggota (Member)', href: '/dashboard/member', icon: 'user' },
+    { label: 'Pengaturan', href: '/dashboard/settings', icon: 'settings' },
   ];
 
   const memberNav: DashboardNavItem[] = [
     { label: 'Ikhtisar Anggota', href: '/dashboard/member', icon: 'layout-dashboard' },
     { label: 'Pustaka Bookmark', href: '/bookmarks', icon: 'bookmark' },
+    { label: 'Pengaturan', href: '/dashboard/settings', icon: 'settings' },
   ];
 
   const activeNav =

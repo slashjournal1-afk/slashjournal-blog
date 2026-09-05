@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Menu, X, LayoutDashboard, FileText, Plus, Inbox, Activity, Shield, Bookmark, User, PenTool } from 'lucide-react';
+import { Home, Menu, X, LayoutDashboard, FileText, Plus, Inbox, Activity, Shield, Bookmark, User, PenTool, Settings } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { BrandLogo } from '@/components/layout/BrandLogo';
 import { LogoutButton } from '@/components/auth/LogoutButton';
@@ -17,7 +17,8 @@ export type DashboardIconKey =
   | 'shield'
   | 'bookmark'
   | 'user'
-  | 'pen-tool';
+  | 'pen-tool'
+  | 'settings';
 
 const DASHBOARD_ICONS: Record<DashboardIconKey, LucideIcon> = {
   'layout-dashboard': LayoutDashboard,
@@ -29,6 +30,7 @@ const DASHBOARD_ICONS: Record<DashboardIconKey, LucideIcon> = {
   bookmark: Bookmark,
   user: User,
   'pen-tool': PenTool,
+  settings: Settings,
 };
 
 export interface DashboardNavItem {

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { articleCreateSchema, articleUpdateSchema } from './validation';
+import { articleCreateSchema, articleUpdateSchema, profileUpdateSchema, changePasswordSchema } from './validation';
 
 test('articleCreateSchema allows long coverImageUrl (e.g. Base64 data URL > 2048 chars)', () => {
   const longBase64 = 'data:image/png;base64,' + 'A'.repeat(50000);
@@ -82,4 +82,33 @@ test('articleCreateSchema returns descriptive error when required fields are mis
     assert.ok(errorMessages.includes('Judul wajib diisi'));
     assert.ok(errorMessages.includes('Konten wajib diisi'));
   }
+});
+
+test('profileUpdateSchema accepts valid profile data and normalizes empty optionals to null', () => {
+  const result = profileUpdateSchema.safeParse({
+    displayName: '  Penulis Andal  ',
+    name: '   ',
+    avatarUrl: '/uploads/avatar/img_123.webp',
+  });
+
+  assert.equal(result.success, true);
+  if (result.success) {
+    assert.equal(result.data.displayName, 'Penulis Andal');
+    assert.equal(result.data.name, null);
+    assert.equal(result.data.avatarUrl, '/uploads/avatar/img_123.webp');
+  }
+});
+
+test('profileUpdateSchema rejects empty displayName and non-http avatar URLs', () => {
+  const emptyName = profileUpdateSchema.safeParse({ displayName: '   ' });
+  assert.equal(emptyName.success, false);
+
+  const badAvatar = profileUpdateSchema.safeParse({ displayName: 'Valid', avatarUrl: 'javascript:alert(1)' });
+  assert.equal(badAvatar.success, false);
+});
+
+test('changePasswordSchema requires a different new password with minimal length', () => {
+  assert.equal(changePasswordSchema.safeParse({ currentPassword: 'lama1234', newPassword: 'baru1234' }).success, true);
+  assert.equal(changePasswordSchema.safeParse({ currentPassword: 'sama1234', newPassword: 'sama1234' }).success, false);
+  assert.equal(changePasswordSchema.safeParse({ currentPassword: 'lama1234', newPassword: 'pendek' }).success, false);
 });

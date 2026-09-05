@@ -10,7 +10,7 @@ export const commentSchema = z.object({
 export const feedbackSchema = z.object({
   articleId: articleIdSchema,
   isHelpful: z.boolean().optional(),
-  reaction: z.enum(['👏', '🚀', '💡', '🔥', '❤️']).optional(),
+  reaction: z.enum(['helpful', 'insight', 'solid', 'practical', 'deep-dive', '👏', '🚀', '💡', '🔥', '🧠', '❤️']).optional(),
 }).refine((data) => data.isHelpful !== undefined || data.reaction !== undefined, {
   message: 'Feedback tidak berisi penilaian',
 });
@@ -18,6 +18,31 @@ export const feedbackSchema = z.object({
 export const subscriptionSchema = z.object({
   email: z.string().trim().toLowerCase().email('Format email tidak valid').max(320, 'Email terlalu panjang'),
   topic: z.enum(['all', 'rekayasa-sistem', 'desain-antarmuka']).default('all'),
+});
+
+const optionalAvatarUrlSchema = z
+  .string()
+  .trim()
+  .max(2000, 'URL avatar terlalu panjang (maksimal 2000 karakter)')
+  .refine(
+    (value) => !value || /^https?:\/\//i.test(value) || value.startsWith('/uploads/'),
+    'URL avatar harus diawali http://, https://, atau /uploads/'
+  )
+  .nullish()
+  .transform((val) => (val && val.trim() ? val.trim() : null));
+
+export const profileUpdateSchema = z.object({
+  displayName: z.string().trim().min(1, 'Nama tampilan wajib diisi').max(80, 'Nama tampilan terlalu panjang (maksimal 80 karakter)'),
+  name: z.string().trim().max(80, 'Nama lengkap terlalu panjang (maksimal 80 karakter)').nullish().transform((val) => (val && val.trim() ? val.trim() : null)),
+  avatarUrl: optionalAvatarUrlSchema,
+});
+
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, 'Kata sandi saat ini wajib diisi').max(128, 'Kata sandi terlalu panjang'),
+  newPassword: z.string().min(8, 'Kata sandi baru minimal harus 8 karakter').max(128, 'Kata sandi baru maksimal 128 karakter'),
+}).refine((data) => data.currentPassword !== data.newPassword, {
+  message: 'Kata sandi baru harus berbeda dari kata sandi saat ini',
+  path: ['newPassword'],
 });
 
 const optionalHttpUrlSchema = z

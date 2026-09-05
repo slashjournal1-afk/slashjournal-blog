@@ -22,6 +22,8 @@ export function ArticleSortSelect({ value }: { value: string }) {
         <option value="views-asc">Pembaca tersedikit</option>
         <option value="helpful-desc">Apresiasi terbanyak</option>
         <option value="helpful-asc">Apresiasi tersedikit</option>
+        <option value="comments-desc">Diskusi terbanyak</option>
+        <option value="comments-asc">Diskusi tersedikit</option>
       </select>
     </div>
   );
