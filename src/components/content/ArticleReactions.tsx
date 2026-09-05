@@ -1,42 +1,54 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Sparkles } from 'lucide-react';
+import { Award, BookOpen, Layers, Lightbulb, ThumbsUp } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { pushDataLayer } from '@/lib/data-layer';
 
 interface ArticleReactionsProps {
   articleId: string;
 }
 
-const REACTIONS = [
-  { emoji: '👏', label: 'Tepuk Tangan', id: 'clap' },
-  { emoji: '🚀', label: 'Arsitektur Hebat', id: 'rocket' },
-  { emoji: '💡', label: 'Ide Brilian', id: 'idea' },
-  { emoji: '🔥', label: 'Krusial', id: 'fire' },
-  { emoji: '🧠', label: 'Wawasan Mendalam', id: 'brain' },
+interface ReactionItem {
+  id: string;
+  label: string;
+  icon: LucideIcon;
+}
+
+const REACTIONS: ReactionItem[] = [
+  { id: 'helpful', label: 'Membantu', icon: ThumbsUp },
+  { id: 'insight', label: 'Wawasan Baru', icon: Lightbulb },
+  { id: 'solid', label: 'Arsitektur Solid', icon: Layers },
+  { id: 'practical', label: 'Praktis & Relevan', icon: Award },
+  { id: 'deep-dive', label: 'Perlu Pendalaman', icon: BookOpen },
 ];
 
 export function ArticleReactions({ articleId }: ArticleReactionsProps) {
   const [counts, setCounts] = useState<{ [key: string]: number }>({
-    clap: 12,
-    rocket: 8,
-    idea: 15,
-    fire: 6,
-    brain: 11,
+    helpful: 12,
+    insight: 15,
+    solid: 8,
+    practical: 6,
+    'deep-dive': 11,
   });
 
-  const [userReactions, setUserReactions] = useState<{ [key: string]: number }>({});
-  const [activeReactionAnim, setActiveReactionAnim] = useState<string | null>(null);
+  const [selected, setSelected] = useState<string | null>(null);
 
-  const handleReact = async (id: string, emoji: string) => {
-    const currentCount = userReactions[id] || 0;
-    if (currentCount >= 50) return; // max 50 per reader
+  const handleReact = async (id: string) => {
+    // Single-vote toggle: clicking the active reaction removes it locally.
+    if (selected === id) {
+      setSelected(null);
+      setCounts((prev) => ({ ...prev, [id]: Math.max(0, (prev[id] || 1) - 1) }));
+      return;
+    }
 
-    setUserReactions((prev) => ({ ...prev, [id]: currentCount + 1 }));
-    setCounts((prev) => ({ ...prev, [id]: (prev[id] || 0) + 1 }));
-    setActiveReactionAnim(id);
-
-    setTimeout(() => setActiveReactionAnim(null), 600);
+    const previous = selected;
+    setSelected(id);
+    setCounts((prev) => {
+      const next = { ...prev, [id]: (prev[id] || 0) + 1 };
+      if (previous) next[previous] = Math.max(0, (next[previous] || 1) - 1);
+      return next;
+    });
 
     // Send to API
     try {
@@ -46,52 +58,56 @@ export function ArticleReactions({ articleId }: ArticleReactionsProps) {
         body: JSON.stringify({
           articleId,
           isHelpful: true,
-          reaction: emoji,
+          reaction: id,
         }),
       });
-      if (response.ok) pushDataLayer('article_feedback', { article_id: articleId, reaction: emoji });
-    } catch {}
+      if (!response.ok) throw new Error('Feedback gagal direkam');
+      pushDataLayer('article_feedback', { article_id: articleId, reaction: id });
+    } catch {
+      // Roll back the optimistic update so the count stays truthful.
+      setSelected(previous);
+      setCounts((prev) => {
+        const next = { ...prev, [id]: Math.max(0, (prev[id] || 1) - 1) };
+        if (previous) next[previous] = (next[previous] || 0) + 1;
+        return next;
+      });
+    }
   };
 
   return (
-    <div className="my-8 p-6 rounded-[28px] bg-[#f4f4f5]/60 dark:bg-[#18181b]/60 border border-[#ececee] dark:border-[#27272a] space-y-4 shadow-xs">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-[var(--accent)]" />
-          <h4 className="text-xs font-bold uppercase tracking-wider text-[#09090b] dark:text-white">
-            Apresiasi &amp; Reaksi Pembaca
-          </h4>
-        </div>
-        <span className="text-[11px] text-[#71717a] dark:text-[#a1a1aa]">
-          Klik untuk memberikan apresiasi
+    <div className="my-8 p-6 rounded-[20px] bg-[var(--bg-card)] border border-[var(--border-color)] space-y-4">
+      <div className="flex items-center justify-between gap-3">
+        <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--text-primary)]">
+          Apresiasi &amp; Reaksi Pembaca
+        </h4>
+        <span className="text-[11px] text-[var(--text-muted)]">
+          Pilih satu reaksi yang paling sesuai
         </span>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2.5">
+      <div className="flex flex-wrap items-center gap-2">
         {REACTIONS.map((item) => {
           const count = counts[item.id] || 0;
-          const userHasReacted = (userReactions[item.id] || 0) > 0;
-          const isAnimating = activeReactionAnim === item.id;
+          const isActive = selected === item.id;
+          const Icon = item.icon;
 
           return (
             <button
               key={item.id}
-              onClick={() => handleReact(item.id, item.emoji)}
-              className={`group flex items-center gap-2 px-3.5 py-2 rounded-[14px] border text-xs font-bold transition-all active:scale-95 ${
-                userHasReacted
+              type="button"
+              onClick={() => handleReact(item.id)}
+              aria-pressed={isActive}
+              aria-label={`${item.label}, ${count} suara`}
+              title={item.label}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-[12px] border text-xs font-semibold transition-all active:scale-95 ${
+                isActive
                   ? 'bg-[var(--accent-soft)] border-[var(--accent-line)] text-[var(--accent)]'
-                  : 'bg-white dark:bg-[#121214] border-[#ececee] dark:border-[#27272a] text-[#09090b] dark:text-white hover:border-zinc-300 dark:hover:border-zinc-700'
+                  : 'bg-transparent border-[var(--border-color)] text-[var(--text-secondary)] hover:border-[var(--accent)] hover:text-[var(--accent)]'
               }`}
-              title={`${item.label} (Klik untuk menambah)`}
             >
-              <span
-                className={`text-base transition-transform ${
-                  isAnimating ? 'scale-150 -translate-y-1' : 'group-hover:scale-110'
-                }`}
-              >
-                {item.emoji}
-              </span>
-              <span className="font-mono text-xs">{count}</span>
+              <Icon className="h-4 w-4" aria-hidden="true" />
+              <span>{item.label}</span>
+              <span className="font-mono tabular-nums">{count}</span>
             </button>
           );
         })}

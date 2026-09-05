@@ -16,6 +16,7 @@ import {
   CheckCircle2,
   AlertCircle,
   ThumbsUp,
+  MessageSquare,
   ArrowUpRight,
   Edit3,
 } from 'lucide-react';
@@ -56,6 +57,7 @@ export default async function CreatorDashboardPage({ searchParams }: { searchPar
         viewCount: true,
         helpfulVotes: true,
         category: { select: { name: true } },
+        _count: { select: { comments: true } },
       },
     }),
     prisma.article.groupBy({
@@ -273,6 +275,17 @@ export default async function CreatorDashboardPage({ searchParams }: { searchPar
                         <span className="flex items-center gap-1 text-emerald-500 font-bold">
                           <ThumbsUp className="w-3 h-3" />
                           {art.helpfulVotes} apresiasi
+                        </span>
+                        <span>•</span>
+                        <span
+                          className={`flex items-center gap-1 font-bold ${
+                            art._count.comments > 0
+                              ? 'text-[var(--accent)]'
+                              : 'text-[var(--text-muted)]'
+                          }`}
+                        >
+                          <MessageSquare className="w-3 h-3" />
+                          {art._count.comments} diskusi
                         </span>
                       </>
                     )}

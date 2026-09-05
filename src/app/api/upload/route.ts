@@ -16,22 +16,27 @@ export async function POST(req: NextRequest) {
   try {
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ error: 'Sesi tidak ditemukan' }, { status: 401 });
-    if (!['ADMIN', 'EDITOR', 'AUTHOR'].includes(user.role)) {
-      return NextResponse.json({ error: 'Akses upload ditolak' }, { status: 403 });
-    }
 
     const formData = await req.formData();
     const file = formData.get('file');
     if (!(file instanceof File)) return NextResponse.json({ error: 'Berkas gambar wajib diisi' }, { status: 400 });
-    if (file.size > MAX_UPLOAD_BYTES) return NextResponse.json({ error: 'Ukuran gambar maksimal 10 MB' }, { status: 413 });
-    if (!VALID_MIMES.has(file.type)) return NextResponse.json({ error: 'Format gambar tidak didukung' }, { status: 400 });
-
     const requestedFolder = String(formData.get('folder') || '');
+    const isAvatarUpload = requestedFolder === 'avatar';
+    if (!isAvatarUpload && !['ADMIN', 'EDITOR', 'AUTHOR'].includes(user.role)) {
+      return NextResponse.json({ error: 'Akses upload ditolak' }, { status: 403 });
+    }
+    const maxBytes = isAvatarUpload ? 2 * 1024 * 1024 : MAX_UPLOAD_BYTES;
+    if (file.size > maxBytes) {
+      return NextResponse.json({ error: isAvatarUpload ? 'Ukuran avatar maksimal 2 MB' : 'Ukuran gambar maksimal 10 MB' }, { status: 413 });
+    }
+    if (!VALID_MIMES.has(file.type)) return NextResponse.json({ error: 'Format gambar tidak didukung' }, { status: 400 });
     if (requestedFolder === 'ads' && user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Akses upload iklan ditolak' }, { status: 403 });
     }
     const folder = requestedFolder === 'ads'
       ? 'ads'
+      : requestedFolder === 'avatar'
+      ? 'avatar'
       : ['thumbnail', 'cover'].includes(requestedFolder) || ['true', '1'].includes(String(formData.get('isCover')))
       ? 'thumbnail'
       : 'konten-artikel';
