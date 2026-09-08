@@ -77,6 +77,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
   const breadcrumbJsonLd = breadcrumbSchema([
     { name: 'Beranda', path: '/' },
     { name: category.name, path: `/category/${category.slug}` },
+
   ]);
 
   // Fetch in-feed & leaderboard ad
@@ -98,29 +99,38 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
           <div className="p-4 rounded-[20px] bg-[#f4f4f5] dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] flex items-center gap-3 text-xs text-[#52525b] dark:text-[#a1a1aa]">
             <Lock className="w-4 h-4 text-[var(--accent)] shrink-0" />
             <span>
-              <strong>Kanal Refleksi Personal:</strong> Halaman dan artikel dalam kanal ini tidak diindeks secara agresif oleh mesin pencari publik demi menjaga integritas privasi (sesuai ketentuan UU PDP & keputusan KB2).
+              <strong>Kanal Refleksi Personal:</strong> Halaman dan artikel dalam kanal ini tidak diindeks secara agresif oleh mesin pencari publik demi menjaga integritas privasi.
             </span>
           </div>
         )}
       </div>
 
-      <div className="mb-16">
-        {articles.map((art, idx) => (
-          <React.Fragment key={art.id}>
-            <ArticleRow href={`/${art.slug}`} title={art.title} excerpt={art.excerpt} date={formatDate(art.publishedAt || art.createdAt)} readingTime={art.readingTime} imageUrl={art.coverImageUrl} sponsored={art.isSponsored} sponsorName={art.sponsorName} />
+      {articles.length === 0 ? (
+        <div className="mb-16 py-12 text-center border-t border-b border-[var(--border-color)]">
+          <p className="text-sm text-[var(--text-muted)]">Belum ada tulisan yang dipublikasikan dalam topik ini.</p>
+          <Link href="/category" className="mt-4 inline-block text-xs font-semibold text-[var(--accent)] hover:underline">
+            ← Kembali ke semua kategori
+          </Link>
+        </div>
+      ) : (
+        <div className="mb-16">
+          {articles.map((art, idx) => (
+            <React.Fragment key={art.id}>
+              <ArticleRow href={`/${art.slug}`} title={art.title} excerpt={art.excerpt} date={formatDate(art.publishedAt || art.createdAt)} readingTime={art.readingTime} imageUrl={art.coverImageUrl} sponsored={art.isSponsored} sponsorName={art.sponsorName} />
 
-            {idx === 1 && (
-              <AdSlotView
-                slotName="in_feed"
-                ad={inFeedAd}
-                adsenseSlot={process.env.NEXT_PUBLIC_ADSENSE_IN_FEED_SLOT || process.env.ADSENSE_IN_FEED_SLOT}
-                adsenseLayoutKey={process.env.NEXT_PUBLIC_ADSENSE_IN_FEED_LAYOUT_KEY}
-                className="my-6"
-              />
-            )}
-          </React.Fragment>
-        ))}
-      </div>
+              {idx === 1 && (
+                <AdSlotView
+                  slotName="in_feed"
+                  ad={inFeedAd}
+                  adsenseSlot={process.env.NEXT_PUBLIC_ADSENSE_IN_FEED_SLOT || process.env.ADSENSE_IN_FEED_SLOT}
+                  adsenseLayoutKey={process.env.NEXT_PUBLIC_ADSENSE_IN_FEED_LAYOUT_KEY}
+                  className="my-6"
+                />
+              )}
+            </React.Fragment>
+          ))}
+        </div>
+      )}
 
       {(page > 1 || hasNextPage) && (
         <nav aria-label="Paginasi kanal" className="mb-12 flex items-center justify-between border-t border-[var(--border-color)] pt-6 text-sm">
@@ -129,12 +139,14 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
         </nav>
       )}
 
-      <AdSlotView
-        slotName="leaderboard"
-        ad={leaderboardAd}
-        adsenseSlot={process.env.NEXT_PUBLIC_ADSENSE_LEADERBOARD_SLOT || process.env.ADSENSE_LEADERBOARD_SLOT}
-        className="mt-10"
-      />
+      {articles.length > 0 && (
+        <AdSlotView
+          slotName="leaderboard"
+          ad={leaderboardAd}
+          adsenseSlot={process.env.NEXT_PUBLIC_ADSENSE_LEADERBOARD_SLOT || process.env.ADSENSE_LEADERBOARD_SLOT}
+          className="mt-10"
+        />
+      )}
     </div>
   );
 }

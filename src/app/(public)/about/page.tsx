@@ -104,7 +104,7 @@ export default function AboutPage() {
       {/* Editorial Policy & Correction Statement */}
       <div className="rounded-[36px] bg-[#27272a] text-white p-8 sm:p-12 space-y-6">
         <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
-          Kebijakan Koreksi & Integritas Publikasi (C10 & E4)
+          Kebijakan Koreksi &amp; Integritas Publikasi
         </h2>
         <p className="text-sm text-zinc-300 leading-relaxed max-w-3xl">
           Sebagai entitas perorangan dengan tanggung jawab hukum melekat, kami menerapkan transparansi penuh pada setiap koreksi. Kesalahan ketik diperbaiki secara langsung, sementara koreksi fakta atau arsitektur dicatat secara transparan dengan riwayat versi permanen pada basis data.

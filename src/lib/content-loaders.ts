@@ -54,12 +54,17 @@ export const getArticleComments = cache(async (articleId: string) => {
 
 const getCachedNavbarCategories = unstable_cache(async () => {
   return prisma.category.findMany({
-    where: { isIndexable: true },
-    orderBy: { name: 'asc' },
+    where: {
+      isIndexable: true,
+      articles: { some: { status: 'PUBLISHED', isIndexable: true } },
+    },
+    orderBy: {
+      articles: { _count: 'desc' },
+    },
     take: 8,
     select: { name: true, slug: true, description: true },
   });
-}, ['navbar-categories'], { revalidate: 900 });
+}, ['navbar-categories-v2'], { revalidate: 900 });
 
 export const getNavbarCategories = cache(async () => {
   try {

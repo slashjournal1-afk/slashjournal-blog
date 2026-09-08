@@ -50,11 +50,11 @@ export default function ContactPage() {
                     onChange={(e) => setSubject(e.target.value)}
                     className="w-full px-4 py-3 rounded-[14px] bg-[#f4f4f5] dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-xs font-semibold text-[#09090b] dark:text-white focus:outline-none"
                   >
-                    <option value="correction">Koreksi Kesalahan Teknis / Fakta (C10)</option>
-                    <option value="sponsor">Kerjasama Sponsor & Advertorial (M1-M5)</option>
-                    <option value="author">Daftar menjadi penulis kontributor</option>
+                    <option value="correction">Koreksi Kesalahan Teknis / Fakta</option>
+                    <option value="sponsor">Kerjasama Sponsor &amp; Kemitraan</option>
+                    <option value="author">Daftar Menjadi Penulis Kontributor</option>
                     <option value="privacy">Permintaan Data Pribadi / Hapus Akun (UU PDP)</option>
-                    <option value="general">Pertanyaan Umum Arsitektur</option>
+                    <option value="general">Pertanyaan Umum Platform</option>
                   </select>
                 </div>
 
@@ -117,7 +117,7 @@ export default function ContactPage() {
               <Sparkles className="w-5 h-5" />
             </div>
             <h3 className="text-base font-bold text-[#09090b] dark:text-white">
-              Slot Iklan & Advertorial (M1-M5)
+              Slot Kemitraan &amp; Advertorial
             </h3>
             <p className="text-xs text-[#52525b] dark:text-[#a1a1aa] leading-relaxed">
               Kami menerima penempatan banner sponsor billboard, native in-feed cards, dan penulisan artikel bersponsor mendalam. Seluruh pos bersponsor akan memiliki penanda transparan <code>POS BERSPONSOR</code>.
