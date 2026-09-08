@@ -18,7 +18,10 @@ export const metadata: Metadata = {
 
 export default async function SeriesIndexPage() {
   const seriesList = await prisma.series.findMany({
-    where: { isPublished: true },
+    where: {
+      isPublished: true,
+      articles: { some: { status: 'PUBLISHED', isIndexable: true } },
+    },
     orderBy: { sortOrder: 'asc' },
     include: {
       articles: {

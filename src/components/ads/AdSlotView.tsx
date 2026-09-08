@@ -13,12 +13,12 @@ interface AdSlotViewProps {
 }
 
 export function AdSlotView({ slotName, ad, adsenseSlot, adsenseLayoutKey, className = '' }: AdSlotViewProps) {
-  if (ad && ad.isActive) {
-    return <ManualAdCreative ad={ad} slotName={slotName} className={className} />;
-  }
-
   if (adsenseSlot && getAdSlotConfig(slotName).adsenseAllowed) {
     return <GoogleAdSense slot={adsenseSlot} slotName={slotName} layoutKey={adsenseLayoutKey} className={className} />;
+  }
+
+  if (ad && ad.isActive) {
+    return <ManualAdCreative ad={ad} slotName={slotName} className={className} />;
   }
 
   return <ManualAdPlaceholder slotName={slotName} className={className} />;

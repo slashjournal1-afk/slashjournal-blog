@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { pushDataLayer } from '@/lib/data-layer';
 import { getAdSlotConfig, type AdSlotName } from '@/lib/ad-slots';
-import { readAdvertisingConsent } from '@/lib/consent';
 
 declare global {
   interface Window { adsbygoogle: unknown[]; }
@@ -18,21 +17,20 @@ interface GoogleAdSenseProps {
 
 export function GoogleAdSense({ slot, slotName, layoutKey, className = '' }: GoogleAdSenseProps) {
   const config = getAdSlotConfig(slotName);
-  const [enabled, setEnabled] = useState(false);
+  const [enabled] = useState(true);
   const [scriptReady, setScriptReady] = useState(() => typeof window !== 'undefined' && Array.isArray(window.adsbygoogle));
   const [visible, setVisible] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
   const pushedRef = useRef(false);
-  const publisherId = process.env.NEXT_PUBLIC_ADSENSE_PUBLISHER_ID;
+  const publisherId = process.env.NEXT_PUBLIC_ADSENSE_PUBLISHER_ID || 'ca-pub-7524844307744923';
 
   useEffect(() => {
-    const readConsent = () => setEnabled(readAdvertisingConsent());
-    readConsent();
     const handleReady = () => setScriptReady(true);
-    window.addEventListener('slashjournal:consent-update', readConsent);
+    if (typeof window !== 'undefined' && Array.isArray(window.adsbygoogle)) {
+      setScriptReady(true);
+    }
     window.addEventListener('slashjournal:adsense-ready', handleReady);
     return () => {
-      window.removeEventListener('slashjournal:consent-update', readConsent);
       window.removeEventListener('slashjournal:adsense-ready', handleReady);
     };
   }, []);

@@ -12,8 +12,13 @@ export const metadata: Metadata = {
 
 export default async function CategoriesPage() {
   const categories = await prisma.category.findMany({
-    where: { isIndexable: true },
-    orderBy: { name: 'asc' },
+    where: {
+      isIndexable: true,
+      articles: { some: { status: 'PUBLISHED', isIndexable: true } },
+    },
+    orderBy: {
+      articles: { _count: 'desc' },
+    },
     select: { name: true, slug: true, description: true, _count: { select: { articles: true } } },
   });
 

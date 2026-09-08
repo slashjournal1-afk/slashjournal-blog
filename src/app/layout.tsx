@@ -1,5 +1,6 @@
 import React, { Suspense } from 'react';
 import type { Metadata } from 'next';
+import Script from 'next/script';
 import { Inter, Newsreader, JetBrains_Mono } from 'next/font/google';
 import '@/styles/globals.css';
 import { ThemeProvider } from '@/context/ThemeContext';
@@ -109,6 +110,12 @@ export default function RootLayout({
           }}
         />
         <GoogleTagManager />
+        <Script
+          id="google-adsense"
+          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_ADSENSE_PUBLISHER_ID || 'ca-pub-7524844307744923'}`}
+          strategy="afterInteractive"
+          crossOrigin="anonymous"
+        />
         <GoogleAdSenseLoader />
         <ThemeProvider>
           <AuthProvider>

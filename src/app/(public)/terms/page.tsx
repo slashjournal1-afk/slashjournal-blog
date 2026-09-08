@@ -3,8 +3,8 @@ import type { Metadata } from 'next';
 import { absoluteUrl } from '@/lib/site';
 
 export const metadata: Metadata = {
-  title: 'Ketentuan Layanan & Komentar',
-  description: 'Aturan etika berkomentar, tanggung jawab pengguna, dan pedoman platform.',
+  title: 'Ketentuan Layanan & Pedoman Platform',
+  description: 'Aturan etika berkomentar, tanggung jawab pengguna, dan pedoman publikasi.',
   alternates: { canonical: absoluteUrl('/terms') },
 };
 
@@ -12,21 +12,21 @@ export default function TermsPage() {
   return (
     <div className="min-h-screen max-w-[1200px] mx-auto px-4 sm:px-6 py-12">
       <div className="rounded-[36px] bg-white dark:bg-[#18181b] border border-[#ececee] dark:border-[#27272a] p-8 sm:p-14 mb-12 space-y-4">
-        <span className="px-3 py-1 rounded-[12px] bg-[var(--accent)] text-[var(--accent-foreground)] text-xs font-semibold tracking-wider">
-          ATURAN PLATFORM
+        <span className="px-3 py-1 rounded-[12px] bg-[var(--accent)] text-[var(--accent-foreground)] text-xs font-semibold tracking-wider uppercase">
+          Aturan Platform
         </span>
         <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-[#09090b] dark:text-white leading-[1.15]">
-          Ketentuan Layanan & Pedoman Etika Komentar (S8).
+          Ketentuan Layanan &amp; Pedoman Platform
         </h1>
         <p className="text-sm sm:text-base text-[#52525b] dark:text-[#a1a1aa] max-w-2xl leading-relaxed">
-          Dengan mengakses SlashJournal dan berpartisipasi dalam diskusi komentar, Anda menyetujui ketentuan berikut demi menjaga kualitas intelektual platform.
+          Dengan mengakses SlashJournal dan berpartisipasi dalam interaksi publikasi, Anda menyetujui ketentuan berikut demi menjaga kualitas dan keterbukaan informasi platform.
         </p>
       </div>
 
       <div className="rounded-[36px] bg-white dark:bg-[#18181b] border border-[#ececee] dark:border-[#27272a] p-8 sm:p-12 space-y-8 text-sm text-[#18181b] dark:text-[#d4d4d8] leading-relaxed max-w-4xl">
         <section className="space-y-3">
           <h2 className="text-xl font-bold text-[#09090b] dark:text-white">
-            1. Etika Komentar & Diskusi Teknis
+            1. Etika Komentar &amp; Diskusi Teknis
           </h2>
           <p>
             Komentar terbuka untuk semua pembaca terautentikasi. Dilarang keras memposting ujaran kebencian, spam tautan komersial yang tidak relevan, pelecehan personal, atau muatan yang melanggar hukum Republik Indonesia.
