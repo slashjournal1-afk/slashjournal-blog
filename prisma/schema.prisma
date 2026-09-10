@@ -117,11 +117,26 @@ model Article {
   urlHistory           ArticleUrl[]
   bookmarks            Bookmark[]
   comments             Comment[]
+  viewDaily            ArticleViewDaily[]
 
   @@index([status, publishedAt])
   @@index([categoryId, status])
   @@index([seriesId, seriesOrder])
   @@index([authorId])
+}
+
+model ArticleViewDaily {
+  id        String   @id @default(cuid())
+  articleId String
+  date      DateTime // bucket tengah malam WIB (00:00 Asia/Jakarta, disimpan sebagai UTC)
+  views     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@unique([articleId, date])
+  @@index([articleId, date])
+  @@index([date])
 }
 
 model GlossaryTerm {
