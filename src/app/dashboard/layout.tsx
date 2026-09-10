@@ -30,6 +30,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   const creatorNav: DashboardNavItem[] = [
     { label: 'Studio Penulis', href: '/dashboard/creator', icon: 'pen-tool' },
+    { label: 'Analitik Pembaca', href: '/dashboard/creator/analytics', icon: 'activity' },
     { label: 'Pendapatan Artikel', href: '/dashboard/creator/revenue', icon: 'activity' },
     { label: 'Tulis Dokumen Baru', href: '/admin/docs/new', icon: 'plus' },
     ...(role === 'EDITOR' || role === 'ADMIN'
