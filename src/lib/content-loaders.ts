@@ -2,6 +2,7 @@ import { cache } from 'react';
 import { unstable_cache } from 'next/cache';
 import { prisma } from '@/lib/db';
 import { prepareArticleDiscovery, type ArticleDiscoveryContext, type DiscoveryArticle } from '@/lib/article-discovery';
+import { extractArticleKeywords } from '@/lib/keyword-extractor';
 import { publicArticleWhere } from '@/lib/visibility';
 
 const discoveryArticleSelect = {
@@ -274,12 +275,86 @@ export const getRelatedArticles = cache(async (categoryId: string, articleId: st
   )();
 });
 
+interface FtsArticleRow {
+  id: string;
+  slug: string;
+  title: string;
+  coverImageUrl: string | null;
+  viewCount: number;
+  publishedAt: Date | null;
+  createdAt: Date;
+  categoryId: string;
+  seriesId: string | null;
+  categoryName: string;
+  categorySlug: string;
+  tagIds: string[] | null;
+  ftsScore: number;
+}
+
+const fetchFtsRelatedArticles = async (toTsQueryString: string, excludeArticleId: string) => {
+  if (!toTsQueryString) return [];
+  try {
+    const rows = await prisma.$queryRaw<FtsArticleRow[]>`
+      SELECT 
+        a.id,
+        a.slug,
+        a.title,
+        a."coverImageUrl",
+        a."viewCount",
+        a."publishedAt",
+        a."createdAt",
+        a."categoryId",
+        a."seriesId",
+        c.name AS "categoryName",
+        c.slug AS "categorySlug",
+        ARRAY(
+          SELECT at."tagId"
+          FROM "ArticleTag" at
+          WHERE at."articleId" = a.id
+        ) AS "tagIds",
+        ts_rank_cd(
+          setweight(to_tsvector('simple', COALESCE(a.title, '')), 'A') ||
+          setweight(to_tsvector('simple', COALESCE(a.excerpt, '')), 'B'),
+          to_tsquery('simple', ${toTsQueryString})
+        )::float AS "ftsScore"
+      FROM "Article" a
+      JOIN "Category" c ON a."categoryId" = c.id
+      WHERE a.id != ${excludeArticleId}
+        AND a.status = 'PUBLISHED'
+        AND a."isIndexable" = true
+        AND c."isIndexable" = true
+        AND (
+          setweight(to_tsvector('simple', COALESCE(a.title, '')), 'A') ||
+          setweight(to_tsvector('simple', COALESCE(a.excerpt, '')), 'B')
+        ) @@ to_tsquery('simple', ${toTsQueryString})
+      ORDER BY "ftsScore" DESC, a."publishedAt" DESC
+      LIMIT 15;
+    `;
+    return rows;
+  } catch {
+    return [];
+  }
+};
+
 export const getArticleDiscovery = cache(async (context: ArticleDiscoveryContext) => {
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
   const tagFilter = context.tagIds.length > 0 ? { tags: { some: { tagId: { in: context.tagIds } } } } : undefined;
 
-  const [relatedCandidates, fallbackCandidates, trendingCandidates, popularCandidates] = await Promise.all([
+  const { toTsQueryString } = extractArticleKeywords({
+    title: context.title,
+    excerpt: context.excerpt,
+    tagNames: context.tagNames,
+  });
+
+  const [ftsRows, relatedCandidates, fallbackCandidates, trendingCandidates, popularCandidates] = await Promise.all([
+    toTsQueryString
+      ? unstable_cache(
+          () => fetchFtsRelatedArticles(toTsQueryString, context.articleId),
+          ['fts-related-articles', context.articleId],
+          { revalidate: 3600, tags: ['article-discovery', 'related-articles'] },
+        )()
+      : Promise.resolve([]),
     prisma.article.findMany({
       where: {
         ...publicArticleWhere,
@@ -314,9 +389,28 @@ export const getArticleDiscovery = cache(async (context: ArticleDiscoveryContext
     }),
   ]);
 
+  const ftsCandidates: DiscoveryArticle[] = ftsRows.map((row) => ({
+    id: row.id,
+    slug: row.slug,
+    title: row.title,
+    coverImageUrl: row.coverImageUrl,
+    viewCount: row.viewCount,
+    publishedAt: row.publishedAt ? new Date(row.publishedAt) : null,
+    createdAt: new Date(row.createdAt),
+    categoryId: row.categoryId,
+    seriesId: row.seriesId,
+    category: { name: row.categoryName, slug: row.categorySlug },
+    tags: (row.tagIds || []).map((tId) => ({ tagId: tId })),
+    ftsScore: typeof row.ftsScore === 'number' ? row.ftsScore : 0,
+  }));
+
   return prepareArticleDiscovery({
     context,
-    recommendationCandidates: [...relatedCandidates, ...fallbackCandidates] as DiscoveryArticle[],
+    recommendationCandidates: [
+      ...ftsCandidates,
+      ...(relatedCandidates as DiscoveryArticle[]),
+      ...(fallbackCandidates as DiscoveryArticle[]),
+    ],
     trendingCandidates: trendingCandidates as DiscoveryArticle[],
     popularCandidates: popularCandidates as DiscoveryArticle[],
   });

@@ -10,6 +10,7 @@ export type DiscoveryArticle = {
   seriesId: string | null;
   category: { name: string; slug: string };
   tags: { tagId: string }[];
+  ftsScore?: number;
 };
 
 export type ArticleDiscoveryContext = {
@@ -17,6 +18,9 @@ export type ArticleDiscoveryContext = {
   categoryId: string;
   seriesId: string | null;
   tagIds: string[];
+  title?: string;
+  excerpt?: string;
+  tagNames?: string[];
 };
 
 export type ArticleDiscoveryResult = {
@@ -55,17 +59,23 @@ function takeUnique(articles: DiscoveryArticle[], selected: Set<string>) {
 }
 
 function uniqueArticles(articles: DiscoveryArticle[]) {
-  const seen = new Set<string>();
-  return articles.filter((article) => {
-    if (seen.has(article.id)) return false;
-    seen.add(article.id);
-    return true;
-  });
+  const map = new Map<string, DiscoveryArticle>();
+  for (const article of articles) {
+    const existing = map.get(article.id);
+    if (!existing) {
+      map.set(article.id, { ...article });
+    } else if (article.ftsScore && (!existing.ftsScore || article.ftsScore > existing.ftsScore)) {
+      existing.ftsScore = article.ftsScore;
+    }
+  }
+  return Array.from(map.values());
 }
 
 function recommendationScore(article: DiscoveryArticle, context: ArticleDiscoveryContext) {
   const sharedTags = article.tags.reduce((count, tag) => count + (context.tagIds.includes(tag.tagId) ? 1 : 0), 0);
+  const ftsBonus = (article.ftsScore || 0) * 300;
   return (article.seriesId && article.seriesId === context.seriesId ? 1000 : 0)
+    + ftsBonus
     + sharedTags * 100
     + (article.categoryId === context.categoryId ? 10 : 0);
 }

@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { Coffee, ExternalLink, Sparkles } from 'lucide-react';
+import { Coffee, ExternalLink } from 'lucide-react';
 
 export const DONATION_URL = 'https://saweria.co/slashjournal';
 
@@ -41,8 +41,7 @@ export function DonationBlock({ className = '' }: DonationBlockProps) {
             Dukungan Pembaca · Riset Terbuka
           </p>
         </div>
-        <span className="hidden text-[11px] font-medium text-[var(--text-muted)] sm:inline-flex sm:items-center sm:gap-1">
-          <Sparkles className="h-3 w-3 text-[var(--accent)]" />
+        <span className="hidden text-[11px] font-medium text-[var(--text-muted)] sm:inline-block">
           Saweria / QRIS
         </span>
       </div>
