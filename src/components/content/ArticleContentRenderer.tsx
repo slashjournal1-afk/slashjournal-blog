@@ -24,6 +24,7 @@ export interface ArticleContentRendererProps {
   glossary?: GlossaryItem[];
   className?: string;
   inContentAd?: React.ReactNode;
+  donationCta?: React.ReactNode;
 }
 
 export function ArticleContentRenderer({
@@ -31,6 +32,7 @@ export function ArticleContentRenderer({
   glossary = [],
   className = '',
   inContentAd,
+  donationCta,
 }: ArticleContentRendererProps) {
   if (!content) return null;
 
@@ -40,21 +42,38 @@ export function ArticleContentRenderer({
   // Step 1: Tokenize blocks separating Fenced Code Blocks, Details accordions, etc.
   const tokens = tokenizeMarkdownBlocks(normalized);
 
-  // Step 2: Calculate mid-point insertion index for in-content ad
-  // AdSense in-article policy: do not insert directly after headings, inside code blocks,
-  // or at very short articles. Prefer inserting after a paragraph around the ~40-50% mark.
-  let insertAfterTokenIdx = -1;
-  if (inContentAd && tokens.length >= 3) {
+  // Step 2: Calculate mid-point insertion indices for donation CTA and in-content ad
+  // Both blocks should be inserted gracefully after paragraphs, avoiding headings/code blocks.
+  let insertDonationIdx = -1;
+  let insertAdIdx = -1;
+
+  if (tokens.length >= 3) {
     const paragraphIndices = tokens
       .map((t, idx) => (t.type === 'paragraph' ? idx : -1))
       .filter((idx) => idx !== -1);
 
-    if (paragraphIndices.length >= 2) {
-      // Pick the paragraph token index near middle
-      const midParaOrder = Math.max(1, Math.floor(paragraphIndices.length / 2));
-      insertAfterTokenIdx = paragraphIndices[midParaOrder];
-    } else if (tokens.length >= 4) {
-      insertAfterTokenIdx = Math.floor(tokens.length / 2);
+    if (donationCta && inContentAd) {
+      if (paragraphIndices.length >= 6) {
+        insertAdIdx = paragraphIndices[Math.floor(paragraphIndices.length * 0.33)];
+        insertDonationIdx = paragraphIndices[Math.floor(paragraphIndices.length * 0.66)];
+      } else if (paragraphIndices.length >= 2) {
+        // Prioritize donation CTA in the middle for shorter articles
+        insertDonationIdx = paragraphIndices[Math.floor(paragraphIndices.length / 2)];
+      } else if (tokens.length >= 4) {
+        insertDonationIdx = Math.floor(tokens.length / 2);
+      }
+    } else if (donationCta) {
+      if (paragraphIndices.length >= 2) {
+        insertDonationIdx = paragraphIndices[Math.floor(paragraphIndices.length / 2)];
+      } else if (tokens.length >= 3) {
+        insertDonationIdx = Math.floor(tokens.length / 2);
+      }
+    } else if (inContentAd) {
+      if (paragraphIndices.length >= 2) {
+        insertAdIdx = paragraphIndices[Math.floor(paragraphIndices.length / 2)];
+      } else if (tokens.length >= 4) {
+        insertAdIdx = Math.floor(tokens.length / 2);
+      }
     }
   }
 
@@ -63,7 +82,12 @@ export function ArticleContentRenderer({
       {tokens.map((token, idx) => (
         <React.Fragment key={idx}>
           {renderToken(token, idx, glossary)}
-          {idx === insertAfterTokenIdx && inContentAd && (
+          {idx === insertDonationIdx && donationCta && (
+            <div className="my-10 not-prose" aria-label="Dukungan donasi pembaca">
+              {donationCta}
+            </div>
+          )}
+          {idx === insertAdIdx && inContentAd && (
             <div className="my-10 not-prose" aria-label="Iklan dalam artikel">
               {inContentAd}
             </div>
