@@ -6,6 +6,7 @@ import { formatDate } from '@/lib/utils';
 import { ArticleRow } from '@/components/content/ArticleRow';
 import { PageIntro } from '@/components/layout/PageIntro';
 import { AdSlotView } from '@/components/ads/AdSlotView';
+import { GoogleMultiplexAd } from '@/components/ads/GoogleMultiplexAd';
 import { Lock } from 'lucide-react';
 import type { Metadata } from 'next';
 import { absoluteUrl } from '@/lib/site';
@@ -140,12 +141,15 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
       )}
 
       {articles.length > 0 && (
-        <AdSlotView
-          slotName="leaderboard"
-          ad={leaderboardAd}
-          adsenseSlot={process.env.NEXT_PUBLIC_ADSENSE_LEADERBOARD_SLOT || process.env.ADSENSE_LEADERBOARD_SLOT}
-          className="mt-10"
-        />
+        <>
+          <GoogleMultiplexAd className="mt-12" />
+          <AdSlotView
+            slotName="leaderboard"
+            ad={leaderboardAd}
+            adsenseSlot={process.env.NEXT_PUBLIC_ADSENSE_LEADERBOARD_SLOT || process.env.ADSENSE_LEADERBOARD_SLOT}
+            className="mt-10"
+          />
+        </>
       )}
     </div>
   );

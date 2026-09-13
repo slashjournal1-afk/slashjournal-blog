@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { prisma } from '@/lib/db';
 import { ArrowRight } from 'lucide-react';
 import { PageIntro } from '@/components/layout/PageIntro';
+import { GoogleMultiplexAd } from '@/components/ads/GoogleMultiplexAd';
 import type { Metadata } from 'next';
 import { absoluteUrl } from '@/lib/site';
 import { JsonLd } from '@/components/seo/JsonLd';
@@ -94,6 +95,10 @@ export default async function SeriesIndexPage() {
           </div>
         ))}
       </div>
+
+      {seriesList.length > 0 && (
+        <GoogleMultiplexAd className="mt-12" />
+      )}
     </div>
   );
 }

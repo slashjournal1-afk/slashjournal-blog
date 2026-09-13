@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { prisma } from '@/lib/db';
 import { formatDate } from '@/lib/utils';
 import { Layers, ArrowRight, Clock } from 'lucide-react';
+import { GoogleMultiplexAd } from '@/components/ads/GoogleMultiplexAd';
 import type { Metadata } from 'next';
 import { absoluteUrl } from '@/lib/site';
 import { JsonLd } from '@/components/seo/JsonLd';
@@ -144,6 +145,10 @@ export default async function SeriesDetailPage({ params }: PageProps) {
           </Link>
         ))}
       </div>
+
+      {series.articles.length > 0 && (
+        <GoogleMultiplexAd className="mt-12 max-w-4xl" />
+      )}
     </div>
   );
 }
