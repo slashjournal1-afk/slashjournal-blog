@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { formatDate } from '@/lib/utils';
 import { ArticleContentRenderer } from '@/components/content/ArticleContentRenderer';
+import { DonationBlock } from '@/components/content/DonationBlock';
 import { ScrollSpyTOC } from '@/components/wiki/ScrollSpyTOC';
 import { MobileTOC } from '@/components/wiki/MobileTOC';
 import { StickyReadingHeader } from '@/components/layout/StickyReadingHeader';
@@ -334,13 +335,7 @@ export default async function ArticleDetailPage({ params }: PageProps) {
               <ArticleContentRenderer
                 content={article.contentMarkdown}
                 glossary={glossaryTerms}
-                inContentAd={
-                  <AdSlotView
-                    slotName="below_hero"
-                    ad={belowHeroAd}
-                    adsenseSlot={process.env.NEXT_PUBLIC_ADSENSE_BELOW_HERO_SLOT || process.env.ADSENSE_BELOW_HERO_SLOT}
-                  />
-                }
+                donationCta={<DonationBlock />}
               />
             </div>
 
