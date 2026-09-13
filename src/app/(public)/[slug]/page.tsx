@@ -15,6 +15,7 @@ import { BookmarkButton } from '@/components/wiki/BookmarkButton';
 import { CommentSection } from '@/components/comments/CommentSection';
 import { SponsoredBadge } from '@/components/ads/SponsoredBadge';
 import { AdSlotView } from '@/components/ads/AdSlotView';
+import { GoogleMultiplexAd } from '@/components/ads/GoogleMultiplexAd';
 import { Calendar, Clock, ArrowLeft, ArrowRight, ExternalLink } from 'lucide-react';
 import type { Metadata } from 'next';
 import { absoluteUrl, siteConfig } from '@/lib/site';
@@ -488,6 +489,9 @@ export default async function ArticleDetailPage({ params }: PageProps) {
             </div>
           </aside>
         </div>
+
+        {/* Google AdSense Multiplex Ad Unit (Matched Content Recommendation Grid) */}
+        <GoogleMultiplexAd className="mt-14" />
 
         <ArticleDiscoveryBand {...discovery} />
       </article>

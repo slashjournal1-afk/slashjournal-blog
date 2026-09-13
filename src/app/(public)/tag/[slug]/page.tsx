@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db';
 import { formatDate } from '@/lib/utils';
 import { PageIntro } from '@/components/layout/PageIntro';
 import { ArticleRow } from '@/components/content/ArticleRow';
+import { GoogleMultiplexAd } from '@/components/ads/GoogleMultiplexAd';
 import type { Metadata } from 'next';
 import { publicArticleWhere } from '@/lib/visibility';
 
@@ -57,6 +58,10 @@ export default async function TagPage({ params }: PageProps) {
           <ArticleRow key={art.id} href={`/${art.slug}`} title={art.title} excerpt={art.excerpt} category={art.category.name} date={formatDate(art.publishedAt || art.createdAt)} readingTime={art.readingTime} imageUrl={art.coverImageUrl} />
         ))}
       </div>
+
+      {publishedArticles.length > 0 && (
+        <GoogleMultiplexAd className="mt-12" />
+      )}
     </div>
   );
 }

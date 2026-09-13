@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { formatDate } from '@/lib/utils';
 import { AdSlotView } from '@/components/ads/AdSlotView';
+import { GoogleMultiplexAd } from '@/components/ads/GoogleMultiplexAd';
 import { ArticleRow } from '@/components/content/ArticleRow';
 import { ReferenceRail } from '@/components/content/ReferenceRail';
 import { SectionHeading } from '@/components/layout/SectionHeading';
@@ -268,7 +269,10 @@ export default async function HomePage() {
         />
       )}
 
-      {/* 8. Newsletter */}
+      {/* 8. Rekomendasi Multipleks Google AdSense */}
+      <GoogleMultiplexAd className="my-12" />
+
+      {/* 9. Newsletter */}
       <section className="border-t border-[var(--border-color)] pt-12">
         <div className="grid gap-8 md:grid-cols-2 md:items-end">
           <div>
