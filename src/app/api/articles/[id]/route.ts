@@ -3,7 +3,7 @@ import { prisma } from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth';
 import { calculateReadingTime, slugify } from '@/lib/utils';
 import { recordAuditLog } from '@/lib/audit';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { jsonError } from '@/lib/api-errors';
 import { publicArticleWhere } from '@/lib/visibility';
 import { registerArticleRevenueIdentity } from '@/lib/revenue';
@@ -179,6 +179,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     revalidatePath('/');
     revalidatePath('/category/[slug]', 'page');
     revalidatePath('/series/[slug]', 'page');
+    revalidateTag('article-discovery', 'max');
     revalidatePath(`/${updated.slug}`);
 
     return NextResponse.json({ article: updated });
@@ -208,6 +209,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     revalidatePath('/');
     revalidatePath('/category/[slug]', 'page');
     revalidatePath('/series/[slug]', 'page');
+    revalidateTag('article-discovery', 'max');
     revalidatePath(`/${deleted.slug}`);
 
     return NextResponse.json({ success: true });

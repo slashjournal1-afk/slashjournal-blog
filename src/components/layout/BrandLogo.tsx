@@ -10,6 +10,7 @@ export function BrandLogo({ size = 34, className = '' }: { size?: number; classN
       width={size}
       height={size}
       priority
+      unoptimized
       className={`shrink-0 dark:invert ${className}`}
     />
   );

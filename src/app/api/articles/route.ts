@@ -3,7 +3,7 @@ import { prisma } from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth';
 import { calculateReadingTime, slugify } from '@/lib/utils';
 import { recordAuditLog } from '@/lib/audit';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { jsonError } from '@/lib/api-errors';
 import { publicArticleWhere } from '@/lib/visibility';
 import { registerArticleRevenueIdentity } from '@/lib/revenue';
@@ -152,6 +152,7 @@ export async function POST(req: NextRequest) {
     revalidatePath('/');
     revalidatePath('/category/[slug]', 'page');
     revalidatePath('/series/[slug]', 'page');
+    revalidateTag('article-discovery', 'max');
     if (article.status === 'PUBLISHED') revalidatePath(`/${article.slug}`);
 
     return NextResponse.json({ article }, { status: 201 });

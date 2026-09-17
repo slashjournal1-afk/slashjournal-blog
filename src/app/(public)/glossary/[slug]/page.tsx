@@ -13,6 +13,10 @@ import { breadcrumbSchema } from '@/lib/structured-data';
 
 export const revalidate = 3600;
 
+export async function generateStaticParams() {
+  return [];
+}
+
 interface PageProps {
   params: Promise<{ slug: string }>;
 }

@@ -347,6 +347,8 @@ export const getArticleDiscovery = cache(async (context: ArticleDiscoveryContext
     tagNames: context.tagNames,
   });
 
+  const tagSignature = [...context.tagIds].sort().join(',');
+
   const [ftsRows, relatedCandidates, fallbackCandidates, trendingCandidates, popularCandidates] = await Promise.all([
     toTsQueryString
       ? unstable_cache(
@@ -355,38 +357,54 @@ export const getArticleDiscovery = cache(async (context: ArticleDiscoveryContext
           { revalidate: 3600, tags: ['article-discovery', 'related-articles'] },
         )()
       : Promise.resolve([]),
-    prisma.article.findMany({
-      where: {
-        ...publicArticleWhere,
-        id: { not: context.articleId },
-        OR: [
-          ...(context.seriesId ? [{ seriesId: context.seriesId }] : []),
-          ...(tagFilter ? [tagFilter] : []),
-          { categoryId: context.categoryId },
-        ],
-      },
-      orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }],
-      take: 40,
-      select: discoveryArticleSelect,
-    }),
-    prisma.article.findMany({
-      where: { ...publicArticleWhere, id: { not: context.articleId } },
-      orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }],
-      take: 12,
-      select: discoveryArticleSelect,
-    }),
-    prisma.article.findMany({
-      where: { ...publicArticleWhere, id: { not: context.articleId }, publishedAt: { gte: thirtyDaysAgo } },
-      orderBy: [{ viewCount: 'desc' }, { publishedAt: 'desc' }, { createdAt: 'desc' }],
-      take: 12,
-      select: discoveryArticleSelect,
-    }),
-    prisma.article.findMany({
-      where: { ...publicArticleWhere, id: { not: context.articleId } },
-      orderBy: [{ viewCount: 'desc' }, { publishedAt: 'desc' }, { createdAt: 'desc' }],
-      take: 12,
-      select: discoveryArticleSelect,
-    }),
+    unstable_cache(
+      () => prisma.article.findMany({
+        where: {
+          ...publicArticleWhere,
+          id: { not: context.articleId },
+          OR: [
+            ...(context.seriesId ? [{ seriesId: context.seriesId }] : []),
+            ...(tagFilter ? [tagFilter] : []),
+            { categoryId: context.categoryId },
+          ],
+        },
+        orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }],
+        take: 40,
+        select: discoveryArticleSelect,
+      }),
+      ['discovery-related', context.articleId, context.categoryId, context.seriesId ?? '', tagSignature],
+      { revalidate: 900, tags: ['article-discovery'] },
+    )(),
+    unstable_cache(
+      () => prisma.article.findMany({
+        where: { ...publicArticleWhere, id: { not: context.articleId } },
+        orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }],
+        take: 12,
+        select: discoveryArticleSelect,
+      }),
+      ['discovery-fallback', context.articleId],
+      { revalidate: 900, tags: ['article-discovery'] },
+    )(),
+    unstable_cache(
+      () => prisma.article.findMany({
+        where: { ...publicArticleWhere, id: { not: context.articleId }, publishedAt: { gte: thirtyDaysAgo } },
+        orderBy: [{ viewCount: 'desc' }, { publishedAt: 'desc' }, { createdAt: 'desc' }],
+        take: 12,
+        select: discoveryArticleSelect,
+      }),
+      ['discovery-trending', context.articleId],
+      { revalidate: 900, tags: ['article-discovery'] },
+    )(),
+    unstable_cache(
+      () => prisma.article.findMany({
+        where: { ...publicArticleWhere, id: { not: context.articleId } },
+        orderBy: [{ viewCount: 'desc' }, { publishedAt: 'desc' }, { createdAt: 'desc' }],
+        take: 12,
+        select: discoveryArticleSelect,
+      }),
+      ['discovery-popular', context.articleId],
+      { revalidate: 900, tags: ['article-discovery'] },
+    )(),
   ]);
 
   const ftsCandidates: DiscoveryArticle[] = ftsRows.map((row) => ({

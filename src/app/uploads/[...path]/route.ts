@@ -22,6 +22,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
           headers: {
             'Content-Type': blob.blob.contentType || 'image/webp',
             'Cache-Control': 'public, max-age=31536000, immutable',
+            'CDN-Cache-Control': 'public, s-maxage=31536000, immutable',
             'X-Content-Type-Options': 'nosniff',
           },
         });

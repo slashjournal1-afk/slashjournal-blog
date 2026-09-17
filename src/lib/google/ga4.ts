@@ -1,4 +1,3 @@
-import { google } from 'googleapis';
 import { createAnalyticsAuth } from './auth';
 import { cachedReport } from './report-cache';
 
@@ -47,10 +46,11 @@ function dimension(row: { dimensionValues?: Array<{ value?: string | null }> }, 
   return row.dimensionValues?.[index]?.value || '';
 }
 
-function createClient() {
+async function createClient() {
   const property = propertyId();
   if (!property) throw new Error('GOOGLE_ANALYTICS_PROPERTY_ID is not configured');
-  return { property: `properties/${property}`, client: google.analyticsdata({ version: 'v1beta', auth: createAnalyticsAuth() }) };
+  const { google } = await import('googleapis');
+  return { property: `properties/${property}`, client: google.analyticsdata({ version: 'v1beta', auth: await createAnalyticsAuth() }) };
 }
 
 export async function runGa4Summary(range: GoogleDateRange) {
@@ -58,7 +58,7 @@ export async function runGa4Summary(range: GoogleDateRange) {
   if (!property) throw new Error('GOOGLE_ANALYTICS_PROPERTY_ID is not configured');
 
   return cachedReport(`ga4:summary:${property}:${range}`, 5 * 60_000, async (): Promise<Ga4Summary> => {
-    const { property: resource, client } = createClient();
+    const { property: resource, client } = await createClient();
     const response = await client.properties.runReport({
       property: resource,
       requestBody: {
@@ -93,7 +93,7 @@ export async function runGa4Events(range: GoogleDateRange) {
   if (!property) throw new Error('GOOGLE_ANALYTICS_PROPERTY_ID is not configured');
 
   return cachedReport(`ga4:events:${property}:${range}`, 10 * 60_000, async (): Promise<Ga4EventRow[]> => {
-    const { property: resource, client } = createClient();
+    const { property: resource, client } = await createClient();
     const response = await client.properties.runReport({
       property: resource,
       requestBody: {
@@ -113,7 +113,7 @@ export async function runGa4Pages(range: GoogleDateRange) {
   if (!property) throw new Error('GOOGLE_ANALYTICS_PROPERTY_ID is not configured');
 
   return cachedReport(`ga4:pages:${property}:${range}`, 10 * 60_000, async (): Promise<Ga4PageRow[]> => {
-    const { property: resource, client } = createClient();
+    const { property: resource, client } = await createClient();
     const response = await client.properties.runReport({
       property: resource,
       requestBody: {
@@ -132,7 +132,7 @@ export async function runGa4Realtime() {
   const property = propertyId();
   if (!property) throw new Error('GOOGLE_ANALYTICS_PROPERTY_ID is not configured');
   return cachedReport(`ga4:realtime:${property}`, 60_000, async () => {
-    const { property: resource, client } = createClient();
+    const { property: resource, client } = await createClient();
     const response = await client.properties.runRealtimeReport({
       property: resource,
       requestBody: { metrics: [{ name: 'activeUsers' }] },

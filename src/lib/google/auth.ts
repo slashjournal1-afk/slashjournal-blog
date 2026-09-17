@@ -1,5 +1,3 @@
-import { google } from 'googleapis';
-
 export function googleErrorMessage(error: unknown): string {
   if (error instanceof Error) return error.message;
   if (typeof error === 'object' && error !== null) {
@@ -22,7 +20,9 @@ function normalizePrivateKey(value: string): string {
   return key.replace(/\\n/g, '\n').replace(/\\r/g, '\r').trim();
 }
 
-export function createAnalyticsAuth() {
+export async function createAnalyticsAuth() {
+  // Dynamic import: googleapis besar, hanya dimuat saat route admin analytics dipanggil.
+  const { google } = await import('googleapis');
   return new google.auth.GoogleAuth({
     credentials: {
       client_email: required('GOOGLE_SERVICE_ACCOUNT_EMAIL'),
@@ -32,7 +32,9 @@ export function createAnalyticsAuth() {
   });
 }
 
-export function createAdSenseAuth() {
+export async function createAdSenseAuth() {
+  // Dynamic import: googleapis besar, hanya dimuat saat route revenue dipanggil.
+  const { google } = await import('googleapis');
   const oauth2 = new google.auth.OAuth2(
     required('GOOGLE_ADSENSE_CLIENT_ID'),
     required('GOOGLE_ADSENSE_CLIENT_SECRET'),

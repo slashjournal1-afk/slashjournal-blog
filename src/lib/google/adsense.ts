@@ -1,4 +1,3 @@
-import { google } from 'googleapis';
 import { createAdSenseAuth } from './auth';
 import { cachedReport } from './report-cache';
 import { normalizeAdSenseReport, type AdSenseSummary } from './report-normalizers';
@@ -11,7 +10,8 @@ export async function runAdSenseReport(range: 'today' | '7d' | '28d' | '90d') {
   const account = accountId();
   if (!account) throw new Error('GOOGLE_ADSENSE_ACCOUNT_ID is not configured');
   return cachedReport(`adsense:report:${account}:${range}`, 15 * 60_000, async (): Promise<AdSenseSummary> => {
-    const client = google.adsense({ version: 'v2', auth: createAdSenseAuth() });
+    const { google } = await import('googleapis');
+    const client = google.adsense({ version: 'v2', auth: await createAdSenseAuth() });
     const end = new Date();
     const start = new Date(end);
     start.setDate(end.getDate() - (range === 'today' ? 0 : Number(range.replace('d', ''))));
@@ -77,7 +77,8 @@ function parseRows(data: { headers?: Array<{ name?: string | null }>; rows?: Arr
 
 export async function runAdSenseRevenueReport(start: Date, end: Date) {
   return cachedReport(`adsense:revenue:${reportAccount()}:${start.toISOString()}:${end.toISOString()}`, 15 * 60_000, async () => {
-    const client = google.adsense({ version: 'v2', auth: createAdSenseAuth() });
+    const { google } = await import('googleapis');
+    const client = google.adsense({ version: 'v2', auth: await createAdSenseAuth() });
     const base = {
       account: reportAccount(),
       'startDate.year': reportDate(start).year,

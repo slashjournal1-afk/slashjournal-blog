@@ -81,5 +81,7 @@ function recommendationScore(article: DiscoveryArticle, context: ArticleDiscover
 }
 
 function dateValue(article: DiscoveryArticle) {
-  return (article.publishedAt || article.createdAt).getTime();
+  // Tanggal bisa string ISO saat kandidat datang dari Data Cache (serialisasi).
+  const value = article.publishedAt || article.createdAt;
+  return value instanceof Date ? value.getTime() : new Date(value).getTime();
 }
