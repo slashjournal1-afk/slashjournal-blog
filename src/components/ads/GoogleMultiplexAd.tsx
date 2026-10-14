@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { pushDataLayer } from '@/lib/data-layer';
+import { getAdSensePublisherId, isAdSenseApproved, isAdSenseRunnable } from '@/lib/ads-approval';
 import { Sparkles } from 'lucide-react';
 
 declare global {
@@ -18,8 +19,8 @@ interface GoogleMultiplexAdProps {
 }
 
 export function GoogleMultiplexAd({
-  slot = process.env.NEXT_PUBLIC_ADSENSE_MULTIPLEX_SLOT || '5979804118',
-  publisherId = process.env.NEXT_PUBLIC_ADSENSE_PUBLISHER_ID || 'ca-pub-7524844307744923',
+  slot = process.env.NEXT_PUBLIC_ADSENSE_MULTIPLEX_SLOT || '',
+  publisherId = getAdSensePublisherId(),
   title = 'Rekomendasi & Materi Terkait',
   className = '',
 }: GoogleMultiplexAdProps) {
@@ -76,7 +77,8 @@ export function GoogleMultiplexAd({
     }
   }, [scriptReady, visible, slot, publisherId]);
 
-  if (!slot || !publisherId) return null;
+  // Pre-approval: render null agar tidak ada kontainer "Sponsor / Iklan Google" kosong.
+  if (!isAdSenseApproved() || !isAdSenseRunnable({ slot, publisherId })) return null;
 
   return (
     <section

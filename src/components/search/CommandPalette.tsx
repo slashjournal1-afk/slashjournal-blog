@@ -73,7 +73,7 @@ export function CommandPalette() {
       } finally {
         setLoading(false);
       }
-    }, 180);
+    }, 400);
 
     return () => {
       clearTimeout(timer);

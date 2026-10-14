@@ -20,7 +20,7 @@ import { Calendar, Clock, ArrowLeft, ArrowRight, ExternalLink } from 'lucide-rea
 import type { Metadata } from 'next';
 import { absoluteUrl, siteConfig } from '@/lib/site';
 import { JsonLd } from '@/components/seo/JsonLd';
-import { authorId, breadcrumbSchema, organizationId, websiteId } from '@/lib/structured-data';
+import { authorId, authorSameAs, breadcrumbSchema, organizationId, websiteId } from '@/lib/structured-data';
 import { ArticleViewTracker } from '@/components/content/ArticleViewTracker';
 import { ArticleDiscoveryBand } from '@/components/content/ArticleDiscoveryBand';
 import {
@@ -32,6 +32,10 @@ import {
 } from '@/lib/content-loaders';
 
 export const revalidate = 900;
+
+export async function generateStaticParams() {
+  return [];
+}
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -157,6 +161,7 @@ export default async function ArticleDetailPage({ params }: PageProps) {
       name: article.author.displayName,
       '@id': authorId,
       url: absoluteUrl('/about#author'),
+      sameAs: authorSameAs,
     },
     publisher: {
       '@type': 'Organization',
@@ -285,7 +290,9 @@ export default async function ArticleDetailPage({ params }: PageProps) {
                 {article.author.displayName.charAt(0)}
               </div>
               <div>
-                <p className="text-sm font-semibold text-[var(--text-primary)]">{article.author.displayName}</p>
+                <Link href="/about#author" rel="author" className="text-sm font-semibold text-[var(--text-primary)] hover:text-[var(--accent)] transition-colors">
+                  {article.author.displayName}
+                </Link>
                 <p className="text-xs text-[var(--text-muted)]">Penulis &amp; Arsitek</p>
               </div>
             </div>
@@ -470,9 +477,9 @@ export default async function ArticleDetailPage({ params }: PageProps) {
                     {article.author.displayName.charAt(0)}
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-[var(--text-primary)]">
+                    <Link href="/about#author" rel="author" className="text-sm font-medium text-[var(--text-primary)] hover:text-[var(--accent)] transition-colors">
                       {article.author.displayName}
-                    </p>
+                    </Link>
                     <p className="text-xs text-[var(--text-muted)]">Penulis &amp; Arsitek</p>
                   </div>
                 </div>
@@ -480,7 +487,8 @@ export default async function ArticleDetailPage({ params }: PageProps) {
                   Menulis panduan arsitektur perangkat lunak dengan fokus pada keandalan sistem dan kesederhanaan desain.
                 </p>
                 <Link
-                  href="/about"
+                  href="/about#author"
+                  rel="author"
                   className="mt-3 inline-block text-xs font-medium text-[var(--accent)] transition-colors hover:text-[var(--accent-hover)]"
                 >
                   Profil Lengkap →

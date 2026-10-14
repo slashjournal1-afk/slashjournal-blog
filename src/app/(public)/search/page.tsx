@@ -2,6 +2,7 @@ import React from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { prisma } from '@/lib/db';
+import { buildSearchTsQuery } from '@/lib/keyword-extractor';
 import { formatDate } from '@/lib/utils';
 import { Search as SearchIcon, FileText, Sparkles, ArrowRight, BookOpen, Clock, Tag } from 'lucide-react';
 import { PageIntro } from '@/components/layout/PageIntro';
@@ -45,32 +46,62 @@ export default async function SearchPage({
   let terms: SearchTerm[] = [];
 
   if (query) {
+    const tsQuery = buildSearchTsQuery(query);
+    const articlePromise: Promise<SearchArticle[]> = tsQuery
+      ? prisma
+          .$queryRaw<SearchArticle[]>`
+            SELECT a.id, a.slug, a.title, a.excerpt, a."publishedAt", a."createdAt",
+              a."readingTime", a."coverImageUrl", jsonb_build_object('name', c.name) AS category
+            FROM "Article" a
+            JOIN "Category" c ON a."categoryId" = c.id
+            WHERE a.status = 'PUBLISHED'
+              AND a."isIndexable" = true
+              AND c."isIndexable" = true
+              AND (
+                setweight(to_tsvector('simple', COALESCE(a.title, '')), 'A') ||
+                setweight(to_tsvector('simple', COALESCE(a.excerpt, '')), 'B')
+              ) @@ to_tsquery('simple', ${tsQuery})
+            ORDER BY ts_rank_cd(
+              setweight(to_tsvector('simple', COALESCE(a.title, '')), 'A') ||
+              setweight(to_tsvector('simple', COALESCE(a.excerpt, '')), 'B'),
+              to_tsquery('simple', ${tsQuery})
+            ) DESC, a."publishedAt" DESC NULLS LAST
+            LIMIT 50;
+          `
+          .then((rows) =>
+            rows.map((r) => ({
+              ...r,
+              publishedAt: r.publishedAt ? new Date(r.publishedAt) : null,
+              createdAt: new Date(r.createdAt),
+              category: typeof r.category === 'string' ? JSON.parse(r.category) : r.category,
+            })),
+          )
+      : prisma.article.findMany({
+          where: {
+            status: 'PUBLISHED',
+            isIndexable: true,
+            category: { isIndexable: true },
+            OR: [
+              { title: { contains: query, mode: 'insensitive' } },
+              { excerpt: { contains: query, mode: 'insensitive' } },
+            ],
+          },
+          select: {
+            id: true,
+            slug: true,
+            title: true,
+            excerpt: true,
+            publishedAt: true,
+            createdAt: true,
+            readingTime: true,
+            coverImageUrl: true,
+            category: { select: { name: true } },
+          },
+          orderBy: { publishedAt: 'desc' },
+          take: 50,
+        });
     [articles, terms] = await Promise.all([
-      prisma.article.findMany({
-        where: {
-          status: 'PUBLISHED',
-          isIndexable: true,
-          category: { isIndexable: true },
-          OR: [
-            { title: { contains: query, mode: 'insensitive' } },
-            { excerpt: { contains: query, mode: 'insensitive' } },
-            { contentMarkdown: { contains: query, mode: 'insensitive' } },
-          ],
-        },
-        select: {
-          id: true,
-          slug: true,
-          title: true,
-          excerpt: true,
-          publishedAt: true,
-          createdAt: true,
-          readingTime: true,
-          coverImageUrl: true,
-          category: { select: { name: true } },
-        },
-        orderBy: { publishedAt: 'desc' },
-        take: 50,
-      }),
+      articlePromise,
       prisma.glossaryTerm.findMany({
         where: {
           OR: [

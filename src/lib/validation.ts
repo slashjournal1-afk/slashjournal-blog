@@ -20,6 +20,15 @@ export const subscriptionSchema = z.object({
   topic: z.enum(['all', 'rekayasa-sistem', 'desain-antarmuka']).default('all'),
 });
 
+export const contactSubjectSchema = z.enum(['correction', 'sponsor', 'author', 'privacy', 'general']);
+
+export const contactSchema = z.object({
+  name: z.string().trim().min(2, 'Nama minimal 2 karakter').max(120, 'Nama terlalu panjang'),
+  email: z.string().trim().toLowerCase().email('Format email tidak valid').max(320, 'Email terlalu panjang'),
+  subject: contactSubjectSchema.default('general'),
+  message: z.string().trim().min(20, 'Pesan minimal 20 karakter agar dapat ditindaklanjuti').max(5000, 'Pesan terlalu panjang (maksimal 5000 karakter)'),
+});
+
 const optionalAvatarUrlSchema = z
   .string()
   .trim()

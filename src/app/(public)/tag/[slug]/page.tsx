@@ -8,7 +8,11 @@ import { GoogleMultiplexAd } from '@/components/ads/GoogleMultiplexAd';
 import type { Metadata } from 'next';
 import { publicArticleWhere } from '@/lib/visibility';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 900;
+
+export async function generateStaticParams() {
+  return [];
+}
 
 interface PageProps {
   params: Promise<{ slug: string }>;

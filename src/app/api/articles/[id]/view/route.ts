@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { rateLimit, requestKey } from '@/lib/rate-limit';
+import { rateLimitAsync, requestKey } from '@/lib/rate-limit';
 import { jakartaDayBucket } from '@/lib/analytics-date';
 
 const BOT_PATTERN = /bot|crawler|spider|slurp|headless|lighthouse/i;
@@ -9,7 +9,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   if (BOT_PATTERN.test(request.headers.get('user-agent') || '')) {
     return new NextResponse(null, { status: 204 });
   }
-  if (!rateLimit(requestKey(request, 'view'), 30, 60_000)) {
+  if (!(await rateLimitAsync(requestKey(request, 'view'), 30, 60_000))) {
     return new NextResponse(null, { status: 429 });
   }
 

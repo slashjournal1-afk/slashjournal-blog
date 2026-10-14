@@ -1,14 +1,16 @@
-type CachedValue<T> = { value: T; expiresAt: number; cachedAt: string };
+import { getAnalyticsCache, setAnalyticsCache } from '@/lib/analytics-cache';
 
-const cache = new Map<string, CachedValue<unknown>>();
-
+/**
+ * Cache laporan Google (GA4/AdSense) via Redis jika tersedia, else memori.
+ * Map in-memory lama tidak pernah hit di serverless (cold start / multi-instance),
+ * sehingga tiap kunjungan dashboard admin selalu menembak Google API.
+ */
 export async function cachedReport<T>(key: string, ttlMs: number, loader: () => Promise<T>): Promise<{ value: T; cachedAt: string }> {
-  const now = Date.now();
-  const existing = cache.get(key);
-  if (existing && existing.expiresAt > now) return { value: existing.value as T, cachedAt: existing.cachedAt };
+  const cached = await getAnalyticsCache<T>(key);
+  if (cached) return cached;
 
   const value = await loader();
   const cachedAt = new Date().toISOString();
-  cache.set(key, { value, expiresAt: now + ttlMs, cachedAt });
+  await setAnalyticsCache(key, value, Math.max(1, Math.ceil(ttlMs / 1000)));
   return { value, cachedAt };
 }

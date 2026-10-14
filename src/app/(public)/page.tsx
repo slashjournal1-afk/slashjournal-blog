@@ -46,8 +46,11 @@ export default async function HomePage() {
   const mostReadIds = new Set(mostRead.map(({ id }) => id));
   const mostHelpful = helpfulArticles.filter(({ id }) => !mostReadIds.has(id)).slice(0, 5);
   const trendingKeywords = selectTrendingKeywords(searchQueries);
-  const belowHeroFilled = Boolean(belowHeroAd?.isActive)
-    || Boolean(process.env.NEXT_PUBLIC_ADSENSE_BELOW_HERO_SLOT || process.env.ADSENSE_BELOW_HERO_SLOT);
+  // Pre-approval AdSense: AdSlotView me-render null, jadi anggap slot kosong
+  // agar tidak ada ruang iklan kosong yang dihitung sebagai "filled".
+  const adsenseApproved = process.env.NEXT_PUBLIC_ADSENSE_APPROVED === 'true';
+  const belowHeroFilled = adsenseApproved && (Boolean(belowHeroAd?.isActive)
+    || Boolean(process.env.NEXT_PUBLIC_ADSENSE_BELOW_HERO_SLOT || process.env.ADSENSE_BELOW_HERO_SLOT));
 
   return (
     <div className="mx-auto min-h-screen max-w-editorial px-5 pb-24 sm:px-8">
@@ -74,7 +77,9 @@ export default async function HomePage() {
                 </p>
               )}
               <div className="mt-6 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[var(--text-muted)]">
-                <span className="font-medium text-[var(--text-secondary)]">{featured.author.displayName}</span>
+                <Link href="/about#author" rel="author" className="font-medium text-[var(--text-secondary)] hover:text-[var(--accent)] transition-colors">
+                  {featured.author.displayName}
+                </Link>
                 <span aria-hidden="true" className="text-[var(--color-silver)]">·</span>
                 <span>{formatDate(featured.publishedAt || featured.createdAt)}</span>
                 {featured.readingTime != null && (

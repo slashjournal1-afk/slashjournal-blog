@@ -19,12 +19,14 @@ export function selectTrendingKeywords(
     if (query.length < 2) continue;
 
     const key = query.toLocaleLowerCase('id-ID');
+    // createdAt bisa string ISO saat data datang dari Data Cache (serialisasi).
+    const latest = new Date(candidate.createdAt).getTime();
     const existing = counts.get(key);
     if (existing) {
       existing.count += 1;
-      existing.latest = Math.max(existing.latest, candidate.createdAt.getTime());
+      existing.latest = Math.max(existing.latest, latest);
     } else {
-      counts.set(key, { query, count: 1, latest: candidate.createdAt.getTime() });
+      counts.set(key, { query, count: 1, latest });
     }
   }
 

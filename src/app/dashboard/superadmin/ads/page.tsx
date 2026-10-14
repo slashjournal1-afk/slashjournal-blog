@@ -18,7 +18,7 @@ export default async function ManualAdsPage() {
     title: 'Ruang Kemitraan SlashJournal',
     description: null,
     imageUrl: null,
-    targetUrl: 'https://slashjournal.dev/contact?subject=sponsor',
+    targetUrl: 'https://www.slashjournal.my.id/contact?subject=sponsor',
     sponsorName: 'Nama Brand',
     ctaLabel: 'Kunjungi Situs',
     isActive: false,

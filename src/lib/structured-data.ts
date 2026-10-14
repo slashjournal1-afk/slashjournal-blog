@@ -4,6 +4,9 @@ export const organizationId = absoluteUrl('/#organization');
 export const websiteId = absoluteUrl('/#website');
 export const authorId = absoluteUrl('/about#author');
 
+// sameAs terkonfirmasi milik penulis (Okt 2026). Satu sumber: siteConfig.
+export const authorSameAs: string[] = [...siteConfig.authorSameAs];
+
 export function breadcrumbSchema(items: Array<{ name: string; path: string }>) {
   return {
     '@context': 'https://schema.org',
@@ -50,9 +53,14 @@ export function siteGraphSchema() {
       {
         '@type': 'Person',
         '@id': authorId,
-        name: 'Choirul Humam',
-        url: absoluteUrl('/about'),
+        name: siteConfig.authorName,
+        url: absoluteUrl('/about#author'),
+        image: absoluteUrl('/choirul-humam.webp'),
+        jobTitle: siteConfig.authorJobTitle,
+        description:
+          'Choirul Humam adalah penulis dan Software Engineer di balik SlashJournal — publikasi independen tentang arsitektur sistem dan rekayasa perangkat lunak.',
         worksFor: { '@id': organizationId },
+        sameAs: authorSameAs,
       },
     ],
   };

@@ -15,6 +15,11 @@ import { breadcrumbSchema } from '@/lib/structured-data';
 import { publicArticleWhere } from '@/lib/visibility';
 
 export const revalidate = 300;
+
+export async function generateStaticParams() {
+  return [];
+}
+
 const PAGE_SIZE = 12;
 
 interface PageProps {

@@ -104,3 +104,22 @@ export function extractArticleKeywords({
     toTsQueryString,
   };
 }
+
+/**
+ * Bangun string to_tsquery('simple', ...) yang aman dari query pencarian user.
+ * Hanya token alfanumerik >= 2 karakter, maks 8 token, digabung OR.
+ * Return '' jika tidak ada token valid (caller harus fallback).
+ */
+export function buildSearchTsQuery(query: string, maxTokens = 8): string {
+  const tokens: string[] = [];
+  const seen = new Set<string>();
+  for (const raw of query.toLowerCase().split(/[^a-z0-9]+/)) {
+    const cleaned = raw.trim();
+    if (cleaned.length < 2 || cleaned.length > 32 || seen.has(cleaned)) continue;
+    if (/^\d+$/.test(cleaned)) continue;
+    seen.add(cleaned);
+    tokens.push(cleaned);
+    if (tokens.length >= maxTokens) break;
+  }
+  return tokens.join(' | ');
+}

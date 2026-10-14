@@ -12,10 +12,10 @@ async function main() {
   const adminHashedPassword = await bcrypt.hash('AdminPassword123!', 10);
 
   const admin = await prisma.user.upsert({
-    where: { email: 'admin@slashjournal.dev' },
+    where: { email: 'admin@slashjournal.my.id' },
     update: {},
     create: {
-      email: 'admin@slashjournal.dev',
+      email: 'admin@slashjournal.my.id',
       name: 'Choirul',
       displayName: 'Choirul (Chief Architect & Penulis Utama)',
       passwordHash: adminHashedPassword,
@@ -25,10 +25,10 @@ async function main() {
   });
 
   const editor = await prisma.user.upsert({
-    where: { email: 'editor@slashjournal.dev' },
+    where: { email: 'editor@slashjournal.my.id' },
     update: {},
     create: {
-      email: 'editor@slashjournal.dev',
+      email: 'editor@slashjournal.my.id',
       name: 'Sarah Reviewer',
       displayName: 'Sarah (Staff Editor)',
       passwordHash: hashedPassword,

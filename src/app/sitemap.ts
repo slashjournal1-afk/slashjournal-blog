@@ -84,7 +84,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'weekly',
       priority: 0.8,
     },
-    { url: absoluteUrl('/about'), changeFrequency: 'monthly', priority: 0.5 },
+    // /about adalah profil penulis kanonis "Choirul Humam" — prioritas
+    // dinaikkan agar query nama penulis terindeks ke slashjournal.my.id.
+    { url: absoluteUrl('/about'), lastModified: latestContentUpdate, changeFrequency: 'monthly', priority: 0.8 },
     { url: absoluteUrl('/contact'), changeFrequency: 'monthly', priority: 0.5 },
     { url: absoluteUrl('/privacy-policy'), changeFrequency: 'yearly', priority: 0.3 },
     { url: absoluteUrl('/terms'), changeFrequency: 'yearly', priority: 0.3 },
