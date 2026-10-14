@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { CookieSettingsButton } from '@/components/analytics/CookieSettingsButton';
 import { BrandLogo } from '@/components/layout/BrandLogo';
+import { siteConfig } from '@/lib/site';
 
 const readingLinks = [
   { label: 'Tulisan', href: '/' },
@@ -33,6 +34,36 @@ export function Footer() {
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-[var(--text-muted)]">
               Catatan produksi tentang sistem terdistribusi, rekayasa antarmuka, dan keputusan teknis yang layak dipahami.
             </p>
+            <p className="mt-4 text-sm text-[var(--text-muted)]">
+              <a href={`mailto:${siteConfig.contactEmail}`} className="font-medium hover:text-[var(--text-primary)] transition-colors">
+                {siteConfig.contactEmail}
+              </a>
+              <span aria-hidden="true"> · </span>
+              <span>{siteConfig.operatorLocation}</span>
+            </p>
+            <p className="mt-3 text-sm text-[var(--text-muted)]">
+              Ditulis oleh{' '}
+              <Link href="/about#author" rel="author" className="font-semibold text-[var(--text-primary)] hover:text-[var(--accent)] transition-colors">
+                {siteConfig.authorName}
+              </Link>
+              .
+            </p>
+            {/* Tautan eksplisit identitas penulis — rel="me" untuk verifikasi Knowledge Graph */}
+            <nav aria-label="Profil sosial Choirul Humam" className="mt-5 flex flex-wrap gap-2">
+              {siteConfig.authorSocials.map((social) => (
+                <a
+                  key={social.href}
+                  href={social.href}
+                  rel="me noopener"
+                  target="_blank"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-[var(--border-color)] px-3 py-1.5 text-xs font-medium text-[var(--text-muted)] transition-colors hover:border-[var(--accent)] hover:text-[var(--text-primary)]"
+                >
+                  {social.label}
+                  <span aria-hidden="true" className="text-[var(--color-silver)]">·</span>
+                  <span>{social.handle}</span>
+                </a>
+              ))}
+            </nav>
           </div>
           <FooterColumn title="Baca" links={readingLinks} />
           <div>

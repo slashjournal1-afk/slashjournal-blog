@@ -433,3 +433,16 @@ model RevenueJobRun {
   @@index([jobName, startedAt])
   @@index([revenuePeriodId])
 }
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  subject   String   @default("general")
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([isRead, createdAt])
+  @@index([email])
+}

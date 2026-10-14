@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { pushDataLayer } from '@/lib/data-layer';
+import { getAdSensePublisherId, isAdSenseApproved, isAdSenseRunnable } from '@/lib/ads-approval';
 import { getAdSlotConfig, type AdSlotName } from '@/lib/ad-slots';
 
 declare global {
@@ -17,12 +18,13 @@ interface GoogleAdSenseProps {
 
 export function GoogleAdSense({ slot, slotName, layoutKey, className = '' }: GoogleAdSenseProps) {
   const config = getAdSlotConfig(slotName);
-  const [enabled] = useState(true);
+  // Pre-approval: jangan render boks iklan kosong (pemicu "Konten tanpa manfaat").
+  const [enabled] = useState(() => isAdSenseApproved());
   const [scriptReady, setScriptReady] = useState(() => typeof window !== 'undefined' && Array.isArray(window.adsbygoogle));
   const [visible, setVisible] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
   const pushedRef = useRef(false);
-  const publisherId = process.env.NEXT_PUBLIC_ADSENSE_PUBLISHER_ID || 'ca-pub-7524844307744923';
+  const publisherId = getAdSensePublisherId();
 
   useEffect(() => {
     const handleReady = () => setScriptReady(true);
@@ -67,7 +69,7 @@ export function GoogleAdSense({ slot, slotName, layoutKey, className = '' }: Goo
     }
   }, [enabled, scriptReady, visible, slot, publisherId]);
 
-  if (!enabled || !slot || !publisherId) return null;
+  if (!enabled || !isAdSenseRunnable({ slot, publisherId })) return null;
 
   return (
     <div

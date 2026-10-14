@@ -1,112 +1,79 @@
-'use client';
-
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
-import { Mail, Send, CheckCircle2, MessageSquare, Sparkles, Shield, PenLine } from 'lucide-react';
+import type { Metadata } from 'next';
+import { Mail, Send, Shield, PenLine, Sparkles, Clock } from 'lucide-react';
 import { PageIntro } from '@/components/layout/PageIntro';
+import { ContactForm } from './ContactForm';
+import { absoluteUrl, siteConfig } from '@/lib/site';
 
-export default function ContactPage() {
-  const [submitted, setSubmitted] = useState(false);
-  const [subject, setSubject] = useState('correction');
-  const subjectOptions = ['correction', 'sponsor', 'author', 'privacy', 'general'];
+export const metadata: Metadata = {
+  title: 'Kontak & Hak Jawab',
+  description:
+    'Hubungi redaksi SlashJournal untuk koreksi teknis, kemitraan sponsor, kontribusi penulis, atau permintaan data pribadi sesuai UU PDP.',
+  alternates: { canonical: absoluteUrl('/contact') },
+};
 
-  React.useEffect(() => {
-    const requestedSubject = new URLSearchParams(window.location.search).get('subject');
-    if (requestedSubject && subjectOptions.includes(requestedSubject)) setSubject(requestedSubject);
-  }, []);
+const VALID_SUBJECTS = ['correction', 'sponsor', 'author', 'privacy', 'general'];
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitted(true);
-  };
+export default async function ContactPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ subject?: string }>;
+}) {
+  const params = (await searchParams) || {};
+  const initialSubject = VALID_SUBJECTS.includes(params.subject || '') ? params.subject! : 'general';
 
   return (
     <div className="min-h-screen max-w-[1200px] mx-auto px-4 sm:px-6 py-12">
       <div className="mb-12"><PageIntro eyebrow="Kontak dan hak jawab" title="Koreksi teknis, kemitraan, atau permintaan data" description="Kirim koreksi fakta atau kode, proposal sponsor yang relevan, atau permintaan hak akses data sesuai UU PDP." /></div>
 
+      {/* Jalur kontak langsung — verifikabel, bukan hanya formulir */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+        <a
+          href={`mailto:${siteConfig.contactEmail}`}
+          className="rounded-[24px] bg-white dark:bg-[#18181b] border border-[#ececee] dark:border-[#27272a] p-5 flex items-center gap-4 hover:border-[var(--accent)] transition-colors"
+        >
+          <span className="w-10 h-10 rounded-[14px] bg-[#f4f4f5] dark:bg-[#27272a] flex items-center justify-center text-[var(--accent)] shrink-0">
+            <Mail className="w-5 h-5" />
+          </span>
+          <span>
+            <span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--text-muted)]">Email Redaksi</span>
+            <span className="block text-sm font-bold text-[#09090b] dark:text-white">{siteConfig.contactEmail}</span>
+          </span>
+        </a>
+        <a
+          href={`mailto:${siteConfig.privacyEmail}?subject=Permintaan%20Data%20Pribadi%20(UU%20PDP)`}
+          className="rounded-[24px] bg-white dark:bg-[#18181b] border border-[#ececee] dark:border-[#27272a] p-5 flex items-center gap-4 hover:border-[var(--accent)] transition-colors"
+        >
+          <span className="w-10 h-10 rounded-[14px] bg-[#f4f4f5] dark:bg-[#27272a] flex items-center justify-center text-[var(--accent)] shrink-0">
+            <Shield className="w-5 h-5" />
+          </span>
+          <span>
+            <span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--text-muted)]">Privasi &amp; Data (UU PDP)</span>
+            <span className="block text-sm font-bold text-[#09090b] dark:text-white">{siteConfig.privacyEmail}</span>
+          </span>
+        </a>
+        <div className="rounded-[24px] bg-white dark:bg-[#18181b] border border-[#ececee] dark:border-[#27272a] p-5 flex items-center gap-4">
+          <span className="w-10 h-10 rounded-[14px] bg-[#f4f4f5] dark:bg-[#27272a] flex items-center justify-center text-[var(--accent)] shrink-0">
+            <Clock className="w-5 h-5" />
+          </span>
+          <span>
+            <span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--text-muted)]">Waktu Respons</span>
+            <span className="block text-sm font-bold text-[#09090b] dark:text-white">Hari kerja, maks. 3×24 jam</span>
+          </span>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
         {/* Contact Form */}
         <div className="lg:col-span-7">
           <div className="rounded-[36px] bg-white dark:bg-[#18181b] border border-[#ececee] dark:border-[#27272a] p-8 sm:p-10">
-            {submitted ? (
-              <div className="p-8 rounded-[24px] bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 text-center space-y-3">
-                <CheckCircle2 className="w-10 h-10 text-emerald-600 mx-auto" />
-                <h3 className="text-lg font-bold text-emerald-900 dark:text-emerald-300">
-                  Pesan Anda Telah Diterima
-                </h3>
-                <p className="text-xs text-emerald-700 dark:text-emerald-400 max-w-md mx-auto leading-relaxed">
-                  Terima kasih atas kontribusi Anda. Penulis utama akan meninjau catatan Anda dalam 1-2 hari kerja.
-                </p>
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-5">
-                  <div className="space-y-2">
-                   <label htmlFor="contact-subject" className="text-xs font-bold text-[#09090b] dark:text-white uppercase tracking-wider">
-                    Keperluan Pesan
-                  </label>
-                  <select
-                    id="contact-subject"
-                    value={subject}
-                    onChange={(e) => setSubject(e.target.value)}
-                    className="w-full px-4 py-3 rounded-[14px] bg-[#f4f4f5] dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-xs font-semibold text-[#09090b] dark:text-white focus:outline-none"
-                  >
-                    <option value="correction">Koreksi Kesalahan Teknis / Fakta</option>
-                    <option value="sponsor">Kerjasama Sponsor &amp; Kemitraan</option>
-                    <option value="author">Daftar Menjadi Penulis Kontributor</option>
-                    <option value="privacy">Permintaan Data Pribadi / Hapus Akun (UU PDP)</option>
-                    <option value="general">Pertanyaan Umum Platform</option>
-                  </select>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                     <label htmlFor="contact-name" className="text-xs font-bold text-[#09090b] dark:text-white uppercase tracking-wider">
-                      Nama Lengkap
-                    </label>
-                    <input
-                       id="contact-name"
-                       type="text"
-                      required
-                      placeholder="Nama Anda"
-                      className="w-full px-4 py-3 rounded-[14px] bg-[#f4f4f5] dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-xs text-[#09090b] dark:text-white focus:outline-none"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                     <label htmlFor="contact-email" className="text-xs font-bold text-[#09090b] dark:text-white uppercase tracking-wider">
-                      Alamat Email
-                    </label>
-                    <input
-                       id="contact-email"
-                       type="email"
-                      required
-                      placeholder="email@domain.com"
-                      className="w-full px-4 py-3 rounded-[14px] bg-[#f4f4f5] dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-xs text-[#09090b] dark:text-white focus:outline-none"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                   <label htmlFor="contact-message" className="text-xs font-bold text-[#09090b] dark:text-white uppercase tracking-wider">
-                    Isi Pesan / Tautan Artikel Terkait
-                  </label>
-                  <textarea
-                     id="contact-message"
-                     rows={5}
-                    required
-                    placeholder="Tuliskan catatan koreksi, tautan artikel, atau detail kolaborasi..."
-                    className="w-full px-4 py-3 rounded-[14px] bg-[#f4f4f5] dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] text-xs text-[#09090b] dark:text-white focus:outline-none resize-none"
-                  ></textarea>
-                </div>
-
-                <button
-                  type="submit"
-                  className="w-full py-3.5 rounded-[14px] bg-[#09090b] text-white hover:bg-[#18181b] text-xs font-bold shadow-awesomic-dark-btn transition-all flex items-center justify-center gap-2"
-                >
-                  <Send className="w-4 h-4" />
-                  Kirim Pesan Sekarang
-                </button>
-              </form>
-            )}
+            <ContactForm initialSubject={initialSubject} />
+            <p className="mt-5 text-[11px] leading-relaxed text-[#71717a] dark:text-[#a1a1aa]">
+              Setiap pesan tersimpan di sistem redaksi dan ditinjau manual. Pesan terkait data
+              pribadi diproses sesuai <Link href="/privacy-policy" className="font-semibold underline underline-offset-2">Kebijakan Privasi</Link> dan
+              UU No. 27 Tahun 2022 tentang Pelindungan Data Pribadi.
+            </p>
           </div>
         </div>
 

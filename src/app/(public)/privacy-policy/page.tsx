@@ -1,6 +1,7 @@
 import React from 'react';
+import Link from 'next/link';
 import type { Metadata } from 'next';
-import { absoluteUrl } from '@/lib/site';
+import { absoluteUrl, siteConfig } from '@/lib/site';
 
 export const metadata: Metadata = {
   title: 'Kebijakan Privasi',
@@ -21,9 +22,27 @@ export default function PrivacyPolicyPage() {
         <p className="text-sm sm:text-base text-[#52525b] dark:text-[#a1a1aa] max-w-2xl leading-relaxed">
           SlashJournal menghormati hak privasi setiap pembaca dan berkomitmen untuk melindungi data pribadi sesuai dengan Undang-Undang No. 27 Tahun 2022 tentang Pelindungan Data Pribadi (UU PDP) serta standar perlindungan data dan periklanan global.
         </p>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#71717a] dark:text-[#a1a1aa]">
+          Berlaku sejak: {siteConfig.lastLegalUpdate}
+        </p>
       </div>
 
       <div className="rounded-[36px] bg-white dark:bg-[#18181b] border border-[#ececee] dark:border-[#27272a] p-8 sm:p-12 space-y-8 text-sm text-[#18181b] dark:text-[#d4d4d8] leading-relaxed max-w-4xl">
+        <section className="space-y-3">
+          <h2 className="text-xl font-bold text-[#09090b] dark:text-white">
+            0. Pengendali Data &amp; Kontak Privasi
+          </h2>
+          <p>
+            Pengendali data pribadi pada layanan ini adalah <strong>{siteConfig.operatorName}</strong> ({siteConfig.operatorType.toLowerCase()},
+            berdomisili di {siteConfig.operatorLocation}). Untuk pertanyaan, keluhan, atau
+            pelaksanaan hak Anda atas data pribadi, hubungi:
+          </p>
+          <ul className="list-disc pl-5 space-y-1 text-xs text-[#52525b] dark:text-[#a1a1aa]">
+            <li><strong>Email privasi:</strong>{' '}<a href={`mailto:${siteConfig.privacyEmail}`} className="font-semibold text-[var(--accent)] underline underline-offset-4">{siteConfig.privacyEmail}</a></li>
+            <li><strong>Email redaksi:</strong>{' '}<a href={`mailto:${siteConfig.contactEmail}`} className="font-semibold text-[var(--accent)] underline underline-offset-4">{siteConfig.contactEmail}</a></li>
+            <li><strong>Formulir:</strong>{' '}<Link href="/contact?subject=privacy" className="font-semibold text-[var(--accent)] underline underline-offset-4">/contact?subject=privacy</Link> — setiap pesan tercatat di sistem redaksi dan ditinjau pada hari kerja (maks. 3×24 jam).</li>
+          </ul>
+        </section>
         <section className="space-y-3">
           <h2 className="text-xl font-bold text-[#09090b] dark:text-white">
             1. Data yang Kami Kumpulkan
@@ -48,6 +67,22 @@ export default function PrivacyPolicyPage() {
           <ul className="list-disc pl-5 space-y-1 text-xs text-[#52525b] dark:text-[#a1a1aa]">
             <li>Alamat email dan profil Anda akan dihapus secara permanen dari basis data utama kami saat permintaan diajukan.</li>
             <li>Komentar historis yang Anda tinggalkan pada artikel akan tetap ada demi integritas diskusi publik, namun identitasnya akan disamarkan menjadi <em>&quot;Pengguna Terhapus&quot;</em>.</li>
+            <li>Cara mengajukan: kirim email ke <a href={`mailto:${siteConfig.privacyEmail}`} className="font-semibold text-[var(--accent)] underline underline-offset-4">{siteConfig.privacyEmail}</a> dari alamat yang terdaftar, atau via <Link href="/contact?subject=privacy" className="font-semibold text-[var(--accent)] underline underline-offset-4">formulir privasi</Link>. Kami memproses permintaan dalam maks. 3×24 jam hari kerja.</li>
+          </ul>
+        </section>
+
+        <section className="space-y-3">
+          <h2 className="text-xl font-bold text-[#09090b] dark:text-white">
+            2a. Dasar Hukum &amp; Masa Retensi
+          </h2>
+          <p>
+            Pemrosesan data dilakukan berdasarkan persetujuan Anda (pendaftaran, langganan buletin, persetujuan cookie), pelaksanaan layanan yang Anda minta (autentikasi, komentar, bookmark), dan kewajiban hukum (keamanan, audit):
+          </p>
+          <ul className="list-disc pl-5 space-y-1 text-xs text-[#52525b] dark:text-[#a1a1aa]">
+            <li><strong>Akun &amp; profil:</strong> disimpan selama akun aktif; dihapus permanen maks. 30 hari setelah permintaan penghapusan disetujui.</li>
+            <li><strong>Pesan kontak:</strong> disimpan maks. 12 bulan untuk tindak lanjut, lalu dihapus atau dianonimkan.</li>
+            <li><strong>Log keamanan (IP tersamar):</strong> disimpan maks. 90 hari, lalu diagregasi secara anonim.</li>
+            <li><strong>Preferensi cookie:</strong> tersimpan di peramban Anda hingga Anda menghapusnya; lihat <Link href="/cookie-policy" className="font-semibold text-[var(--accent)] underline underline-offset-4">Kebijakan Cookie</Link>.</li>
           </ul>
         </section>
 
@@ -95,6 +130,17 @@ export default function PrivacyPolicyPage() {
           </h2>
           <p>
             Kami menerapkan Google Consent Mode v2 untuk menghormati preferensi privasi Anda. Pengukuran performa analitik hanya aktif setelah mendapatkan persetujuan. Anda dapat memperbarui izin cookie kapan saja melalui tautan pengaturan cookie di bagian bawah halaman.
+          </p>
+        </section>
+
+        <section className="space-y-3">
+          <h2 className="text-xl font-bold text-[#09090b] dark:text-white">
+            5. Perubahan Kebijakan
+          </h2>
+          <p className="text-xs text-[#52525b] dark:text-[#a1a1aa]">
+            Kebijakan ini dapat diperbarui mengikuti perubahan layanan atau regulasi. Setiap versi
+            mencantumkan tanggal berlakunya di bagian atas halaman ini. Perubahan material akan
+            diumumkan melalui buletin bagi pelanggan yang berlangganan. Versi saat ini berlaku sejak {siteConfig.lastLegalUpdate}.
           </p>
         </section>
       </div>

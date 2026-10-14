@@ -9,7 +9,7 @@ import { TopProgressBar } from '@/components/layout/TopProgressBar';
 import { CommandPalette } from '@/components/search/CommandPalette';
 import { GoogleTagManager } from '@/components/analytics/GoogleTagManager';
 import { GoogleConsent } from '@/components/analytics/GoogleConsent';
-import { siteConfig } from '@/lib/site';
+import { absoluteUrl, siteConfig } from '@/lib/site';
 import { Toaster } from 'sonner';
 import { GoogleAdSenseLoader } from '@/components/ads/GoogleAdSenseLoader';
 
@@ -46,7 +46,7 @@ export const metadata: Metadata = {
     'Microservices',
     'Distributed Systems',
   ],
-  authors: [{ name: 'Choirul Humam', url: siteConfig.url }],
+  authors: [{ name: siteConfig.authorName, url: absoluteUrl('/about#author') }],
   metadataBase: new URL(siteConfig.url),
   icons: {
     icon: [
@@ -98,6 +98,11 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Gerbang AdSense: script global HANYA dimuat setelah approval + publisher ID terisi.
+  // Pre-approval harus 100% konten agar lolos "Konten tanpa manfaat".
+  const adsenseApproved = process.env.NEXT_PUBLIC_ADSENSE_APPROVED === 'true';
+  const adsensePublisherId = (process.env.NEXT_PUBLIC_ADSENSE_PUBLISHER_ID || '').trim();
+  const loadAdsenseScript = adsenseApproved && adsensePublisherId.length > 0;
   return (
     <html lang="id" suppressHydrationWarning>
       <body
@@ -110,13 +115,17 @@ export default function RootLayout({
           }}
         />
         <GoogleTagManager />
-        <Script
-          id="google-adsense"
-          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_ADSENSE_PUBLISHER_ID || 'ca-pub-7524844307744923'}`}
-          strategy="afterInteractive"
-          crossOrigin="anonymous"
-        />
-        <GoogleAdSenseLoader />
+        {loadAdsenseScript && (
+          <>
+            <Script
+              id="google-adsense"
+              src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsensePublisherId}`}
+              strategy="afterInteractive"
+              crossOrigin="anonymous"
+            />
+            <GoogleAdSenseLoader />
+          </>
+        )}
         <ThemeProvider>
           <AuthProvider>
             <Suspense fallback={null}>
