@@ -17,6 +17,7 @@ export interface GlossaryItem {
   slug: string;
   shortDef?: string | null;
   category?: string | null;
+  type?: 'glossary' | 'article';
 }
 
 export interface ArticleContentRendererProps {
@@ -692,13 +693,29 @@ export function renderInlineFormattedText(text: string, glossary: GlossaryItem[]
         (g) => g.slug === slug || g.term.toLowerCase() === target.toLowerCase()
       );
 
+      if (!found) {
+        return (
+          <span key={i} className="font-medium text-[var(--text-primary)]">
+            {label}
+          </span>
+        );
+      }
+
       return (
         <WikiLinkPopover
           key={i}
-          conceptName={found ? found.term : label}
-          slug={found ? found.slug : slug}
-          shortDef={found?.shortDef || undefined}
-          category={found?.category || undefined}
+          label={label}
+          conceptName={found.term}
+          slug={found.slug}
+          shortDef={found.shortDef || undefined}
+          category={found.category || undefined}
+          metadata={{
+            term: found.term,
+            slug: found.slug,
+            category: found.category || 'Arsitektur',
+            shortDef: found.shortDef || '',
+            type: found.type || 'glossary',
+          }}
         />
       );
     }

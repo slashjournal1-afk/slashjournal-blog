@@ -21,6 +21,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     { label: 'Studio Penulis', href: '/dashboard/creator', icon: 'pen-tool', roles: ['ADMIN', 'EDITOR', 'AUTHOR'] },
     { label: 'Tulis Dokumen Baru', href: '/admin/docs/new', icon: 'plus', roles: ['ADMIN', 'EDITOR', 'AUTHOR'] },
     { label: 'Antrean Review Draf', href: '/admin/review-queue', icon: 'inbox', roles: ['ADMIN', 'EDITOR'] },
+    { label: 'Moderasi Komentar', href: '/admin/comments', icon: 'message-square', roles: ['ADMIN', 'EDITOR'] },
     { label: 'Telemetri Pencarian', href: '/admin/telemetry', icon: 'activity', roles: ['ADMIN', 'EDITOR'] },
     { label: 'Log Audit & Revisi', href: '/admin/audit-logs', icon: 'file-text', roles: ['ADMIN'] },
   ];

@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Menu, X, LayoutDashboard, FileText, Plus, Inbox, Activity, Shield, Bookmark, User, PenTool, Settings } from 'lucide-react';
+import { Home, Menu, X, LayoutDashboard, FileText, Plus, Inbox, Activity, Shield, Bookmark, User, PenTool, Settings, MessageSquare } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { BrandLogo } from '@/components/layout/BrandLogo';
 import { LogoutButton } from '@/components/auth/LogoutButton';
@@ -18,6 +18,7 @@ export type DashboardIconKey =
   | 'bookmark'
   | 'user'
   | 'pen-tool'
+  | 'message-square'
   | 'settings';
 
 const DASHBOARD_ICONS: Record<DashboardIconKey, LucideIcon> = {
@@ -30,6 +31,7 @@ const DASHBOARD_ICONS: Record<DashboardIconKey, LucideIcon> = {
   bookmark: Bookmark,
   user: User,
   'pen-tool': PenTool,
+  'message-square': MessageSquare,
   settings: Settings,
 };
 

@@ -19,7 +19,18 @@ export default async function CategoriesPage() {
     orderBy: {
       articles: { _count: 'desc' },
     },
-    select: { name: true, slug: true, description: true, _count: { select: { articles: true } } },
+    select: {
+      name: true,
+      slug: true,
+      description: true,
+      _count: {
+        select: {
+          articles: {
+            where: { status: 'PUBLISHED', isIndexable: true },
+          },
+        },
+      },
+    },
   });
 
   return (

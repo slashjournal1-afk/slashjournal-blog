@@ -13,7 +13,7 @@ import { absoluteUrl, siteConfig } from '@/lib/site';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { siteGraphSchema } from '@/lib/structured-data';
 import { selectHomeArticleSections } from '@/lib/home-article-sections';
-import { selectTrendingKeywords } from '@/lib/home-trending';
+import { getCuratedEditorialTopics } from '@/lib/home-trending';
 import { HomeSignalDesk } from '@/components/content/HomeSignalDesk';
 import { HomeCategorySections } from '@/components/content/HomeCategorySections';
 import { getHomePageData } from '@/lib/content-loaders';
@@ -45,7 +45,9 @@ export default async function HomePage() {
   const mostRead = popularArticles.slice(0, 5);
   const mostReadIds = new Set(mostRead.map(({ id }) => id));
   const mostHelpful = helpfulArticles.filter(({ id }) => !mostReadIds.has(id)).slice(0, 5);
-  const trendingKeywords = selectTrendingKeywords(searchQueries);
+  const curatedTopics = getCuratedEditorialTopics(
+    categorySections.map((s) => ({ name: s.name, slug: s.slug })),
+  );
   // Pre-approval AdSense: AdSlotView me-render null, jadi anggap slot kosong
   // agar tidak ada ruang iklan kosong yang dihitung sebagai "filled".
   const adsenseApproved = process.env.NEXT_PUBLIC_ADSENSE_APPROVED === 'true';
@@ -168,7 +170,7 @@ export default async function HomePage() {
         </section>
       )}
 
-      <HomeSignalDesk mostRead={mostRead} mostHelpful={mostHelpful} keywords={trendingKeywords} />
+      <HomeSignalDesk mostRead={mostRead} mostHelpful={mostHelpful} topics={curatedTopics} />
 
       {/* 4. Latest Articles + Reference Rail */}
       <section className="grid gap-12 py-12 lg:grid-cols-[minmax(0,1.4fr)_minmax(300px,0.6fr)] lg:gap-16">

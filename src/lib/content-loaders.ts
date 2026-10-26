@@ -44,7 +44,7 @@ export const getPublishedArticle = cache((slug: string) => getCachedPublishedArt
 
 export const getArticleComments = cache(async (articleId: string) => {
   return prisma.comment.findMany({
-    where: { articleId },
+    where: { articleId, status: 'APPROVED' },
     orderBy: { createdAt: 'desc' },
     take: 20,
     include: {
@@ -200,11 +200,41 @@ const getCachedHomePageData = unstable_cache(async () => {
 export const getHomePageData = cache(() => getCachedHomePageData());
 
 export const getCachedGlossaryItems = unstable_cache(
-  async () => prisma.glossaryTerm.findMany({
-    select: { term: true, slug: true, shortDef: true, category: true },
-  }),
-  ['article-glossary-items'],
-  { revalidate: 3600 },
+  async () => {
+    const [glossary, articles] = await Promise.all([
+      prisma.glossaryTerm.findMany({
+        select: { term: true, slug: true, shortDef: true, category: true },
+      }),
+      prisma.article.findMany({
+        where: publicArticleWhere,
+        select: {
+          title: true,
+          slug: true,
+          excerpt: true,
+          category: { select: { name: true } },
+        },
+      }),
+    ]);
+
+    return [
+      ...glossary.map((g) => ({
+        term: g.term,
+        slug: g.slug,
+        shortDef: g.shortDef,
+        category: g.category,
+        type: 'glossary' as const,
+      })),
+      ...articles.map((a) => ({
+        term: a.title,
+        slug: a.slug,
+        shortDef: a.excerpt,
+        category: a.category?.name || 'Artikel',
+        type: 'article' as const,
+      })),
+    ];
+  },
+  ['article-glossary-items-v3'],
+  { revalidate: 1800, tags: ['wikilinks', 'articles'] },
 );
 
 export const getCachedSidebarAd = unstable_cache(

@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { ArrowUpRight, Search, ThumbsUp } from 'lucide-react';
+import { ArrowUpRight, Compass, ThumbsUp } from 'lucide-react';
+import type { CuratedTopic } from '@/lib/home-trending';
 
 type SignalArticle = {
   id: string;
@@ -36,7 +37,26 @@ function SignalList({ articles, metric }: { articles: SignalArticle[]; metric: '
   );
 }
 
-export function HomeSignalDesk({ mostRead, mostHelpful, keywords }: { mostRead: SignalArticle[]; mostHelpful: SignalArticle[]; keywords: TrendingKeyword[] }) {
+export function HomeSignalDesk({
+  mostRead,
+  mostHelpful,
+  keywords,
+  topics,
+}: {
+  mostRead: SignalArticle[];
+  mostHelpful: SignalArticle[];
+  keywords?: TrendingKeyword[];
+  topics?: CuratedTopic[];
+}) {
+  const displayTopics: CuratedTopic[] =
+    topics && topics.length > 0
+      ? topics
+      : (keywords || []).map((k) => ({
+          label: k.query,
+          href: `/search?q=${encodeURIComponent(k.query)}`,
+          hint: `${k.count}x`,
+        }));
+
   return (
     <section className="border-b border-[var(--border-color)] py-12" aria-labelledby="signal-desk-title">
       <div className="flex flex-wrap items-end justify-between gap-4 border-b border-[var(--border-color)] pb-4">
@@ -58,13 +78,32 @@ export function HomeSignalDesk({ mostRead, mostHelpful, keywords }: { mostRead: 
         </section>
       </div>
 
-      <section className="mt-8 border-t border-[var(--border-color)] pt-6" aria-labelledby="search-signal-title">
-        <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--text-primary)]"><Search className="h-3.5 w-3.5 text-[var(--accent)]" aria-hidden="true" /><h3 id="search-signal-title">Dicari pembaca</h3></div>
-        {keywords.length > 0 ? (
-          <div className="mt-4 flex flex-wrap gap-x-5 gap-y-3">
-            {keywords.map((keyword) => <Link key={keyword.query} href={`/search?q=${encodeURIComponent(keyword.query)}`} className="group inline-flex items-center gap-2 font-mono text-xs text-[var(--text-secondary)] hover:text-[var(--accent)]"><span>“{keyword.query}”</span><span className="text-[var(--text-muted)]">{keyword.count}x</span><ArrowUpRight className="h-3 w-3 opacity-0 transition-opacity group-hover:opacity-100" aria-hidden="true" /></Link>)}
+      <section className="mt-8 border-t border-[var(--border-color)] pt-6" aria-labelledby="curated-topics-title">
+        <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--text-primary)]">
+          <Compass className="h-3.5 w-3.5 text-[var(--accent)]" aria-hidden="true" />
+          <h3 id="curated-topics-title">Topik Kurasi Redaksi</h3>
+        </div>
+        {displayTopics.length > 0 ? (
+          <div className="mt-4 flex flex-wrap gap-2.5">
+            {displayTopics.map((topic) => (
+              <Link
+                key={topic.href}
+                href={topic.href}
+                className="group inline-flex items-center gap-2 rounded-full border border-[var(--border-color)] bg-[var(--bg-card)] px-3.5 py-1.5 text-xs text-[var(--text-secondary)] transition-all hover:border-[var(--accent)] hover:text-[var(--accent)] hover:bg-[var(--accent)]/5"
+              >
+                <span className="font-medium">{topic.label}</span>
+                {topic.hint && (
+                  <span className="text-[10px] text-[var(--text-muted)] font-mono">
+                    {topic.hint}
+                  </span>
+                )}
+                <ArrowUpRight className="h-3 w-3 opacity-0 transition-opacity group-hover:opacity-100 text-[var(--accent)]" aria-hidden="true" />
+              </Link>
+            ))}
           </div>
-        ) : <p className="mt-4 text-sm text-[var(--text-muted)]">Keyword pembaca akan muncul setelah pencarian mulai terbentuk.</p>}
+        ) : (
+          <p className="mt-4 text-sm text-[var(--text-muted)]">Belum ada topik kurasi aktif.</p>
+        )}
       </section>
     </section>
   );

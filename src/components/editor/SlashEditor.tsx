@@ -83,93 +83,17 @@ interface SlashEditorProps {
 const KNOWN_COVER_SOURCE_TYPES = ['FREE_STOCK', 'SELF_SHOT', 'AI_GENERATED'];
 export const CUSTOM_COVER_SOURCE_SENTINEL = '__CUSTOM__';
 
-const DEFAULT_DEMO_CONTENT = `## 1. Analisis Latar Belakang & Problem Statement
+const DEFAULT_DEMO_CONTENT = `<!-- slashjournal:editor-example -->
+## Ilustrasi editor
 
-Sistem terdistribusi modern membutuhkan keandalan transaksi tingkat tinggi. Pada arsitektur pembayaran dan mutasi keuangan, risiko terjadinya pemrosesan ganda (*double billing*) saat terjadi network timeout harus dieliminasi menggunakan [[idempotency-key]].
+Contoh ini hanya menunjukkan format Markdown. Ganti dengan analisis dan sumber yang telah ditinjau sebelum publikasi.
 
-> [!NOTE]
-> **Prinsip Dasar**: Kunci idempotensi unik wajib dihasilkan di sisi klien dan diverifikasi secara atomik pada lapisan basis data sebelum mutasi saldo dieksekusi.
-
----
-
-## 2. Diagram Alur Transaksi (Mermaid Sequence)
-
-Berikut adalah diagram sekuens interaktif yang menggambarkan pertukaran pesan antara klien, API Gateway, dan PostgreSQL:
-
-\`\`\`mermaid
-sequenceDiagram
-    autonumber
-    actor User as Klien Pengguna
-    participant Gateway as API Gateway
-    participant Ledger as Layanan Ledger
-    participant DB as PostgreSQL (ACID)
-
-    User->>Gateway: POST /api/v1/charge (Idempotency-Key: abc-123)
-    Gateway->>Ledger: Forward Request
-    Ledger->>DB: INSERT INTO idempotency_records ON CONFLICT DO NOTHING
-    alt Kunci Baru (Belum Pernah Diproses)
-        DB-->>Ledger: Sukses Dibuat
-        Ledger->>DB: Eksekusi Mutasi Saldo
-        Ledger-->>Gateway: 201 Created (Transaksi Sukses)
-        Gateway-->>User: 200 OK
-    else Kunci Duplikat (Sedang/Sudah Diproses)
-        DB-->>Ledger: Conflict Detected
-        Ledger-->>Gateway: Return Hasil Cached Sebelumnya
-        Gateway-->>User: 200 OK (Idempotent Response)
-    end
-\`\`\`
-
----
-
-## 3. Implementasi Handler Transaksi Multi-Bahasa
-
-\`\`\`tabs
-// tab: TypeScript
-import { NextRequest, NextResponse } from 'next/server';
-
-export async function POST(req: NextRequest) {
-  const idempotencyKey = req.headers.get('x-idempotency-key');
-  if (!idempotencyKey) {
-    return NextResponse.json({ error: 'Header X-Idempotency-Key wajib disertakan' }, { status: 400 });
-  }
-
-  // Verifikasi kunci di basis data PostgreSQL
-  return NextResponse.json({ status: 'PROCESSED', key: idempotencyKey });
-}
-// tab: SQL
-CREATE TABLE IF NOT EXISTS idempotency_keys (
-    key VARCHAR(64) PRIMARY KEY,
-    response_body JSONB NOT NULL,
-    status_code INT NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    expires_at TIMESTAMPTZ DEFAULT NOW() + INTERVAL '24 hours'
-);
-// tab: Go
-package main
-
-import (
-    "net/http"
-)
-
-func IdempotentHandler(w http.ResponseWriter, r *http.Request) {
-    key := r.Header.Get("X-Idempotency-Key")
-    if key == "" {
-        http.Error(w, "Missing Idempotency Key", http.StatusBadRequest)
-        return
-    }
-    w.WriteHeader(http.StatusOK)
+\`\`\`typescript
+// Ilustrasi fungsi murni; bukan implementasi transaksi produksi.
+function sum(a: number, b: number) {
+  return a + b;
 }
 \`\`\`
-
----
-
-## 4. Evaluasi Metrik & Latensi
-
-| Lapisan Sistem | Mekanisme Penyimpanan | P95 Latency | Karakteristik Konsistensi |
-|---|---|---|---|
-| Edge Proxy | Redis Token Cache | < 2ms | In-memory atomic SETNX |
-| Ledger Core | PostgreSQL Partitioned Table | ~ 8ms | Strong ACID Transactional |
-| Audit Trail | ClickHouse Append-Only Log | ~ 15ms | High Throughput Analytics |
 `;
 
 export function SlashEditor({
@@ -237,7 +161,7 @@ export function SlashEditor({
 
   // Default starter content
   const [contentMarkdown, setContentMarkdown] = useState(
-    initialArticle?.contentMarkdown || DEFAULT_DEMO_CONTENT
+    initialArticle?.contentMarkdown ?? ''
   );
 
   // Slash Menu State
@@ -254,7 +178,7 @@ export function SlashEditor({
       if (initialArticle.title !== undefined) setTitle(initialArticle.title || '');
       if (initialArticle.slug !== undefined) setSlug(initialArticle.slug || '');
       if (initialArticle.excerpt !== undefined) setExcerpt(initialArticle.excerpt || '');
-      if (initialArticle.contentMarkdown !== undefined) setContentMarkdown(initialArticle.contentMarkdown || DEFAULT_DEMO_CONTENT);
+      if (initialArticle.contentMarkdown !== undefined) setContentMarkdown(initialArticle.contentMarkdown ?? '');
       if (initialArticle.categoryId !== undefined) setCategoryId(initialArticle.categoryId || categories[0]?.id || '');
       if (initialArticle.seriesId !== undefined) setSeriesId(initialArticle.seriesId || '');
       if (initialArticle.seriesOrder !== undefined) setSeriesOrder(initialArticle.seriesOrder || 1);
@@ -435,7 +359,7 @@ export function SlashEditor({
 
   // Undo / Redo History Stack Management
   const [history, setHistory] = useState<Array<{ content: string; cursor: number }>>(() => [
-    { content: initialArticle?.contentMarkdown || DEFAULT_DEMO_CONTENT, cursor: 0 },
+    { content: initialArticle?.contentMarkdown ?? '', cursor: 0 },
   ]);
   const [historyIndex, setHistoryIndex] = useState<number>(0);
   const isPerformingUndoRedoRef = useRef(false);
