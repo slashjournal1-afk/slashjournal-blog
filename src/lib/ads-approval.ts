@@ -30,3 +30,17 @@ export function isAdSenseRunnable(args: {
   const publisher = (args.publisherId ?? getAdSensePublisherId()).trim();
   return slot.length > 0 && publisher.length > 0;
 }
+
+export function getAdSenseVerificationMetadata(
+  rawPublisherId: string | undefined,
+): Record<string, string> {
+  const publisherId = (rawPublisherId ?? '').trim();
+
+  if (!/^ca-pub-\d{16}$/.test(publisherId)) {
+    return {};
+  }
+
+  return {
+    'google-adsense-account': publisherId,
+  };
+}

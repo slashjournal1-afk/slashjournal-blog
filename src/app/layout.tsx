@@ -12,6 +12,7 @@ import { GoogleConsent } from '@/components/analytics/GoogleConsent';
 import { absoluteUrl, siteConfig } from '@/lib/site';
 import { Toaster } from 'sonner';
 import { GoogleAdSenseLoader } from '@/components/ads/GoogleAdSenseLoader';
+import { getAdSenseVerificationMetadata } from '@/lib/ads-approval';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -90,6 +91,9 @@ export const metadata: Metadata = {
         alt: 'SlashJournal — Catatan Arsitektur & Rekayasa Perangkat Lunak',
       },
     ],
+  },
+  other: {
+    ...getAdSenseVerificationMetadata(process.env.NEXT_PUBLIC_ADSENSE_PUBLISHER_ID),
   },
 };
 

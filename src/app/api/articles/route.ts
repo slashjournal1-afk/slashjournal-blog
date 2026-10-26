@@ -8,6 +8,7 @@ import { jsonError } from '@/lib/api-errors';
 import { publicArticleWhere } from '@/lib/visibility';
 import { registerArticleRevenueIdentity } from '@/lib/revenue';
 import { articleCreateSchema } from '@/lib/validation';
+import { validatePublication } from '@/lib/publication-validation';
 
 const EDITORIAL_ROLES = new Set(['ADMIN', 'EDITOR']);
 
@@ -18,10 +19,17 @@ export async function GET(req: NextRequest) {
   const seriesSlug = searchParams.get('series');
 
   const user = await getCurrentUser();
-  const canReadEditorial = user && ['ADMIN', 'EDITOR', 'AUTHOR'].includes(user.role);
-  const where = canReadEditorial && status
-    ? { status, ...(categorySlug ? { category: { slug: categorySlug } } : {}), ...(seriesSlug ? { series: { slug: seriesSlug } } : {}) }
-    : { ...publicArticleWhere, ...(categorySlug ? { category: { slug: categorySlug } } : {}), ...(seriesSlug ? { series: { slug: seriesSlug } } : {}) };
+  const isFullEditorial = Boolean(user && ['ADMIN', 'EDITOR'].includes(user.role));
+  const isAuthor = user?.role === 'AUTHOR';
+
+  let where: Record<string, unknown>;
+  if (isFullEditorial && status) {
+    where = { status, ...(categorySlug ? { category: { slug: categorySlug } } : {}), ...(seriesSlug ? { series: { slug: seriesSlug } } : {}) };
+  } else if (isAuthor && status && user) {
+    where = { authorId: user.id, status, ...(categorySlug ? { category: { slug: categorySlug } } : {}), ...(seriesSlug ? { series: { slug: seriesSlug } } : {}) };
+  } else {
+    where = { ...publicArticleWhere, ...(categorySlug ? { category: { slug: categorySlug } } : {}), ...(seriesSlug ? { series: { slug: seriesSlug } } : {}) };
+  }
 
   const articles = await prisma.article.findMany({
     where,
@@ -89,6 +97,17 @@ export async function POST(req: NextRequest) {
     const generatedSlug = body.slug ? slugify(body.slug) : slugify(body.title);
     if (!generatedSlug) {
       return NextResponse.json({ error: 'Slug tidak dapat dibuat dari judul' }, { status: 400 });
+    }
+
+    const pubError = validatePublication({
+      status,
+      slug: generatedSlug,
+      contentMarkdown: body.contentMarkdown,
+      isSponsored: Boolean(body.isSponsored),
+      sponsorName: body.sponsorName,
+    });
+    if (pubError) {
+      return NextResponse.json({ error: pubError }, { status: 400 });
     }
     const readingTime = calculateReadingTime(body.contentMarkdown);
 

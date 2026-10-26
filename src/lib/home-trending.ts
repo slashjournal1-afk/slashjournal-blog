@@ -8,6 +8,35 @@ export type TrendingKeyword = {
   count: number;
 };
 
+export type CuratedTopic = {
+  label: string;
+  href: string;
+  hint?: string;
+};
+
+export const DEFAULT_CURATED_TOPICS: CuratedTopic[] = [
+  { label: 'Arsitektur Frontend', href: '/category/arsitektur-frontend', hint: 'Kategori' },
+  { label: 'Sistem Terdistribusi', href: '/category/backend-distributed', hint: 'Kategori' },
+  { label: 'DevOps & Cloud Native', href: '/category/devops-cloud', hint: 'Kategori' },
+  { label: 'Keamanan Siber & API', href: '/category/keamanan-siber', hint: 'Kategori' },
+  { label: 'Rekayasa Kecerdasan Buatan', href: '/category/kecerdasan-buatan', hint: 'Kategori' },
+  { label: 'Optimasi Basis Data', href: '/category/basis-data', hint: 'Kategori' },
+];
+
+export function getCuratedEditorialTopics(
+  categories?: Array<{ name: string; slug: string }>,
+  limit = 8,
+): CuratedTopic[] {
+  if (categories && categories.length > 0) {
+    return categories.slice(0, limit).map((c) => ({
+      label: c.name,
+      href: `/category/${c.slug}`,
+      hint: 'Kategori',
+    }));
+  }
+  return DEFAULT_CURATED_TOPICS.slice(0, limit);
+}
+
 export function selectTrendingKeywords(
   candidates: SearchQueryCandidate[] | undefined,
   limit = 6,

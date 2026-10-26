@@ -12,7 +12,7 @@ export async function GET(req: Request) {
   if (!articleId) return NextResponse.json({ comments: [] }, { status: 400 });
 
   const comments = await prisma.comment.findMany({
-    where: { article: { ...publicArticleWhere }, articleId },
+    where: { article: { ...publicArticleWhere }, articleId, status: 'APPROVED' },
     orderBy: { createdAt: 'desc' },
     take: 20,
     include: {
@@ -41,6 +41,7 @@ export async function POST(req: Request) {
         articleId,
         content: content.trim(),
         userId: user.id,
+        status: 'PENDING',
       },
       include: {
         article: { select: { slug: true } },
@@ -53,7 +54,7 @@ export async function POST(req: Request) {
     revalidatePath(`/${comment.article.slug}`);
 
     const { article: _article, ...publicComment } = comment;
-    return NextResponse.json({ success: true, comment: publicComment });
+    return NextResponse.json({ success: true, pendingModeration: true, comment: publicComment });
   } catch (err: unknown) {
     return jsonError('Gagal mengirim komentar', 500, err);
   }

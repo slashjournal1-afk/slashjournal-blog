@@ -31,6 +31,7 @@ export function CommentSection({ articleId, docId, initialComments }: CommentSec
   const [content, setContent] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [noticeMsg, setNoticeMsg] = useState<string | null>(null);
   const loginPromptShownRef = useRef(false);
 
   const promptLoginOnce = () => {
@@ -59,6 +60,7 @@ export function CommentSection({ articleId, docId, initialComments }: CommentSec
     if (!content.trim()) return;
     setSubmitting(true);
     setErrorMsg(null);
+    setNoticeMsg(null);
 
     try {
       const res = await fetch('/api/comments', {
@@ -71,7 +73,11 @@ export function CommentSection({ articleId, docId, initialComments }: CommentSec
       if (!res.ok) throw new Error(data.error || 'Gagal mengirim komentar');
 
       if (data.comment) {
-        setComments([data.comment, ...comments]);
+        if (data.pendingModeration) {
+          setNoticeMsg('Komentar Anda telah diterima dan akan ditayangkan setelah ditinjau oleh tim editorial.');
+        } else {
+          setComments([data.comment, ...comments]);
+        }
         setContent('');
         pushDataLayer('comment_submit', { article_id: targetId });
       }
@@ -109,6 +115,12 @@ export function CommentSection({ articleId, docId, initialComments }: CommentSec
           Login diperlukan
         </span>
       </div>
+
+      {noticeMsg && (
+        <div className="p-3.5 rounded-[14px] bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs flex items-center gap-2">
+          <span>✓ {noticeMsg}</span>
+        </div>
+      )}
 
       {errorMsg && (
         <div className="p-3.5 rounded-[14px] bg-[var(--danger-soft)] border border-[var(--danger)]/30 text-[var(--danger)] text-xs flex items-center gap-2">

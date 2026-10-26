@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Award, BookOpen, Layers, Lightbulb, ThumbsUp } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { pushDataLayer } from '@/lib/data-layer';
 
 interface ArticleReactionsProps {
   articleId: string;
+  initialCounts?: Record<string, number>;
 }
 
 interface ReactionItem {
@@ -23,22 +24,50 @@ const REACTIONS: ReactionItem[] = [
   { id: 'deep-dive', label: 'Perlu Pendalaman', icon: BookOpen },
 ];
 
-export function ArticleReactions({ articleId }: ArticleReactionsProps) {
-  const [counts, setCounts] = useState<{ [key: string]: number }>({
-    helpful: 12,
-    insight: 15,
-    solid: 8,
-    practical: 6,
-    'deep-dive': 11,
-  });
+export function ArticleReactions({ articleId, initialCounts }: ArticleReactionsProps) {
+  const [counts, setCounts] = useState<{ [key: string]: number }>(() => ({
+    helpful: 0,
+    insight: 0,
+    solid: 0,
+    practical: 0,
+    'deep-dive': 0,
+    ...(initialCounts || {}),
+  }));
 
   const [selected, setSelected] = useState<string | null>(null);
 
+  useEffect(() => {
+    let active = true;
+    fetch(`/api/feedback?articleId=${encodeURIComponent(articleId)}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (active && data?.counts) {
+          setCounts((prev) => ({ ...prev, ...data.counts }));
+        }
+      })
+      .catch(() => {
+        // Abaikan kegagalan jaringan saat fetching counts
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [articleId]);
+
   const handleReact = async (id: string) => {
-    // Single-vote toggle: clicking the active reaction removes it locally.
+    // Single-vote toggle: clicking the active reaction removes it locally & synchronizes to API.
     if (selected === id) {
       setSelected(null);
       setCounts((prev) => ({ ...prev, [id]: Math.max(0, (prev[id] || 1) - 1) }));
+      try {
+        await fetch(`/api/feedback?articleId=${encodeURIComponent(articleId)}&reaction=${encodeURIComponent(id)}`, {
+          method: 'DELETE',
+        });
+      } catch {
+        // Roll back if removal failed
+        setSelected(id);
+        setCounts((prev) => ({ ...prev, [id]: (prev[id] || 0) + 1 }));
+      }
       return;
     }
 

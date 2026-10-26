@@ -1,5 +1,6 @@
 import { prisma } from './db';
 import { slugify } from './utils';
+import { publicArticleWhere } from './visibility';
 
 export interface PopoverMetadata {
   term: string;
@@ -48,9 +49,9 @@ export async function extractAndResolveWikiLinks(markdown: string): Promise<Map<
     });
   });
 
-  // Fetch articles if not in glossary
+  // Fetch articles if not in glossary, obeying publicArticleWhere
   const articleItems = await prisma.article.findMany({
-    where: { slug: { in: slugs }, status: 'PUBLISHED' },
+    where: { slug: { in: slugs }, ...publicArticleWhere },
     select: { title: true, slug: true, excerpt: true, category: { select: { name: true } } },
   });
 

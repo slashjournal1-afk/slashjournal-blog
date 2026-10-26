@@ -8,13 +8,14 @@ import { jsonError } from '@/lib/api-errors';
 import { publicArticleWhere } from '@/lib/visibility';
 import { registerArticleRevenueIdentity } from '@/lib/revenue';
 import { articleUpdateSchema } from '@/lib/validation';
+import { canEditArticle, canReadEditorialArticle } from '@/lib/article-permissions';
+import { validatePublication } from '@/lib/publication-validation';
 
 const EDITORIAL_ROLES = new Set(['ADMIN', 'EDITOR']);
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const user = await getCurrentUser();
-  const canReadEditorial = user && ['ADMIN', 'EDITOR', 'AUTHOR'].includes(user.role);
   const article = await prisma.article.findUnique({
     where: { id },
     include: {
@@ -28,8 +29,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   });
 
   if (!article) return NextResponse.json({ error: 'Article not found' }, { status: 404 });
-  if (!canReadEditorial && (article.status !== 'PUBLISHED' || !article.isIndexable || !article.category.isIndexable)) {
-    return NextResponse.json({ error: 'Article not found' }, { status: 404 });
+  const canReadEditorial = canReadEditorialArticle(user, article);
+  if (!canReadEditorial) {
+    if (article.status !== 'PUBLISHED' || !article.isIndexable || !article.category.isIndexable) {
+      return NextResponse.json({ error: 'Article not found' }, { status: 404 });
+    }
+    const { revisions, reviewNote, reviewerId, ...publicArticle } = article;
+    return NextResponse.json({ article: publicArticle });
   }
   return NextResponse.json({ article });
 }
@@ -44,9 +50,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   const existing = await prisma.article.findUnique({ where: { id } });
   if (!existing) return NextResponse.json({ error: 'Article not found' }, { status: 404 });
 
-  // Authors can only edit their own drafts
-  if (user.role === 'AUTHOR' && existing.authorId !== user.id) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  if (!canEditArticle(user, existing)) {
+    return NextResponse.json({ error: 'Akses ditolak untuk mengedit naskah ini' }, { status: 403 });
   }
 
   let rawBody: unknown;
@@ -80,6 +85,24 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   }
 
   try {
+    const targetStatus = body.status ?? existing.status;
+    const targetSlug = body.slug ? slugify(body.slug) : existing.slug;
+    const targetContent = body.contentMarkdown ?? existing.contentMarkdown;
+    const targetIsSponsored = body.isSponsored ?? existing.isSponsored;
+    const targetSponsorName = body.sponsorName !== undefined ? body.sponsorName : existing.sponsorName;
+
+    const pubError = validatePublication({
+      status: targetStatus,
+      slug: targetSlug,
+      contentMarkdown: targetContent,
+      isSponsored: targetIsSponsored,
+      sponsorName: targetSponsorName,
+    });
+
+    if (pubError) {
+      return NextResponse.json({ error: pubError }, { status: 400 });
+    }
+
     let finalCategoryId = body.categoryId;
     if (!finalCategoryId && body.newCategoryName) {
       const catSlug = slugify(body.newCategoryName);

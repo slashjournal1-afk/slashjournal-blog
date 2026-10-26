@@ -13,82 +13,118 @@ import { absoluteUrl } from '@/lib/site';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { breadcrumbSchema } from '@/lib/structured-data';
 import { publicArticleWhere } from '@/lib/visibility';
+import { parsePaginationPage } from '@/lib/pagination';
 
 export const revalidate = 300;
-
-export async function generateStaticParams() {
-  return [];
-}
 
 const PAGE_SIZE = 12;
 
 interface PageProps {
   params: Promise<{ slug: string }>;
-  searchParams?: Promise<{ page?: string }>;
+  searchParams?: Promise<{ page?: string | string[] | undefined }>;
 }
 
 export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const page = Math.max(1, Number((await searchParams)?.page || '1') || 1);
+  const sParams = await searchParams;
+  const parsed = parsePaginationPage(sParams?.page, PAGE_SIZE);
+
+  if (!parsed) {
+    notFound();
+  }
+
   const category = await prisma.category.findUnique({
     where: { slug },
+    select: { id: true, name: true, slug: true, description: true, isIndexable: true },
   });
 
-  // Resolve inside metadata so the HTTP 404 status is set before streaming begins.
-  if (!category) notFound();
-
-  if (!category.isIndexable) {
-    return { title: category.name, robots: { index: false, follow: false } };
+  if (!category || !category.isIndexable) {
+    notFound();
   }
 
   return {
-    title: category.name,
+    title: parsed.page > 1 ? `${category.name} — Halaman ${parsed.page}` : category.name,
     description: category.description || 'Kanal penulisan arsitektur dan sistem.',
-    alternates: { canonical: absoluteUrl(`/category/${category.slug}${page > 1 ? `?page=${page}` : ''}`) },
-    robots: category.isIndexable ? 'index, follow' : 'noindex, nofollow',
+    alternates: {
+      canonical: absoluteUrl(`/category/${category.slug}${parsed.page > 1 ? `?page=${parsed.page}` : ''}`),
+    },
+    robots: 'index, follow',
   };
 }
 
 export default async function CategoryPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
-  const page = Math.max(1, Number((await searchParams)?.page || '1') || 1);
+  const sParams = await searchParams;
+  const parsed = parsePaginationPage(sParams?.page, PAGE_SIZE);
+
+  if (!parsed) {
+    notFound();
+  }
 
   const category = await prisma.category.findUnique({
     where: { slug },
-    include: {
-      articles: {
-        where: { ...publicArticleWhere },
-        include: {
-          author: true,
-          tags: { include: { tag: true } },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      description: true,
+      isIndexable: true,
+      _count: {
+        select: {
+          articles: {
+            where: publicArticleWhere,
+          },
         },
-        orderBy: { createdAt: 'desc' },
-        skip: (page - 1) * PAGE_SIZE,
-        take: PAGE_SIZE + 1,
       },
     },
   });
 
-  if (!category) {
+  if (!category || !category.isIndexable) {
     notFound();
   }
 
-  if (!category.isIndexable) {
+  const totalArticles = category._count.articles;
+  const totalPages = Math.max(1, Math.ceil(totalArticles / PAGE_SIZE));
+
+  if (parsed.page > totalPages) {
     notFound();
   }
 
-  const hasNextPage = category.articles.length > PAGE_SIZE;
-  const articles = category.articles.slice(0, PAGE_SIZE);
-  if (page > 1 && articles.length === 0) notFound();
+  const articles = await prisma.article.findMany({
+    where: {
+      categoryId: category.id,
+      ...publicArticleWhere,
+    },
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      excerpt: true,
+      readingTime: true,
+      coverImageUrl: true,
+      isSponsored: true,
+      sponsorName: true,
+      createdAt: true,
+      publishedAt: true,
+    },
+    orderBy: { createdAt: 'desc' },
+    skip: parsed.skip,
+    take: PAGE_SIZE,
+  });
+
+  const hasNextPage = parsed.page < totalPages;
+  const page = parsed.page;
+
   const breadcrumbJsonLd = breadcrumbSchema([
     { name: 'Beranda', path: '/' },
     { name: category.name, path: `/category/${category.slug}` },
-
   ]);
 
-  // Fetch in-feed & leaderboard ad
-  const inFeedAd = await prisma.adSlot.findUnique({ where: { slotName: 'in_feed' } });
-  const leaderboardAd = await prisma.adSlot.findUnique({ where: { slotName: 'leaderboard' } });
+  // Safe ad queries: if ad slots fail, page continues to render cleanly without ads
+  const [inFeedAd, leaderboardAd] = await Promise.all([
+    prisma.adSlot.findUnique({ where: { slotName: 'in_feed' } }).catch(() => null),
+    prisma.adSlot.findUnique({ where: { slotName: 'leaderboard' } }).catch(() => null),
+  ]);
 
   return (
     <div className="mx-auto min-h-screen max-w-editorial px-5 py-12 sm:px-8">
@@ -99,7 +135,12 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
         <span aria-current="page">{category.name}</span>
       </nav>
       <div className="mb-12 space-y-5">
-        <PageIntro eyebrow="Kanal pengetahuan" title={category.name} description={category.description || undefined} count={`Halaman ${page}`} />
+        <PageIntro
+          eyebrow="Kanal pengetahuan"
+          title={category.name}
+          description={category.description || undefined}
+          count={totalPages > 1 ? `Halaman ${page} dari ${totalPages}` : undefined}
+        />
 
         {!category.isIndexable && (
           <div className="p-4 rounded-[20px] bg-[#f4f4f5] dark:bg-[#27272a] border border-[#ececee] dark:border-[#3f3f46] flex items-center gap-3 text-xs text-[#52525b] dark:text-[#a1a1aa]">
@@ -122,7 +163,16 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
         <div className="mb-16">
           {articles.map((art, idx) => (
             <React.Fragment key={art.id}>
-              <ArticleRow href={`/${art.slug}`} title={art.title} excerpt={art.excerpt} date={formatDate(art.publishedAt || art.createdAt)} readingTime={art.readingTime} imageUrl={art.coverImageUrl} sponsored={art.isSponsored} sponsorName={art.sponsorName} />
+              <ArticleRow
+                href={`/${art.slug}`}
+                title={art.title}
+                excerpt={art.excerpt}
+                date={formatDate(art.publishedAt || art.createdAt)}
+                readingTime={art.readingTime}
+                imageUrl={art.coverImageUrl}
+                sponsored={art.isSponsored}
+                sponsorName={art.sponsorName}
+              />
 
               {idx === 1 && (
                 <AdSlotView
@@ -140,8 +190,26 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
 
       {(page > 1 || hasNextPage) && (
         <nav aria-label="Paginasi kanal" className="mb-12 flex items-center justify-between border-t border-[var(--border-color)] pt-6 text-sm">
-          {page > 1 ? <Link href={`/category/${category.slug}?page=${page - 1}`} className="font-semibold text-[var(--text-primary)]">← Halaman sebelumnya</Link> : <span />}
-          {hasNextPage ? <Link href={`/category/${category.slug}?page=${page + 1}`} className="font-semibold text-[var(--text-primary)]">Halaman berikutnya →</Link> : <span />}
+          {page > 1 ? (
+            <Link
+              href={`/category/${category.slug}${page - 1 > 1 ? `?page=${page - 1}` : ''}`}
+              className="font-semibold text-[var(--text-primary)] hover:text-[var(--accent)]"
+            >
+              ← Halaman sebelumnya
+            </Link>
+          ) : (
+            <span />
+          )}
+          {hasNextPage ? (
+            <Link
+              href={`/category/${category.slug}?page=${page + 1}`}
+              className="font-semibold text-[var(--text-primary)] hover:text-[var(--accent)]"
+            >
+              Halaman berikutnya →
+            </Link>
+          ) : (
+            <span />
+          )}
         </nav>
       )}
 

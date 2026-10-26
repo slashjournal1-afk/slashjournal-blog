@@ -126,9 +126,11 @@ export default async function ArticleDetailPage({ params }: PageProps) {
   // Determine Previous & Next chapters in the series
   let prevArticle: { title: string; slug: string; seriesOrder?: number | null } | null = null;
   let nextArticle: { title: string; slug: string; seriesOrder?: number | null } | null = null;
+  let currentSeriesIndex = 0;
 
   if (article.series?.articles) {
     const currentIndex = article.series.articles.findIndex((a) => a.id === article.id);
+    if (currentIndex >= 0) currentSeriesIndex = currentIndex + 1;
     if (currentIndex > 0) prevArticle = article.series.articles[currentIndex - 1];
     if (currentIndex >= 0 && currentIndex < article.series.articles.length - 1) {
       nextArticle = article.series.articles[currentIndex + 1];
@@ -268,7 +270,7 @@ export default async function ArticleDetailPage({ params }: PageProps) {
                 href={`/series/${article.series.slug}`}
                 className="text-xs font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)]"
               >
-                Seri: {article.series.title} · Bagian {article.seriesOrder || 1}
+                Seri: {article.series.title} · Bagian {currentSeriesIndex || article.seriesOrder || 1}
               </Link>
             )}
           </div>
