@@ -40,7 +40,7 @@ export default function AboutPage() {
             <PageIntro
               eyebrow="Tentang penulis"
               title="Choirul Humam, penulis di balik SlashJournal"
-              description="SlashJournal adalah ruang publikasi independen tentang rekayasa sistem terdistribusi, integritas database transaksional, dan keputusan desain yang dapat dipertanggungjawabkan."
+              description="SlashJournal adalah ruang publikasi independen yang meliput rekayasa sistem terdistribusi dan perkembangan industri kecerdasan buatan — setiap tulisan berita merujuk ke sumber primer, dan setiap pandangan redaksi teratribusi sebagai opini."
             />
             <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="rounded-[20px] bg-white dark:bg-[#18181b] border border-[#ececee] dark:border-[#27272a] p-4">
@@ -87,8 +87,9 @@ export default function AboutPage() {
         <p className="text-sm leading-relaxed text-[#3f3f46] dark:text-[#d4d4d8]">
           Akun-akun di bawah ini adalah profil resmi <strong>Choirul Humam</strong>, penulis{' '}
           <Link href="/" className="font-semibold text-[var(--accent)] underline underline-offset-2">SlashJournal</Link>.
-          Tautan memakai atribut <code className="font-mono text-xs bg-[#f4f4f5] dark:bg-[#27272a] px-1.5 py-0.5 rounded">rel=&quot;me&quot;</code> sebagai
-          sinyal verifikasi dua arah antara situs ini dan profil sosial tersebut.
+          Tautan memakai atribut <code className="font-mono text-xs bg-[#f4f4f5] dark:bg-[#27272a] px-1.5 py-0.5 rounded">rel=&quot;me&quot;</code> sehingga
+          pembaca dan mesin pencari dapat mengikuti tautan dari situs ini ke profil tersebut. Bila profil sosial tersebut juga menautkan kembali ke situs ini,
+          kedua belah pihak saling menguatkan kepemilikan akun.
         </p>
         <nav aria-label="Profil sosial Choirul Humam" className="flex flex-wrap gap-3">
           {siteConfig.authorSocials.map((social) => (
@@ -116,9 +117,9 @@ export default function AboutPage() {
           <div className="w-10 h-10 rounded-[14px] bg-[#f4f4f5] dark:bg-[#27272a] flex items-center justify-center text-[var(--accent)]">
             <Terminal className="w-5 h-5" />
           </div>
-          <h3 className="text-lg font-bold text-[#09090b] dark:text-white">Rekayasa Terverifikasi</h3>
+          <h3 className="text-lg font-bold text-[#09090b] dark:text-white">Jujur Soal Jenis Tulisan</h3>
           <p className="text-xs text-[#52525b] dark:text-[#a1a1aa] leading-relaxed">
-            Setiap arsitektur dan potongan kode diuji pada beban produksi nyata sebelum dipublikasikan sebagai panduan.
+            SlashJournal menerbitkan tiga jenis tulisan: berita terverifikasi dari sumber primer, analisis dengan pendapat redaksi yang teratribusi, dan panduan teknis yang kodenya benar-benar dijalankan mengikuti dependensi yang disebutkan.
           </p>
         </div>
 
@@ -168,17 +169,26 @@ export default function AboutPage() {
         </h2>
         <div className="space-y-4 text-sm leading-relaxed text-[#3f3f46] dark:text-[#d4d4d8]">
           <p>
-            Setiap artikel SlashJournal berangkat dari masalah produksi yang nyata: bottleneck database,
-            kegagalan idempotensi pembayaran, atau keputusan arsitektur yang biayanya baru terasa berbulan-bulan
-            kemudian. Kami mereproduksi masalahnya terlebih dahulu — menulis skema, menjalankan beban uji,
-            dan mencatat angka yang keluar — sebelum satu paragraf pun dipublikasikan.
+            SlashJournal menerbitkan tulisan dalam tiga jenis, dan setiap jenis diperlakukan berdasarkan
+            tuntutan berbeda. Potongan kode pada artikel <em>panduan teknis</em> dijalankan mengikuti
+            dependensi yang disebutkan di badan naskah sebelum diterbitkan. Diagram arsitektur digambar dari
+            topologi yang benar-benar diuji, bukan dari dokumentasi vendor. Ketika sebuah pendekatan memiliki
+            trade-off — misalnya konsistensi versus latensi, atau normalisasi versus kecepatan baca — trade-off
+            itu ditulis eksplisit beserta kondisi kapan pendekatan tersebut <em>tidak</em> boleh dipakai.
           </p>
           <p>
-            Potongan kode di artikel bukan ilustrasi; ia dijalankan dan diuji pada dependensi yang
-            disebutkan di badan naskah. Diagram arsitektur digambar dari topologi yang benar-benar diuji,
-            bukan dari dokumentasi vendor. Ketika sebuah pendekatan memiliki trade-off — misalnya konsistensi
-            versus latensi, atau normalisasi versus kecepatan baca — trade-off itu ditulis eksplisit beserta
-            kondisi kapan pendekatan tersebut <em>tidak</em> boleh dipakai.
+            Artikel <em>berita</em> melaporkan rilis dan pengumuman yang dapat dirujuk ke sumber primer
+            (dokumentasi resmi, pengumuman perusahaan, atau publikasi ilmiah), yang tautannya tercantum pada
+            blok sumber di bawah setiap artikel. Kami tidak mengklaim telah menguji model atau produk yang
+            diberitakan; klaim performa perusahaan selalu kami atribusi kepada sumbernya, bukan kami jadikan
+            hasil pengujian SlashJournal. Artikel <em>analisis</em> dan <em>opini</em> menampilkan pandangan
+            redaksi yang teratribusi jelas dan dibedakan dari laporan faktual.
+          </p>
+          <p>
+            Laporan yang belum terkonfirmasi resmi — kebocoran, indikasi, atau spekulasi industri — tidak
+            disajikan sebagai fakta. Artikel kategori tersebut kami tandai dengan catatan redaksi
+            &ldquo;belum terverifikasi&rdquo;, dan tulisan yang tidak dapat merujuk ke sumber primer yang dapat
+            diperiksa akan ditarik dari tayang sampai sumbernya tersedia.
           </p>
           <p>
             Klaim yang merujuk pada pihak ketiga dicantumkan di blok sumber di bawah setiap artikel dengan
